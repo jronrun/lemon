@@ -1086,6 +1086,52 @@
   })(theRef, 'when');
 
   (function(kiwi, component) {
+    var fmt, pop, proto, tabs;
+    proto = function(json) {
+      if (kiwi.isBlank(json)) {
+        return '{}';
+      }
+      return fmt(json);
+    };
+    pop = function(m, i) {
+      return p[i - 1];
+    };
+    tabs = function(count) {
+      return new Array(count + 1).join('\t');
+    };
+    fmt = function(json) {
+      var c, i, indent, out, q, ref;
+      out = "";
+      indent = 0;
+      for (i = q = 0, ref = json.length; 0 <= ref ? q < ref : q > ref; i = 0 <= ref ? ++q : --q) {
+        switch (c = json.charAt(i)) {
+          case '{':
+          case '[':
+            out += c + "\n" + tabs(++indent);
+            break;
+          case '}':
+          case ']':
+            out += "\n" + tabs(--indent) + c;
+            break;
+          case ',':
+            out += ",\n" + tabs(indent);
+            break;
+          case ':':
+            out += ": ";
+            break;
+          default:
+            out += c;
+        }
+      }
+      out = out.replace(/\[[\d,\s]+?\]/g, function(m) {
+        return m.replace(/\s/g, '');
+      }).replace(/\\(\d+)\\/g, pop).replace(/\\(\d+)\\/g, pop);
+      return out;
+    };
+    kiwi.register(component, proto);
+  })(theRef, 'json');
+
+  (function(kiwi, component) {
     if (typeof module === 'object' && module && typeof module.exports === 'object') {
       module.exports = kiwi;
     } else {

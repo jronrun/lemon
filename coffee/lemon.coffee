@@ -684,6 +684,40 @@ _::value = ->
 	return
 	
 ))(theRef, 'when')
+
+# json format plugin see https://github.com/phoboslab/json-format
+((kiwi, component) -> (
+
+	proto = (json) -> 
+		if kiwi.isBlank json then return '{}' 
+		fmt json
+	
+	#p = []; push = (m) -> '\\' + p.push m + '\\'
+	pop = (m, i) -> p[i - 1]
+	tabs = (count) -> new Array(count + 1).join '\t'
+	
+	fmt = (json) -> (
+		#p = []; 
+		out = ""; indent = 0
+		
+		#Extract backslashes and strings
+		#json = json.replace(/\\./g, push).replace(/(".*?"|'.*?')/g, push).replace(/\s+/, '')
+		for i in [0...json.length]
+			switch c = json.charAt i
+				when '{', '[' then out += c + "\n" + tabs(++indent)
+				when '}', ']' then out += "\n" + tabs(--indent) + c
+				when ',' then out += ",\n" + tabs(indent)
+				when ':' then out += ": "
+				else out += c
+		#Strip whitespace from numeric arrays and put backslashes and strings back in
+		out = out.replace(/\[[\d,\s]+?\]/g, (m) -> m.replace(/\s/g,'')).replace(/\\(\d+)\\/g, pop).replace( /\\(\d+)\\/g, pop )
+		out
+	)
+	
+	kiwi.register component, proto
+	return
+	
+))(theRef, 'json')
 	
 # registration	
 ((kiwi, component) -> (
