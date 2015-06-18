@@ -688,15 +688,14 @@ _::value = ->
 # json format plugin see https://github.com/phoboslab/json-format
 ((kiwi, component) -> (
 
-	proto = (json) -> 
-		if kiwi.isBlank json then return '{}' 
-		fmt json
+	proto = (json) -> fmt json
 	
 	#p = []; push = (m) -> '\\' + p.push m + '\\'
 	pop = (m, i) -> p[i - 1]
 	tabs = (count) -> new Array(count + 1).join '\t'
 	
 	fmt = (json) -> (
+		if kiwi.isBlank json then return '{}' 
 		#p = []; 
 		out = ""; indent = 0
 		

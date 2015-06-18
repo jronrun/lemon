@@ -1088,9 +1088,6 @@
   (function(kiwi, component) {
     var fmt, pop, proto, tabs;
     proto = function(json) {
-      if (kiwi.isBlank(json)) {
-        return '{}';
-      }
       return fmt(json);
     };
     pop = function(m, i) {
@@ -1101,6 +1098,9 @@
     };
     fmt = function(json) {
       var c, i, indent, out, q, ref;
+      if (kiwi.isBlank(json)) {
+        return '{}';
+      }
       out = "";
       indent = 0;
       for (i = q = 0, ref = json.length; 0 <= ref ? q < ref : q > ref; i = 0 <= ref ? ++q : --q) {
