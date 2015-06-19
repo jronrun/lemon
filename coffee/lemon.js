@@ -1099,7 +1099,7 @@
     tabs = function(count) {
       return new Array(count + 1).join('\t');
     };
-    trims = function(fragment, split, join) {
+    trims = function(fragment, split, isJoinEmpty) {
       var afterTrim, arrEl, out, tmp;
       out = "";
       afterTrim = kiwi.trim(fragment);
@@ -1109,7 +1109,7 @@
         kiwi.each(arrEl, function(v, k) {
           tmp.push(kiwi.trim(v));
         });
-        out = tmp.join(join);
+        out = tmp.join(isJoinEmpty ? '' : split);
       } else {
         out = afterTrim;
       }
@@ -1120,10 +1120,13 @@
       if (kiwi.isBlank(json)) {
         return '{}';
       }
-      out = "";
-      out = trims(json, '\n', '');
-      out = trims(out, ',', ',');
-      out = trims(out, ':', ':');
+      out = trims(json, '\n');
+      out = trims(out, '[');
+      out = trims(out, ']');
+      out = trims(out, '{');
+      out = trims(out, '}');
+      out = trims(out, ',');
+      out = trims(out, ':');
       return out;
     };
     fmt = function(json) {
