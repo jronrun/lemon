@@ -1086,15 +1086,45 @@
   })(theRef, 'when');
 
   (function(kiwi, component) {
-    var fmt, pop, proto, tabs;
+    var fmt, pop, proto, tabs, trims, unfmt;
     proto = function(json) {
       return fmt(json);
+    };
+    proto.reverse = function(json) {
+      return unfmt(json);
     };
     pop = function(m, i) {
       return p[i - 1];
     };
     tabs = function(count) {
       return new Array(count + 1).join('\t');
+    };
+    trims = function(fragment, split, join) {
+      var afterTrim, arrEl, out, tmp;
+      out = "";
+      afterTrim = kiwi.trim(fragment);
+      arrEl = afterTrim.split(split);
+      if (arrEl.length > 0) {
+        tmp = [];
+        kiwi.each(arrEl, function(v, k) {
+          tmp.push(kiwi.trim(v));
+        });
+        out = tmp.join(join);
+      } else {
+        out = afterTrim;
+      }
+      return out;
+    };
+    unfmt = function(json) {
+      var out;
+      if (kiwi.isBlank(json)) {
+        return '{}';
+      }
+      out = "";
+      out = trims(json, '\n', '');
+      out = trims(out, ',', ',');
+      out = trims(out, ':', ':');
+      return out;
     };
     fmt = function(json) {
       var c, i, indent, out, q, ref;

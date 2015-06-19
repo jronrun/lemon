@@ -689,10 +689,32 @@ _::value = ->
 ((kiwi, component) -> (
 
 	proto = (json) -> fmt json
+	proto.reverse = (json) -> unfmt json
 	
 	#p = []; push = (m) -> '\\' + p.push m + '\\'
 	pop = (m, i) -> p[i - 1]
 	tabs = (count) -> new Array(count + 1).join '\t'
+	
+	trims = (fragment, split, join) ->
+		out = ""; afterTrim = kiwi.trim fragment; arrEl = afterTrim.split split
+		if arrEl.length > 0
+			tmp = []
+			kiwi.each arrEl, (v, k) ->
+				tmp.push(kiwi.trim v)
+				return
+			out = tmp.join join
+		else out = afterTrim
+		out
+			
+	
+	unfmt = (json) -> (
+		if kiwi.isBlank json then return '{}' 
+		out = ""
+		out = trims json, '\n', ''
+		out = trims out, ',', ','
+		out = trims out, ':', ':'
+		out
+	)
 	
 	fmt = (json) -> (
 		if kiwi.isBlank json then return '{}' 
