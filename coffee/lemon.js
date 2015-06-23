@@ -807,7 +807,7 @@
         if (!_.getToStringEvent()) {
           target = _.rmEvtProp(target, true);
         }
-        if (root.JSON && _.isJson(target)) {
+        if (root.JSON && root.JSON.stringify && _.isJson(target)) {
           try {
             _stringifyCache = [];
             details.push(JSON.stringify(target, (function(key, value) {
@@ -1086,7 +1086,7 @@
   })(theRef, 'when');
 
   (function(kiwi, component) {
-    var fmt, pop, proto, tabs, trims, unfmt;
+    var chk, fmt, pop, proto, tabs, trims, unfmt;
     proto = function(json) {
       return fmt(json);
     };
@@ -1115,12 +1115,22 @@
       }
       return out;
     };
-    unfmt = function(json) {
-      var out;
-      if (kiwi.isBlank(json)) {
+    chk = function(target) {
+      if (kiwi.isBlank(target)) {
         return '{}';
       }
-      out = trims(json, '\n');
+      if (kiwi.isString(target)) {
+        return target;
+      }
+      if (JSON && JSON.stringify && kiwi.isJson(target)) {
+        return JSON.stringify(target);
+      } else {
+        throw new Error("This browser JSON.stringify is unsupported.");
+      }
+    };
+    unfmt = function(json) {
+      var out;
+      out = trims(chk(json), '\n');
       out = trims(out, '[');
       out = trims(out, ']');
       out = trims(out, '{');
@@ -1131,11 +1141,9 @@
     };
     fmt = function(json) {
       var c, i, indent, out, q, ref;
-      if (kiwi.isBlank(json)) {
-        return '{}';
-      }
       out = "";
       indent = 0;
+      json = chk(json);
       for (i = q = 0, ref = json.length; 0 <= ref ? q < ref : q > ref; i = 0 <= ref ? ++q : --q) {
         switch (c = json.charAt(i)) {
           case '{':

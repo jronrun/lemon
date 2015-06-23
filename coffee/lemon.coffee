@@ -488,7 +488,7 @@ convertAsString = (target, separator, showType) ->
 				target = _.rmEvtProp target, true
 			
 			#JSON http://bestiejs.github.io/json3
-			if root.JSON and _.isJson(target)
+			if root.JSON and root.JSON.stringify and _.isJson(target)
 				try
 					#see http://stackoverflow.com/questions/11616630/json-stringify-avoid-typeerror-converting-circular-structure-to-json
 					_stringifyCache = []
@@ -705,11 +705,17 @@ _::value = ->
 			out = tmp.join if isJoinEmpty then '' else split
 		else out = afterTrim
 		out
+			 
+	chk = (target) -> 
+		if kiwi.isBlank target then return '{}'
+		if kiwi.isString target then return target
+		if JSON and JSON.stringify and kiwi.isJson(target)
+			JSON.stringify target
+		else
+			throw new Error("This browser JSON.stringify is unsupported.");
 			
-	
 	unfmt = (json) -> (
-		if kiwi.isBlank json then return '{}'
-		out = trims json, '\n'
+		out = trims chk(json), '\n'
 		out = trims out, '['
 		out = trims out, ']'
 		out = trims out, '{'
@@ -720,9 +726,8 @@ _::value = ->
 	)
 	
 	fmt = (json) -> (
-		if kiwi.isBlank json then return '{}' 
 		#p = []; 
-		out = ""; indent = 0
+		out = ""; indent = 0; json = chk json
 		
 		#Extract backslashes and strings
 		#json = json.replace(/\\./g, push).replace(/(".*?"|'.*?')/g, push).replace(/\s+/, '')
