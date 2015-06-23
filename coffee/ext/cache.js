@@ -1,0 +1,236 @@
+//cache plugin see http://www.monsur.com/projects/jscache/
+(function(root, core, component) {
+	
+	var proto = function(maxSize, storage) {
+		return new Cache(maxSize, storage);
+	};
+
+	function Cache(maxSize, storage) {
+		this.maxSize_ = maxSize || -1; this.storage_ = storage || core.store;
+		this.fillFactor_ = .75; this.stats_ = {}; this.stats_['hits'] = 0; this.stats_['misses'] = 0;
+	    core.info('Initialized cache with size ' + this.maxSize_);
+	}
+
+	root.CachePriority = {
+		'LOW' : 1,
+		'NORMAL' : 2,
+		'HIGH' : 4
+	};
+
+	/**
+	 * Basic in memory cache storage backend.
+	 */
+	Cache.BasicCacheStorage = function() { this.items_ = {}; this.count_ = 0; };
+	Cache.BasicCacheStorage.prototype.get = function(key) { return this.items_[key]; };
+	Cache.BasicCacheStorage.prototype.set = function(key, value) {
+		if (typeof this.get(key) === "undefined") { this.count_++; } this.items_[key] = value;
+	};
+	Cache.BasicCacheStorage.prototype.size = function(key, value) { return this.count_; };
+	Cache.BasicCacheStorage.prototype.remove = function(key) {
+		var item = this.get(key); if (typeof item !== "undefined") { this.count_--; } delete this.items_[key]; return item;
+	};
+	Cache.BasicCacheStorage.prototype.keys = function() {
+		var ret = [], p = null; for (p in this.items_) { ret.push(p); } return ret;
+	};
+
+	/**
+	 * Retrieves an item from the cache.
+	 * 
+	 * @param {string}
+	 *            key The key to retrieve.
+	 * @return {Object} The item, or null if it doesn't exist.
+	 */
+	Cache.prototype.get = function(key) {
+		// retrieve the item from the cache
+		var item = this.storage_.get(key);
+
+		if (item != null) {
+			if (!this.isExpired_(item)) {
+				// if the item is not expired update its last accessed date
+				item.lastAccessed = core.now();
+			} else {
+				// if the item is expired, remove it from the cache
+				this.remove(key); item = null;
+			}
+		}
+
+		// return the item value (if it exists), or null
+		var returnVal = item ? item.value : null;
+		if (returnVal) { this.stats_['hits']++; } else { this.stats_['misses']++; }
+		return returnVal;
+	};
+
+	Cache._CacheItem = function(k, v, o) {
+		if (!k) { throw new Error("key cannot be null or empty"); }
+		this.key = k; this.value = v; o = o || {};
+		if (o.expirationAbsolute) { o.expirationAbsolute = o.expirationAbsolute.getTime(); }
+		if (!o.priority) { o.priority = CachePriority.NORMAL; }
+		this.options = o; this.lastAccessed = core.now();
+	};
+
+	/**
+	 * Sets an item in the cache.
+	 * @param {string} key The key to refer to the item.
+	 * @param {Object} value The item to cache.
+	 * @param {Object} options an optional object which controls various caching
+	 *    options:
+	 *      expirationAbsolute: the datetime when the item should expire
+	 *      expirationSliding: an integer representing the seconds since the last cache access after which the item should expire
+	 *      priority: How important it is to leave this item in the cache. You can use the values Cache.Priority.LOW, .NORMAL, or
+	 *                .HIGH, or you can just use an integer.  Note that placing a priority on an item does not guarantee
+	 *                it will remain in cache.  It can still be purged if an expiration is hit, or if the cache is full.
+	 *      callback: A function that gets called when the item is purged from cache.  The key and value of the removed item
+	 *                are passed as parameters to the callback function.
+	 */
+	Cache.prototype.setItem = function(key, value, options) {
+		// add a new cache item to the cache
+		if (this.storage_.get(key) != null) { this.remove(key); }
+		this.addItem_(new Cache._CacheItem(key, value, options));
+
+		// if the cache is full, purge it
+		if ((this.maxSize_ > 0) && (this.size() > this.maxSize_)) {
+			var that = this; setTimeout(function() { that.purge_.call(that); }, 0);
+		}
+	};
+	
+	// key, value, expirationAbsolute | expirationSliding | callback | {options}, priority
+	Cache.prototype.set = function(key, value, arg, priority) {
+		if (core.isJson(arg)) { this.setItem(key, value, arg); return;} var opts = {};
+		if (core.isDate(arg)) { opts = { expirationAbsolute: arg }; }
+		else if (core.isNumber(arg)) { opts = {expirationSliding: arg}; }
+		else if (core.isFunc(arg)) { opts = {callback: arg}; }
+		if (priority) { $.extend(opts, {priority: priority}); }
+		this.setItem(key, value, opts);
+	};
+
+	/**
+	 * Removes all items from the cache.
+	 */
+	Cache.prototype.clear = function() {
+		// loop through each item in the cache and remove it
+		var keys = this.storage_.keys(); for (var i = 0; i < keys.length; i++) { this.remove(keys[i]); }
+	};
+
+	/**
+	 * @return {Object} The hits and misses on the cache.
+	 */
+	Cache.prototype.getStats = function() { return this.stats_; };
+
+	/**
+	 * Allows it to resize the Cache capacity if needed.
+	 * 
+	 * @param {integer}
+	 *            newMaxSize the new max amount of stored entries within the Cache
+	 */
+	Cache.prototype.resize = function(newMaxSize) {
+		// Set new size before purging so we know how many items to purge
+		var oldMaxSize = this.maxSize_; this.maxSize_ = newMaxSize;
+
+		if (newMaxSize > 0 && (oldMaxSize < 0 || newMaxSize < oldMaxSize)) {
+			if (this.size() > newMaxSize) {
+				// Cache needs to be purged as it does contain too much entries for the new size
+				this.purge_();
+			} // else if cache isn't filled up to the new limit nothing is to do
+		}
+		// else if newMaxSize >= maxSize nothing to do
+	};
+
+	/**
+	 * Removes expired items from the cache.
+	 */
+	Cache.prototype.purge_ = function() {
+		var tmparray = new Array(); var purgeSize = Math.round(this.maxSize_ * this.fillFactor_);
+		if (this.maxSize_ < 0) { purgeSize = this.size() * this.fillFactor_; }
+		// loop through the cache, expire items that should be expired otherwise, add the item to an array
+		var keys = this.storage_.keys(); for (var i = 0; i < keys.length; i++) {
+			var key = keys[i]; var item = this.storage_.get(key);
+			if (this.isExpired_(item)) { this.remove(key); } else { tmparray.push(item); }
+		}
+
+		if (tmparray.length > purgeSize) {
+			// sort this array based on cache priority and the last accessed date
+			tmparray = tmparray.sort(function(a, b) {
+				if (a.options.priority != b.options.priority) { return b.options.priority - a.options.priority; } 
+				else { return b.lastAccessed - a.lastAccessed; }
+			});
+			// remove items from the end of the array
+			while (tmparray.length > purgeSize) { var ritem = tmparray.pop(); this.remove(ritem.key); }
+		}
+	};
+
+	/**
+	 * Add an item to the cache.
+	 * 
+	 * @param {Object}
+	 *            item The cache item to add.
+	 * @private
+	 */
+	Cache.prototype.addItem_ = function(item, attemptedAlready) {
+		//var cache = this;
+		try { this.storage_.set(item.key, item); } catch (err) {
+			if (attemptedAlready) { core.info('Failed setting again, giving up: ' + err.toString()); throw (err); }
+			core.info('Error adding item, purging and trying again: ' + err.toString());
+			this.purge_(); this.addItem_(item, true);
+		}
+	};
+
+	/**
+	 * Remove an item from the cache, call the callback function (if it exists).
+	 * 
+	 * @param {String}
+	 *            key The key of the item to remove
+	 */
+	Cache.prototype.remove = function(key) {
+		var item = this.storage_.remove(key);
+
+		// if there is a callback function, call it at the end of execution
+		if (item && item.options && item.options.callback) {
+			setTimeout(function() { item.options.callback.call(null, item.key, item.value); }, 0);
+		}
+		return item ? item.value : null;
+	};
+
+	/**
+	 * Scan through each item in the cache and remove that item if it passes the
+	 * supplied test.
+	 * 
+	 * @param {Function}
+	 *            test A test to determine if the given item should be removed.
+	 *            The item will be removed if test(key, value) returns true.
+	 */
+	Cache.prototype.removeWhere = function(test) {
+		// Get a copy of the keys array - it won't be modified when we remove
+		// items from storage
+		var keys = this.storage_.keys(); for (var i = 0; i < keys.length; i++) {
+			var key = keys[i]; var item = this.storage_.get(key); if (test(key, item.value) === true) { this.remove(key); }
+		}
+	};
+
+	Cache.prototype.size = function() { return this.storage_.size(); };
+
+	/**
+	 * @param {Object}
+	 *            item A cache item.
+	 * @return {boolean} True if the item is expired
+	 * @private
+	 */
+	Cache.prototype.isExpired_ = function(item) {
+		var now = core.now(); var expired = false;
+		if (item.options.expirationAbsolute && (item.options.expirationAbsolute < now)) {
+			// if the absolute expiration has passed, expire the item
+			expired = true;
+		}
+		if (!expired && item.options.expirationSliding) {
+			// if the sliding expiration has passed, expire the item
+			var lastAccess = item.lastAccessed + (item.options.expirationSliding * 1000);
+			if (lastAccess < now) { expired = true; }
+		}
+		return expired;
+	};
+	
+	core.register(component, proto);
+	core.register('newMemCache', function(maxSize){
+		return core.newCache(maxSize, new Cache.BasicCacheStorage());
+	});
+
+})(this, this.kiwi, 'newCache');

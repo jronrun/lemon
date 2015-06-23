@@ -8,6 +8,15 @@ module.exports = function(grunt) {
         	options : {
         		beautify: false
         	},
+        	styles: {
+    	      files: [{
+    	          expand: true,
+    	          cwd: 'coffee/ext',
+    	          src: '**/*.js',
+    	          dest: 'coffee/ext',
+    	          ext: '.min.js'
+    	      }]
+    	    },
 			coffee : {
 				files: {
 			        'coffee/lemon.min.js': ['coffee/lemon.js']
@@ -41,7 +50,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-text-replace');
     grunt.loadNpmTasks('grunt-contrib-coffee');
   
-    grunt.registerTask('default', ['coffee', 'uglify:coffee']);
+    grunt.registerTask('default', ['coffee', 'uglify:coffee', 'uglify:styles']);
     grunt.registerTask('coffeemini', ['uglify:coffee']);
     
 };
