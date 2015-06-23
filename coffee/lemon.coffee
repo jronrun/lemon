@@ -727,7 +727,7 @@ _::value = ->
 	
 	fmt = (json) -> (
 		#p = []; 
-		out = ""; indent = 0; json = chk json
+		out = ""; indent = 0; json = unfmt chk json
 		
 		#Extract backslashes and strings
 		#json = json.replace(/\\./g, push).replace(/(".*?"|'.*?')/g, push).replace(/\s+/, '')

@@ -1143,7 +1143,7 @@
       var c, i, indent, out, q, ref;
       out = "";
       indent = 0;
-      json = chk(json);
+      json = unfmt(chk(json));
       for (i = q = 0, ref = json.length; 0 <= ref ? q < ref : q > ref; i = 0 <= ref ? ++q : --q) {
         switch (c = json.charAt(i)) {
           case '{':
