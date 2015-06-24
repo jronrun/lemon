@@ -685,6 +685,32 @@ _::value = ->
 	
 ))(theRef, 'when')
 
+# micro template (jsp style), see http://ejohn.org/blog/javascript-micro-templating/
+((kiwi, component) -> (
+
+	proto = (target, data) -> tmpl target, data
+	_tmplCache = {}
+	
+	`var tmpl = function tmpl(target, data){
+        var fn = !/\W/.test(target) ? _tmplCache[target] = _tmplCache[target] || tmpl(document.getElementById(target).innerHTML) :
+          new Function("obj", "var p=[],print=function(){p.push.apply(p,arguments);};" +
+            "with(obj){p.push('" +
+            target.replace(/[\r\t\n]/g, " ")
+              .split("<%").join("\t")
+              .replace(/((^|%>)[^\t]*)'/g, "$1\r")
+              .replace(/\t=(.*?)%>/g, "',$1,'")
+              .split("\t").join("');")
+              .split("%>").join("p.push('")
+              .split("\r").join("\\'")
+          + "');}return p.join('');");
+        return data ? fn( data ) : fn;
+    };`
+	
+	kiwi.register component, proto
+	return
+	
+))(theRef, 'tmpl')
+
 # json format plugin see https://github.com/phoboslab/json-format
 ((kiwi, component) -> (
 
