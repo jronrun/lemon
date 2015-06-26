@@ -73,7 +73,12 @@
 		<div class="col-md-6">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					<h3 class="panel-title">Request </h3>
+					<!-- <h3 class="panel-title">Request </h3> -->
+					Request
+					<div class="btn-group btn-group-xs pull-right">
+						<button type="button" class="btn btn-success" data-element="#request" data-toggle="modal" data-target="#modal_tpl">
+						<span class="glyphicon glyphicon-tree-deciduous"></span></button>
+					</div>
 				</div>
 				<div class="panel-body">
 					<form>
@@ -83,12 +88,17 @@
 					</form>
 
 				</div>
+				<!-- <div class="panel-footer"> </div> -->
 			</div>
 		</div>
 		<div class="col-md-6">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					<h3 class="panel-title">Response</h3>
+					Response
+					<div class="btn-group btn-group-xs pull-right">
+						<button type="button" class="btn btn-success" data-element="#response" data-toggle="modal" data-target="#modal_tpl">
+						<span class="glyphicon glyphicon-leaf"></span></button>
+					</div>
 				</div>
 				<div class="panel-body">
 					<form>
@@ -100,6 +110,8 @@
 			</div>
 		</div>
 	</div>
+	
+<div class="modal fade"  tabindex="-1" id="modal_tpl" role="dialog"></div>
 	
 <script type="text/html" id="table_tmpl">
 <div class="panel panel-default">
@@ -176,6 +188,7 @@
 			this.env.render();
 			this.cmd.render();
 			this.nav.render();
+			this.mod.render();
 			$('#request').change(function() {
 				$(this).val(lemon.json($(this).val()));
 			});
@@ -571,6 +584,25 @@
 					$(this). removeClass('block-grey');   
 				});
 			}
+		},
+		mod: {
+			render: function() {
+				$('#modal_tpl').on('show.bs.modal', function (event) {
+				  	var button = $(event.relatedTarget);
+				  	var modal = $(this);
+				  	var zoomin = $(document.createElement('textarea')).attr({
+					  	id: 'edit-area'
+					}).css({
+					  	height: document.body.clientHeight,
+						width: document.body.clientWidth
+					}).text($(api.mod.currentTriggerId = button.data('element')).val());
+					modal.html(zoomin);
+				}).on('hide.bs.modal', function(event) {
+					var button = $(event.relatedTarget);
+				  	$(api.mod.currentTriggerId).val($('#edit-area').val());
+				});
+			},
+			currentTriggerId: null
 		}
 	};
 
@@ -589,9 +621,9 @@
 		    serv: [
 				{
 					type: interf.manager,
-					interf: "http://192.168.2.151:8080/mgr/interf.rp",
+					interf: "http://192.168.2.151:8080/rpd/xv1.rp",
 					name: "Manager API",
-					asDefault: 1	//默认环境
+					asDefault: 1	//Default Environment
 				}
 			]
 		},
@@ -601,7 +633,7 @@
 		    serv: [
 				{
 					type: interf.manager,
-					interf: "https://www.xxx.com/mgr/interf.html",
+					interf: "https://www.xxx.com/rpd/xv1.rp",
 					name: "Manager API"
 				}
 			]
@@ -612,10 +644,10 @@
 		items: [
 			 {
 				 api:"M000913",
-				 desc:"query user",
+				 desc:"Query User",
 				 note:"",
 				 type: interf.manager,
-				 request:{"cmd":"M000913","userId":"1","token":"","version":"1.0.0","data":{"name":"name"}}
+				 request:{"cmd":"M000913","userId":"1","token":"","version":"1.0.0","data":{"name":"name","mobile":"mobile"}}
 			 }
 		]
 	};
