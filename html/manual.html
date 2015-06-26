@@ -78,6 +78,8 @@
 					<div class="btn-group btn-group-xs pull-right">
 						<button type="button" class="btn btn-success" data-element="#request" data-toggle="modal" data-target="#modal_tpl">
 						<span class="glyphicon glyphicon-tree-deciduous"></span></button>
+						<button type="button" class="btn btn-success" data-element="both" data-toggle="modal" data-target="#modal_tpl">
+						<span class="glyphicon glyphicon-eye-open"></span></button>
 					</div>
 				</div>
 				<div class="panel-body">
@@ -98,6 +100,8 @@
 					<div class="btn-group btn-group-xs pull-right">
 						<button type="button" class="btn btn-success" data-element="#response" data-toggle="modal" data-target="#modal_tpl">
 						<span class="glyphicon glyphicon-leaf"></span></button>
+						<button type="button" class="btn btn-success" data-element="both" data-toggle="modal" data-target="#modal_tpl">
+						<span class="glyphicon glyphicon-eye-open"></span></button>
 					</div>
 				</div>
 				<div class="panel-body">
@@ -457,8 +461,7 @@
 		},
 		env: {
 			render: function() {
-				var $env = $('#which_env');
-				$env.empty();
+				var $env = $('#which_env'); $env.empty();
 				
 				lemon.each(definedServs, function(v, k) {
 					var title = $(document.createElement('li')).attr({ 
@@ -536,8 +539,7 @@
 		},
 		cmd: {
 			render: function() {
-				var $cmd = $('#which_api');
-				$cmd.empty();
+				var $cmd = $('#which_api'); $cmd.empty();
 				lemon.each(definedServs[0].serv, function(serv, k) {
 					var title = $(document.createElement('li')).attr({ 
 						role:'presentation', 
@@ -589,17 +591,41 @@
 			render: function() {
 				$('#modal_tpl').on('show.bs.modal', function (event) {
 				  	var button = $(event.relatedTarget);
-				  	var modal = $(this);
-				  	var zoomin = $(document.createElement('textarea')).attr({
-					  	id: 'edit-area'
-					}).css({
-					  	height: document.body.clientHeight,
-						width: document.body.clientWidth
-					}).text($(api.mod.currentTriggerId = button.data('element')).val());
-					modal.html(zoomin);
+				  	var modal = $(this); modal.empty();
+				  	api.mod.currentTriggerId = button.data('element');
+				  	var heightOffset = 13;
+				  	
+				  	if ('both' == api.mod.currentTriggerId) {
+				  		var zoominRequest = $(document.createElement('textarea')).attr({
+						  	id: 'edit-area-requ'
+						}).css({
+						  	height: document.body.clientHeight - heightOffset,
+							width: document.body.clientWidth / 2
+						}).text($('#request').val());
+						
+				  		var zoominResponse = $(document.createElement('textarea')).attr({
+						  	id: 'edit-area-resp'
+						}).css({
+						  	height: document.body.clientHeight - heightOffset,
+							width: document.body.clientWidth / 2
+						}).text($('#response').val());
+						modal.append(zoominRequest).append(zoominResponse);
+					} else {
+					  	var zoomin = $(document.createElement('textarea')).attr({
+						  	id: 'edit-area'
+						}).css({
+						  	height: document.body.clientHeight - heightOffset,
+							width: document.body.clientWidth
+						}).text($(api.mod.currentTriggerId).val());
+						modal.append(zoomin);
+					}
 				}).on('hide.bs.modal', function(event) {
-					var button = $(event.relatedTarget);
-				  	$(api.mod.currentTriggerId).val($('#edit-area').val());
+					if ('both' == api.mod.currentTriggerId) {
+						$('#request').val($('#edit-area-requ').val());
+						$('#response').val($('#edit-area-resp').val());
+					} else {
+					  	$(api.mod.currentTriggerId).val($('#edit-area').val());
+					}
 				});
 			},
 			currentTriggerId: null
@@ -621,9 +647,9 @@
 		    serv: [
 				{
 					type: interf.manager,
-					interf: "http://192.168.2.151:8080/rpd/xv1.rp",
+					interf: "http://192.168.2.151:8080/rpd-/xv1.rp",
 					name: "Manager API",
-					asDefault: 1	//Default Environment
+					asDefault: 1	//默认环境
 				}
 			]
 		},
@@ -633,7 +659,7 @@
 		    serv: [
 				{
 					type: interf.manager,
-					interf: "https://www.xxx.com/rpd/xv1.rp",
+					interf: "https://www.xx.com/rpd-/xv1.rp",
 					name: "Manager API"
 				}
 			]
