@@ -224,6 +224,9 @@ _.trim = (target, chars) ->
 		return target.replace(/(^\s*)|(\s*$)/g, "")
 	target.replace(new RegExp("(^(" + chars + ")*)|((" + chars + ")*$)", "gi"), "")
 	
+_.repeat = (target, count) ->
+	new Array(1 + count).join(target)
+	
 _.ltrim = (target, chars) ->
 	unless _.isString target then return target
 	target.replace(new RegExp("(^" + (if _.isBlank(chars) then "\\s" else chars) + "*)"), "")
@@ -488,7 +491,7 @@ convertAsString = (target, separator, showType) ->
 				target = _.rmEvtProp target, true
 			
 			#JSON http://bestiejs.github.io/json3
-			if root.JSON and root.JSON.stringify and _.isJson(target)
+			if root.JSON and _.isJson(target)
 				try
 					#see http://stackoverflow.com/questions/11616630/json-stringify-avoid-typeerror-converting-circular-structure-to-json
 					_stringifyCache = []
@@ -716,6 +719,7 @@ _::value = ->
 
 	proto = (json) -> fmt json
 	proto.reverse = (json) -> unfmt json
+	proto.highlight = (json) -> syntax json
 	
 	#p = []; push = (m) -> '\\' + p.push m + '\\'
 	pop = (m, i) -> p[i - 1]
@@ -735,7 +739,7 @@ _::value = ->
 	chk = (target) -> 
 		if kiwi.isBlank target then return '{}'
 		if kiwi.isString target then return target
-		if JSON and JSON.stringify and kiwi.isJson(target)
+		if JSON and kiwi.isJson(target)
 			JSON.stringify target
 		else
 			throw new Error("This browser JSON.stringify is unsupported.");
@@ -751,7 +755,66 @@ _::value = ->
 		out
 	)
 	
+	#'pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }'
+	proto.style = 
+		'.string': 
+			color: 'green'
+		'.number': 
+			color: 'blue'
+		'.boolean': 
+			color: 'darkorange'
+		'.null': 
+			color: 'magenta'
+		'.key': 
+			color: 'gray'
+	
+	`proto.toCSS = function(target) {
+		var styleStr = '';
+	    for(var i in target){
+	        styleStr += i + " {\n"
+	        for(var j in target[i]){
+	            if(j=="CSS-INHERIT-SELECTOR"){
+	                for(var k in target[target[i][j]]){
+	                    styleStr += "\t" + k + ":" + target[target[i][j]][k] + ";\n"
+	                }
+	            }else{
+	                styleStr += "\t" + j + ":" + target[i][j] + ";\n"     
+	            }
+	        }
+	        styleStr += "}\n"  
+	    }
+	    return styleStr
+	}`
+	
+	proto.addStyle = (style, syntaxId) ->
+		syntaxId = syntaxId || 'json_syntax'
+		if styeObj = kiwi.query('#' + syntaxId)
+			styeObj.innerHTML = ''
+		doc = document; style = doc.createElement 'style'
+		style.type = 'text/css'; style.id = syntaxId
+		style.innerHTML = if kiwi.isString style then style else proto.toCSS proto.style
+		kiwi.query('head').appendChild style
+		return
+	
+	`var syntax = function (json) {
+		proto.addStyle(); json = fmt(json).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+	        var cls = 'number';
+	        if (/^"/.test(match)) {
+				cls = /:$/.test(match) ? 'key' : 'string';
+	        } else if (/true|false/.test(match)) {
+	            cls = 'boolean';
+	        } else if (/null/.test(match)) {
+	            cls = 'null';
+	        }
+	        return '<span class="' + cls + '">' + match + '</span>';
+	    });
+	}`
+	
 	fmt = (json) -> (
+		if JSON
+			`return JSON.stringify(JSON.parse(chk(json)), undefined, 4)`
+		
 		#p = []; 
 		out = ""; indent = 0; json = unfmt chk json
 		
