@@ -564,12 +564,13 @@
 			},
 			change: function(interf) {
 				var env = api.env.which(interf);
+				var desc = env.desc + '  ' + env.name;
 				switch(env.env) {
 				case 'TEST': 
-					api.msg('success', env.desc, interf);
+					api.msg('success', desc , interf);
 					break;
 				case 'PRODUCT':
-					api.msg('danger', env.desc, interf)
+					api.msg('danger', desc, interf)
 						.append('&nbsp;&nbsp;&nbsp;&nbsp;<strong>Danger !!!</strong>');
 					break;
 				}
@@ -742,6 +743,16 @@
 					interf: "http://192.168.2.151:8080/rpd-manager/xv1.rp",
 					name: "Manager API",
 					asDefault: 1	//默认环境
+				},
+				{
+					type: interf.appapi,
+					interf: "http://192.168.2.151:8080/rpdservice/xv3.htm",
+					name: "App API"
+				},
+				{
+					type: interf.enterprise,
+					interf: "http://192.168.2.151:8080/rpdservice/ev1web.htm",
+					name: "Enterprise API"
 				}
 			]
 		},
@@ -753,6 +764,16 @@
 					type: interf.manager,
 					interf: "https://www.xx.com/rpd-manager/xv1.rp",
 					name: "Manager API"
+				},
+				{
+					type: interf.appapi,
+					interf: "https://www.xx.com/xx/rpdservice/xv3.htm",
+					name: "App API"
+				},
+				{
+					type: interf.enterprise,
+					interf: "https://www.xx.com/xx/rpdservice/ev1web.htm",
+					name: "Enterprise API"
 				}
 			]
 		}
