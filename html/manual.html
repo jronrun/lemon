@@ -261,7 +261,8 @@
 									when: v.when,
 									request: v.request,
 									response: v.response,
-									interf: v.interf
+									interf: v.interf,
+									name: (api.getAPI(v.request.cmd) || {desc: ''}).desc
 								}
 							}
 						});
