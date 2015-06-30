@@ -277,6 +277,9 @@
 
 				/* api.nav.textarea('#request');
 				api.nav.textarea('#response'); */
+				$('#request,#response').css({
+					border: '0px solid #ffffff'
+				});
 				api.nav.dblclick('#request');
 				api.nav.dblclick('#response');
 			},
@@ -342,7 +345,7 @@
 				$(elId).hide();
 				
 				var html = [
-					'<div class="panel panel-default" id="' + lemon.ltrim(vid, '#') + '" style="height:' + height + 'px;width:' + width + 'px;">',
+					'<div class="panel panel-default" id="' + lemon.ltrim(vid, '#') + '" style="height:' + height + 'px;width:' + width + 'px;border:0px solid #ffffff;">',
 					'<div class="panel-body"><pre style="border:0px solid #ffffff;background-color:#ffffff;height:' + (height - 20) + 'px;">',
 					lemon.json.highlight(theVal),
 					'</pre></div></div>'
@@ -477,6 +480,7 @@
 						$("#btn_history").click();
 					}
 				}
+				api.nav.view('#request', true);
 				api.nav.view('#response', true);
 			}
 		},
@@ -686,10 +690,10 @@
 				  		var html = [
 					  			'<div class="row">',
 								'<div class="col-md-6">',
-								'<textarea id="edit-area-requ" style="height:' + h + 'px;width:' + w + 'px">' + $('#request').val() + '</textarea>',
+								'<textarea id="edit-area-requ" style="border:0px solid #ffffff;height:' + h + 'px;width:' + w + 'px">' + $('#request').val() + '</textarea>',
 								'</div>',
 								'<div class="col-md-6" style="padding-left: 0px;">',
-								'<textarea id="edit-area-resp" style="height:' + h + 'px;width:' + w + 'px">' + $('#response').val() + '</textarea>',
+								'<textarea id="edit-area-resp" style="border:0px solid #ffffff;height:' + h + 'px;width:' + w + 'px">' + $('#response').val() + '</textarea>',
 								'</div>',
 								'</div>'
 							].join('');
@@ -703,6 +707,7 @@
 					  	var zoomin = $(document.createElement('textarea')).attr({
 						  	id: 'edit-area'
 						}).css({
+							border: '0px solid #ffffff',
 						  	height: document.body.clientHeight - heightOffset,
 							width: document.body.clientWidth
 						}).text($(api.mod.currentTriggerId).val());
@@ -763,7 +768,7 @@
 		    serv: [
 				{
 					type: interf.manager,
-					interf: "https://www.xx.com/rpd-manager/xv1.rp",
+					interf: "https://www.u51.com/rpd-manager/xv1.rp",
 					name: "Manager API"
 				},
 				{
