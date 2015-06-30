@@ -274,8 +274,19 @@
                     return lemon.tmpl($('#table_tmpl').html(), {histories: lemon.store.getAll(), apis: {}});
                 }, { title: 'API History', trigger: 'click' } );
 
-				api.nav.textarea('#request');
-				api.nav.textarea('#response');
+				/* api.nav.textarea('#request');
+				api.nav.textarea('#response'); */
+				api.nav.dblclick('#request');
+				api.nav.dblclick('#response');
+			},
+			dblclick: function(selector) {
+				$(selector).dblclick(function() {
+					if (lemon.endWith(selector, '_view')) {
+						api.nav.edit(selector);
+					} else {
+						api.nav.view(selector);
+					}
+				});
 			},
 			textarea: function(selector, options) {
 				api.popover(selector, function() {
@@ -301,22 +312,30 @@
 					$(lemon.rtrim(elId, '_view')).show();
 				}
 			},
-			view: function(elId) {
+			view: function(elId, reset) {
 				if (lemon.endWith(elId, '_view')) {
 					return;
 				}
-				var theVal = $(elId).val();
-				if (lemon.isBlank(theVal)) {
-					return;
-				}
-				try {
-					JSON.parse(theVal);
-				} catch (e) {
-					lemon.warn(e, 'Can not parse JSON string');
-					return;
+
+				var vid = elId + '_view';
+				if (reset) {
+					$(vid).remove();
 				}
 				
-				var vid = elId + '_view';
+				var theVal = $(elId).val();
+				if (lemon.isBlank(theVal)) {
+					if (!reset) {
+						return;
+					}
+				} else {
+					try {
+						JSON.parse(theVal);
+					} catch (e) {
+						lemon.warn(e, 'Can not parse JSON string');
+						return;
+					}
+				}
+				
 				var height = $(elId).height() - 10;
 				var width = $(elId).width();
 				$(elId).hide();
@@ -328,7 +347,7 @@
 					'</pre></div></div>'
 				].join('');
 				$(elId).parent().append(html);
-				api.nav.textarea(vid, {
+				api.nav.dblclick(vid, {
 					trigger: 'click'
 				});
 			},
@@ -444,7 +463,6 @@
 		onSelect: function(key) {
 			var item = api.getHoverOrSelectItem(key);
 			if (!lemon.isBlank(item)) {
-				api.nav.edit('#response_view');
 				if (lemon.startWith(key, 'api_')) {
 					$('#request').val(lemon.json(item.request || {}));
 					$('#response').val(item.response);
@@ -458,7 +476,7 @@
 						$("#btn_history").click();
 					}
 				}
-				api.nav.view('#response');
+				api.nav.view('#response', true);
 			}
 		},
 		request: function(success) {
@@ -482,7 +500,7 @@
      				interf: lemon.getEnv()
      			 });
 		         success && success(data);
-		         api.nav.view('#response');
+		         api.nav.view('#response', true);
 		     }).fail(function(jqXHR, textStatus, errorThrown){  
             	 lemon.error(jqXHR);
             	 lemon.error(textStatus, 'request status');
@@ -675,9 +693,9 @@
 							].join('');
 						modal.append(html);
 
-						api.nav.textarea('#edit-area-requ');
+						api.nav.dblclick('#edit-area-requ');
 						api.nav.view('#edit-area-requ');
-						api.nav.textarea('#edit-area-resp');
+						api.nav.dblclick('#edit-area-resp');
 						api.nav.view('#edit-area-resp');
 					} else {
 					  	var zoomin = $(document.createElement('textarea')).attr({
@@ -688,13 +706,15 @@
 						}).text($(api.mod.currentTriggerId).val());
 						modal.append(zoomin);
 
-						api.nav.textarea('#edit-area');
+						api.nav.dblclick('#edit-area');
 						api.nav.view('#edit-area');
 					}
 				}).on('hide.bs.modal', function(event) {
 					if ('both' == api.mod.currentTriggerId) {
 						$('#request').val($('#edit-area-requ').val());
 						$('#response').val($('#edit-area-resp').val());
+						api.nav.view('#request', true);
+						api.nav.view('#response', true);
 					} else {
 					  	$(api.mod.currentTriggerId).val($('#edit-area').val());
 					}
@@ -742,7 +762,7 @@
 		items: [
 			 {
 				 api:"M000913",
-				 desc:"User",
+				 desc:"user",
 				 note:"",
 				 type: interf.manager,
 				 request:{"cmd":"M000913","userId":"1","token":"","version":"1.0.0","data":{"name":"name","mobile":"mobile"}}
