@@ -138,7 +138,7 @@
 			<td>
 			<blockquote style="width:800px;">
   				<p>
-					<pre><%= lemon.json(v.request) %></pre>
+					<pre style="background-color:#ffffff;"><%= lemon.json.highlight(v.request) %></pre>
 				</p>
 				<footer><%= v.name %> <cite><%= v.desc %></cite></footer>
 			</blockquote>
@@ -164,8 +164,8 @@
             <td>
 				<blockquote style="width:800px;">
   					<p>
-						<pre><%= lemon.json(v.request) %></pre>
-						<pre><%= lemon.json(v.response) %></pre>
+						<pre style="background-color:#ffffff;"><%= lemon.json.highlight(v.request) %></pre>
+						<pre style="background-color:#ffffff;"><%= lemon.json.highlight(v.response) %></pre>
 					</p>
   					<footer><%= (v.name || '') + '  ' + v.api %> <cite><code><%= v.interf %></code><%= ' ' + v.when %></cite></footer>
 				</blockquote>
@@ -624,7 +624,6 @@
 
 					lemon.each(definedAPIs.items, function(item, k) {
 						if (serv.type === item.type) {
-							var reqStr = lemon.json(item.request);
 							var dropItem = [
 								'<h5>' + item.api + '</h5>',
 								'<h6 class="text-muted" style="width:200px;">' + item.desc + '</h6>'
@@ -635,13 +634,13 @@
 								'data-container': 'body',
 								'data-toggle': 'popover',
 								'data-placement': 'right',
-								'data-content': '<pre style="width:500px;">' + reqStr + '</pre>',
+								'data-content': '<pre style="width:500px;background-color:#ffffff;">' + lemon.json.highlight(item.request) + '</pre>',
 								title: item.api + ' ' + item.desc
 							}).append(dropItem);
 
 							href.click(function() {
 								lemon.setApi(item.api);
-								$('#request').val(reqStr);
+								$('#request').val(lemon.json(item.request));
 							});
 
 							var anApi = $(document.createElement('li')).append(href);
@@ -784,7 +783,7 @@
 		items: [
 			 {
 				 api:"M000913",
-				 desc:"查询用户",
+				 desc:"user",
 				 note:"",
 				 type: interf.manager,
 				 request:{"cmd":"M000913","userId":"1","token":"","version":"1.0.0","data":{"name":"name","mobile":"mobile"}}
