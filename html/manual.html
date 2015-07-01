@@ -480,7 +480,9 @@
 						$("#btn_history").click();
 					}
 				}
-				api.nav.view('#request', true);
+				if (!$('#request:visible').length) {
+					api.nav.view('#request', true);
+				}
 				api.nav.view('#response', true);
 			}
 		},
@@ -768,7 +770,7 @@
 		    serv: [
 				{
 					type: interf.manager,
-					interf: "https://www.u51.com/rpd-manager/xv1.rp",
+					interf: "https://www.xx.com/rpd-manager/xv1.rp",
 					name: "Manager API"
 				},
 				{
