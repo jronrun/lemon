@@ -172,7 +172,16 @@
 						<pre style="background-color:#ffffff;height:100%;"><%= lemon.json.highlight(v.request) %></pre>
 						<pre style="background-color:#ffffff;height:100%;"><%= lemon.json.highlight(v.response) %></pre>
 					</p>
-  					<footer><%= (v.name || '') + '  ' + v.api %> <cite><code><%= v.interf %></code><%= ' ' + v.when %></cite></footer>
+					<%
+						var env = api.env.which(v.interf);
+						var envDesc = env.desc + '  ' + env.name;
+						var theStyle = 'PRODUCT' === env.env ? 'danger' : 'success';
+					%>
+  					<footer><font class="text-<%= theStyle %>"><%= envDesc %></font></footer>
+					<footer>
+						<%= (v.name || '') + '  ' + v.api %> 
+						<cite><code><font class="text-<%= theStyle %>"><%= v.interf %></font></code><%= ' ' + v.when %></cite>
+					</footer>
 				</blockquote>
 			</td>
           </tr>
