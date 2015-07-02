@@ -121,7 +121,11 @@
 <div class="panel panel-default">
   <!-- Default panel contents -->
   <!-- <div class="panel-heading">Panel heading</div> -->
-  <div class="panel-body fixed-panel">
+  <%
+	var clientW = document.body.clientWidth - 110;
+    var panelH = document.body.clientHeight - 150;
+  %>
+  <div class="panel-body fixed-panel" style="height:<%=panelH%>px;max-height:<%=panelH%>px;">
 
 	<% if (!lemon.isBlank(apis)) { %>
 	<!-- Table -->
@@ -136,7 +140,7 @@
 		   <tr onclick="api.onSelect('<%= k %>')" id="<%= k %>">
             <th scope="row"><%= v.name %></th>
 			<td>
-			<blockquote style="width:800px;">
+			<blockquote style="width:<%=clientW - 50%>px;">
   				<p>
 					<pre style="background-color:#ffffff;"><%= lemon.json.highlight(v.request) %></pre>
 				</p>
@@ -149,23 +153,24 @@
      </table>
 	<% } %>
 
-  	<% if (!lemon.isBlank(histories)) { %>
+  	<% if (!lemon.isBlank(histories)) { 
+		var no = 1;
+	%>
 	<!-- Table -->
 	<table class="table table-hover">
 		<caption>History Request</caption>
         <thead> <tr> <th>#</th> <th>Request & Response</th></tr> </thead>
         <tbody>
 		<% 
-		   var no = 1;
 		   lemon.each(api.historySortDesc(histories), function(v, k) {
 		%>
 		   <tr onclick="api.onSelect('<%= v.k %>')" id="<%= v.k %>">
             <th scope="row"><%= no++ %></th>
             <td>
-				<blockquote style="width:800px;">
+				<blockquote style="width:<%=clientW%>px;">
   					<p>
-						<pre style="background-color:#ffffff;"><%= lemon.json.highlight(v.request) %></pre>
-						<pre style="background-color:#ffffff;"><%= lemon.json.highlight(v.response) %></pre>
+						<pre style="background-color:#ffffff;height:100%;"><%= lemon.json.highlight(v.request) %></pre>
+						<pre style="background-color:#ffffff;height:100%;"><%= lemon.json.highlight(v.response) %></pre>
 					</p>
   					<footer><%= (v.name || '') + '  ' + v.api %> <cite><code><%= v.interf %></code><%= ' ' + v.when %></cite></footer>
 				</blockquote>
@@ -372,7 +377,7 @@
 		popoverOnBtn: function(selector, content, options) {
 			api.popover(selector, content, options)
 			  .on('show.bs.popover', function() { 
-				$(this).data("bs.popover").tip().css({maxWidth: "80%"});
+				$(this).data("bs.popover").tip().css({maxWidth: "100%"});
 				$(selector).button('toggle');
 			}).on('hide.bs.popover', function() {
 				$(selector).button('toggle');
