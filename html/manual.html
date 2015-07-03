@@ -298,7 +298,8 @@
 				api.nav.dblclick('#response');
 			},
 			dblclick: function(selector) {
-				$(selector).dblclick(function() {
+				$(selector).dblclick(function(event) {
+					event.preventDefault();
 					if (lemon.endWith(selector, '_view')) {
 						api.nav.edit(selector);
 					} else {
