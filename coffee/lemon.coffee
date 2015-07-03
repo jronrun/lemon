@@ -348,6 +348,12 @@ _.query = (params...) ->
 			return results
 		
 	_.querySelector selector, isAll, doc
+	
+_.removeEl = (params...) ->
+	el = _.query params
+	if el
+		el.parentNode.removeChild el
+	return
 
 _.chkParam = (params...) ->
 	exp = params[0]; errMsg = params[1] || ''; args = _.slice(params, 2)
@@ -788,8 +794,7 @@ _::value = ->
 	
 	proto.addStyle = (style, syntaxId) ->
 		syntaxId = syntaxId || 'json_syntax'
-		if styeObj = kiwi.query('#' + syntaxId)
-			styeObj.innerHTML = ''
+		kiwi.removeEl('#' + syntaxId)
 		doc = document; style = doc.createElement 'style'
 		style.type = 'text/css'; style.id = syntaxId
 		style.innerHTML = if kiwi.isString style then style else proto.toCSS proto.style

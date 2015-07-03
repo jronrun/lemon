@@ -603,6 +603,15 @@
     return _.querySelector(selector, isAll, doc);
   };
 
+  _.removeEl = function() {
+    var el, params;
+    params = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+    el = _.query(params);
+    if (el) {
+      el.parentNode.removeChild(el);
+    }
+  };
+
   _.chkParam = function() {
     var args, errMsg, exp, params;
     params = 1 <= arguments.length ? slice.call(arguments, 0) : [];
@@ -1204,11 +1213,9 @@
 	    return styleStr
 	};
     proto.addStyle = function(style, syntaxId) {
-      var doc, styeObj;
+      var doc;
       syntaxId = syntaxId || 'json_syntax';
-      if (styeObj = kiwi.query('#' + syntaxId)) {
-        styeObj.innerHTML = '';
-      }
+      kiwi.removeEl('#' + syntaxId);
       doc = document;
       style = doc.createElement('style');
       style.type = 'text/css';
