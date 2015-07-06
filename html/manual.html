@@ -254,7 +254,7 @@
 					var regEx = new RegExp(key);
 					var apis = {};
 					lemon.each(definedAPIs.items, function(v, k) {
-						if (justAllAPI || regEx.test(v.api)) {
+						if (justAllAPI || regEx.test(v.api) || regEx.test(v.desc)) {
 							apis['api_' + v.api] = {
 								name: v.api,
 								desc: v.desc,
@@ -270,13 +270,16 @@
 					var histories = {};
 					if (!justAllAPI) {
 						lemon.store.forEach(function(k, v) {
-							if (v && !lemon.isBlank(v.request) && regEx.test(v.request.cmd)) {
-								histories[k] = {
-									when: v.when,
-									request: v.request,
-									response: v.response,
-									interf: v.interf,
-									name: (api.getAPI(v.request.cmd) || {desc: ''}).desc
+							if (v && !lemon.isBlank(v.request)) {
+								var desc = (api.getAPI(v.request.cmd) || {desc: ''}).desc;
+								if (regEx.test(v.request.cmd) || regEx.test(desc)) {
+									histories[k] = {
+										when: v.when,
+										request: v.request,
+										response: v.response,
+										interf: v.interf,
+										name: desc
+									};
 								}
 							}
 						});
