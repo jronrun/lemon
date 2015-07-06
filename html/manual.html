@@ -131,7 +131,7 @@
 	<!-- Table -->
 	<table class="table table-hover">
 		<caption>API</caption>
-        <thead> <tr> <th>#</th> <th>Request</th> </tr> </thead>
+        <thead> <tr> <th>#</th> <th><button type="button" class="btn btn-default btn-xs" id="btn_tgl_api">Request</button></th> </tr> </thead>
         <tbody>
 		<% 
 		   lemon.each(apis, function(v, k) {
@@ -142,7 +142,7 @@
 			<td>
 			<blockquote style="width:<%=clientW - 50%>px;">
   				<p>
-					<pre style="background-color:#ffffff;"><%= lemon.json.highlight(v.request) %></pre>
+					<pre style="background-color:#ffffff;" tgl-api="tgl"><%= lemon.json.highlight(v.request) %></pre>
 				</p>
 				<footer><%= v.name %> <cite><%= v.desc %></cite></footer>
 			</blockquote>
@@ -412,6 +412,10 @@
 			}).on('hide.bs.popover', function() {
 				$(selector).button('toggle');
 			}).on('shown.bs.popover', function() {
+				$('#btn_tgl_api').click(function() {
+					$(this).button('toggle');
+					$('[tgl-api="tgl"]').fadeToggle("slow", "linear");
+				});
 				$('#btn_tgl_requ').click(function() {
 					$(this).button('toggle');
                 	$('[tgl-requ="tgl"]').fadeToggle("slow", "linear");
