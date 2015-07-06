@@ -159,7 +159,9 @@
 	<!-- Table -->
 	<table class="table table-hover">
 		<caption>History Request</caption>
-        <thead> <tr> <th>#</th> <th>Request & Response</th></tr> </thead>
+        <thead> <tr> <th>#</th> <th>
+			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_requ">Request</button> 
+			& <button type="button" class="btn btn-default btn-xs" id="btn_tgl_resp">Response</button></th></tr> </thead>
         <tbody>
 		<% 
 		   lemon.each(api.historySortDesc(histories), function(v, k) {
@@ -169,8 +171,8 @@
             <td>
 				<blockquote style="width:<%=clientW%>px;">
   					<p>
-						<pre style="background-color:#ffffff;height:100%;"><%= lemon.json.highlight(v.request) %></pre>
-						<pre style="background-color:#ffffff;height:100%;"><%= lemon.json.highlight(v.response) %></pre>
+						<pre style="background-color:#ffffff;height:100%;" tgl-requ="tgl"><%= lemon.json.highlight(v.request) %></pre>
+						<pre style="background-color:#ffffff;height:100%;" tgl-resp="tgl"><%= lemon.json.highlight(v.response) %></pre>
 					</p>
 					<%
 						var env = api.env.which(v.interf);
@@ -247,6 +249,12 @@
 					window.open(lemon.getUrl(lemon.getEnv(), {data: lemon.json.reverse(param)}));
 				});
 
+				$('#input_search').focus(function() {
+					if ($('#btn_search').hasClass('active')) {
+						$('#btn_search').click();
+					}
+				});
+
 				api.popoverOnBtn('#btn_search', function() {
 					var key = $('#input_search').val();
 					var justAllAPI = lemon.isBlank(key);
@@ -286,7 +294,7 @@
 					}
 
 					return lemon.tmpl($('#table_tmpl').html(), {histories: histories, apis: apis});
-				}, { title: 'Search Result', trigger: 'focus' } );
+				}, { title: 'Search Result', trigger: 'click' } );
 
 				api.popoverOnBtn("#btn_history", function() {
                     return lemon.tmpl($('#table_tmpl').html(), {histories: lemon.store.getAll(), apis: {}});
@@ -404,7 +412,14 @@
 			}).on('hide.bs.popover', function() {
 				$(selector).button('toggle');
 			}).on('shown.bs.popover', function() {
-				
+				$('#btn_tgl_requ').click(function() {
+					$(this).button('toggle');
+                	$('[tgl-requ="tgl"]').fadeToggle("slow", "linear");
+				});
+				$('#btn_tgl_resp').click(function() {
+					$(this).button('toggle');
+                	$('[tgl-resp="tgl"]').fadeToggle("slow", "linear");
+                });
 			});
 		},
 		popover: function(selector, content, options) {
@@ -504,7 +519,10 @@
 					lemon.setEnv(item.interf);
 					api.env.change(item.interf);
 					if ($('#btn_history').hasClass('active')) {
-						$("#btn_history").click();
+						$('#btn_history').click();
+					}
+					if ($('#btn_search').hasClass('active')) {
+						$('#btn_search').click();
 					}
 				}
 				if (!$('#request:visible').length) {
