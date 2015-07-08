@@ -4,6 +4,10 @@ module.exports = function(grunt) {
 		pkg : grunt.file.readJSON("package.json"),
 		env : grunt.file.readJSON("env.json"),
 		
+		clean: {
+			 js: ["coffee/ext/*.min.js"]
+		},
+	
         uglify : {
         	options : {
         		beautify: false
@@ -50,7 +54,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-text-replace');
     grunt.loadNpmTasks('grunt-contrib-coffee');
   
-    grunt.registerTask('default', ['coffee', 'uglify:coffee', 'uglify:styles']);
+    grunt.registerTask('default', ['coffee', 'uglify:coffee', 'clean', 'uglify:styles']);
     grunt.registerTask('coffeemini', ['uglify:coffee']);
     
 };
