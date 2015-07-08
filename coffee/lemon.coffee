@@ -1,6 +1,6 @@
 ###
-	core.coffee
-	@author paulo.ye
+	lemon.coffee
+	@author paulo.ye https://github.com/jronrun/lemon
 ###
 
 "use strict"
@@ -134,7 +134,7 @@ _.getset = (args, delegate) ->
 	else if _.isJson args
 		props = args
 	else
-		throw new Error(_.type(arguments) + " is unsupported, supports 'string' or 'string array' or 'JSON object'.");
+		throw new Error(_.type(arguments) + " is unsupported, must string|string array|JSON");
 		
 	for k, v of props
 		getsetMethods k, v, delegate
@@ -422,7 +422,7 @@ _.replacer = (configuration) ->
 registerModule = (moduleN, obj, delegate, override) ->
 	ctx = delegate || theRef
 	if _.has(ctx, moduleN) and !override
-		throw new Error("the given module is exists. " + moduleN)
+		throw new Error("module exists: " + moduleN)
 	ctx[moduleN] = obj
 	if _.isFunc(obj) and ctx.mixin
 		target = {}
@@ -464,7 +464,7 @@ _.rmEvtProp = (obj, keepTheEventKey) ->
 				if keepTheEventKey
 					noEventObj[k] = _evtSimpleStr
 				if _.isInfoEnabled()
-					consoler.getC().info("The #{_evtSimpleStr} from property \'#{k}\' below is event detail:");
+					consoler.getC().info("The #{_evtSimpleStr} from \'#{k}\' below is event detail:");
 					consoler.getC().info(v);
 			else
 				noEventObj[k] = v
@@ -512,7 +512,7 @@ convertAsString = (target, separator, showType) ->
 						)
 					))
 				catch e
-					_.warn e.message, 'JSON.stringify ERROR (ignorable)'
+					_.warn e.message, 'JSON.stringify error (ignorable)'
 		)
 		
 		else
@@ -689,6 +689,57 @@ _::value = ->
 		return
 	)
 	
+	proto.idesc =
+		year: ' years ago'
+		month: ' months ago'
+		week: ' weeks ago'
+		day: ' days ago'
+		hour: ' hours ago'
+		minute: ' minutes ago'
+		just: 'just now'
+			
+	proto.time = (target) ->
+		target = target || new Date()
+		if !kiwi.isDate target
+			target = new Date(target)
+		target.getTime()
+	
+	proto.interval = (target) ->
+		unit = 1000.0
+		# 24 * 60 * 60 * 1000 / unit 
+		dayUnit = 86400
+		# 60 * 60 * 1000 / unit
+		hourUnit = 3600
+		# 60 * 1000 / unit
+		minUnit = 60
+		target = proto.time target; interval = (proto.time() - target) / unit
+		
+		if interval >= 0.0
+			# 5 * 365 * dayUnit
+			if interval / 157680000 > 1.0
+				proto.default target
+			# 365 * dayUnit
+			else if interval / 31536000 > 1.0
+				parseInt(interval / 31536000) + proto.idesc.year
+			# 30 * dayUnit
+			else if interval / 2592000 > 1.0
+				parseInt(interval / 2592000) + proto.idesc.month
+			# 7 * dayUnit
+			#else if (interval / 2592000 <= 1.0) && (interval / 604800 >= 1.0)
+			#	parseInt(interval / 604800 ) + proto.idesc.week
+			else if interval / 604800 >= 1.0
+				7 + proto.idesc.day
+			else if (interval / 604800 < 1.0) && (interval / dayUnit >= 1.0)
+				parseInt(interval / dayUnit) + proto.idesc.day
+			else if (interval / dayUnit < 1.0) && (interval / hourUnit >= 1.0)
+				parseInt(interval / hourUnit) + proto.idesc.hour
+			else if (interval < hourUnit) && (interval >= minUnit) 
+				parseInt(interval / minUnit) + proto.idesc.minute
+			else
+				proto.idesc.just
+		else
+			proto.default target
+	
 	kiwi.register component, proto
 	return
 	
@@ -719,128 +770,6 @@ _::value = ->
 	return
 	
 ))(theRef, 'tmpl')
-
-# json format plugin see https://github.com/phoboslab/json-format
-((kiwi, component) -> (
-
-	proto = (json) -> fmt json
-	proto.reverse = (json) -> unfmt json
-	proto.highlight = (json) -> syntax json
-	
-	#p = []; push = (m) -> '\\' + p.push m + '\\'
-	pop = (m, i) -> p[i - 1]
-	tabs = (count) -> new Array(count + 1).join '\t'
-	
-	trims = (fragment, split, isJoinEmpty) ->
-		out = ""; afterTrim = kiwi.trim fragment; arrEl = afterTrim.split split
-		if arrEl.length > 0
-			tmp = []
-			kiwi.each arrEl, (v, k) ->
-				tmp.push(kiwi.trim v)
-				return
-			out = tmp.join if isJoinEmpty then '' else split
-		else out = afterTrim
-		out
-			 
-	chk = (target) -> 
-		if kiwi.isBlank target then return '{}'
-		if kiwi.isString target then return target
-		if JSON and kiwi.isJson(target)
-			JSON.stringify target
-		else
-			throw new Error("This browser JSON.stringify is unsupported.");
-			
-	unfmt = (json) -> (
-		out = trims chk(json), '\n'
-		out = trims out, '['
-		out = trims out, ']'
-		out = trims out, '{'
-		out = trims out, '}' 
-		out = trims out, ','
-		out = trims out, ':'
-		out
-	)
-	
-	#'pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }'
-	proto.style = 
-		'.string': 
-			color: 'green'
-		'.number': 
-			color: 'blue'
-		'.boolean': 
-			color: 'darkorange'
-		'.null': 
-			color: 'magenta'
-		'.key': 
-			color: 'gray'
-	
-	`proto.toCSS = function(target) {
-		var styleStr = '';
-	    for(var i in target){
-	        styleStr += i + " {\n"
-	        for(var j in target[i]){
-	            if(j=="CSS-INHERIT-SELECTOR"){
-	                for(var k in target[target[i][j]]){
-	                    styleStr += "\t" + k + ":" + target[target[i][j]][k] + ";\n"
-	                }
-	            }else{
-	                styleStr += "\t" + j + ":" + target[i][j] + ";\n"     
-	            }
-	        }
-	        styleStr += "}\n"  
-	    }
-	    return styleStr
-	}`
-	
-	proto.addStyle = (style, syntaxId) ->
-		syntaxId = syntaxId || 'json_syntax'
-		kiwi.removeEl('#' + syntaxId)
-		doc = document; style = doc.createElement 'style'
-		style.type = 'text/css'; style.id = syntaxId
-		style.innerHTML = if kiwi.isString style then style else proto.toCSS proto.style
-		kiwi.query('head').appendChild style
-		return
-	
-	`var syntax = function (json) {
-		proto.addStyle(); json = fmt(json).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-	    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-	        var cls = 'number';
-	        if (/^"/.test(match)) {
-				cls = /:$/.test(match) ? 'key' : 'string';
-	        } else if (/true|false/.test(match)) {
-	            cls = 'boolean';
-	        } else if (/null/.test(match)) {
-	            cls = 'null';
-	        }
-	        return '<span class="' + cls + '">' + match + '</span>';
-	    });
-	}`
-	
-	fmt = (json) -> (
-		if JSON
-			`return JSON.stringify(JSON.parse(chk(json)), undefined, 4)`
-		
-		#p = []; 
-		out = ""; indent = 0; json = unfmt chk json
-		
-		#Extract backslashes and strings
-		#json = json.replace(/\\./g, push).replace(/(".*?"|'.*?')/g, push).replace(/\s+/, '')
-		for i in [0...json.length]
-			switch c = json.charAt i
-				when '{', '[' then out += c + "\n" + tabs(++indent)
-				when '}', ']' then out += "\n" + tabs(--indent) + c
-				when ',' then out += ",\n" + tabs(indent)
-				when ':' then out += ": "
-				else out += c
-		#Strip whitespace from numeric arrays and put backslashes and strings back in
-		out = out.replace(/\[[\d,\s]+?\]/g, (m) -> m.replace(/\s/g,'')).replace(/\\(\d+)\\/g, pop).replace( /\\(\d+)\\/g, pop )
-		out
-	)
-	
-	kiwi.register component, proto
-	return
-	
-))(theRef, 'json')
 	
 # registration	
 ((kiwi, component) -> (
