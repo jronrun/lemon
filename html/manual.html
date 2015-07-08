@@ -162,16 +162,20 @@
 		<caption>History Request</caption>
         <thead> <tr> <th>#</th> <th>
 			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_requ">Request</button> 
-			& <button type="button" class="btn btn-default btn-xs" id="btn_tgl_resp">Response</button></th></tr> </thead>
+			& <button type="button" class="btn btn-default btn-xs" id="btn_tgl_resp">Response</button>
+			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_interval">Collapse Toggle</button>
+			</th></tr> </thead>
         <tbody>
 		<% 
 		   var interval = '';
 		   var tmp = '';
 		   var batch = 0;
+		   api.batches = [];
 		   lemon.each(api.historySortDesc(histories), function(v, k) {
 		       if (interval != (tmp = lemon.when.interval(v.when))) {
 					interval = tmp;
 					batch = lemon.uniqueId();
+					api.batches.push(batch);
 		%>
 					<tr onclick="api.interval(<%= batch %>)"> <th></th> <td> <h4><span class="label label-info"><%= interval %></span></h4> </td> </tr>
 		<%
@@ -434,6 +438,12 @@
 				$('#btn_tgl_resp').click(function() {
 					$(this).button('toggle');
                 	$('[tgl-resp="tgl"]').fadeToggle("slow", "linear");
+                });
+                $('#btn_tgl_interval').click(function() {
+                	$(this).button('toggle');
+                	lemon.each(api.batches || [], function(v, k) {
+                    	api.interval(v);
+                    });
                 });
 			});
 		},
