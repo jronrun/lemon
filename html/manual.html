@@ -132,13 +132,23 @@
 	<!-- Table -->
 	<table class="table table-hover">
 		<caption>API</caption>
-        <thead> <tr> <th>#</th> <th><button type="button" class="btn btn-default btn-xs" id="btn_tgl_api">Request</button></th> </tr> </thead>
+        <thead> <tr> <th>#</th> <th>
+			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_api">Request</button>
+			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_interf">Collapse Toggle</button>
+			</th> </tr> </thead>
         <tbody>
 		<% 
+		   var interfType = '';
 		   lemon.each(apis, function(v, k) {
 				if (v && !lemon.isBlank(v.request)) {
+					if (interfType != v.type.id) {
+						interfType = v.type.id;
 		%>
-		   <tr onclick="api.onSelect('<%= k %>')" id="<%= k %>">
+			<tr onclick="api.interfType(<%= interfType %>)"> <th></th> <td> <h4><span class="label label-info"><%= v.type.name %></span></h4> </td> </tr>
+		<%
+					}
+		%>
+		   <tr onclick="api.onSelect('<%= k %>')" id="<%= k %>" type="<%= interfType %>">
             <th scope="row"><%= v.name %></th>
 			<td>
 			<blockquote style="width:<%=clientW - 50%>px;">
@@ -164,6 +174,25 @@
 			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_requ">Request</button> 
 			& <button type="button" class="btn btn-default btn-xs" id="btn_tgl_resp">Response</button>
 			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_interval">Collapse Toggle</button>
+
+			<h5><span class="label label-default">Filter Server</span></h5>
+			<%
+				lemon.each(interf, function(v, k) {
+			%>
+					<button type="button" class="btn btn-default btn-xs" id="filter_<%= v.id %>"><%= v.name %></button>
+			<%
+				});
+			%>
+
+			<h5><span class="label label-default">Filter Environment</span></h5>
+			<%
+				lemon.each(definedServs, function(v, k) {
+			%>
+					<button type="button" class="btn btn-default btn-xs" id="env_filter_<%= v.env %>"><%= v.desc %></button>
+			<%
+				});
+			%>
+
 			</th></tr> </thead>
         <tbody>
 		<% 
@@ -172,6 +201,8 @@
 		   var batch = 0;
 		   api.batches = [];
 		   lemon.each(api.historySortDesc(histories), function(v, k) {
+			   var env = api.env.which(v.interf);
+			   if (lemon.isBlank(env)) { return; }
 		       if (interval != (tmp = lemon.when.interval(v.when))) {
 					interval = tmp;
 					batch = lemon.uniqueId();
@@ -180,8 +211,9 @@
 					<tr onclick="api.interval(<%= batch %>)"> <th></th> <td> <h4><span class="label label-info"><%= interval %></span></h4> </td> </tr>
 		<%
 			   }
+			   
 		%>
-		   <tr onclick="api.onSelect('<%= v.k %>')" id="<%= v.k %>" batch="<%= batch %>">
+		   <tr onclick="api.onSelect('<%= v.k %>')" id="<%= v.k %>" batch="<%= batch %>" interf="<%= env.type.id %>" env="<%= env.env %>" his="1">
             <th scope="row"><%= no++ %></th>
             <td>
 				<blockquote style="width:<%=clientW%>px;">
@@ -190,8 +222,7 @@
 						<pre style="background-color:#ffffff;height:100%;" tgl-resp="tgl"><%= lemon.json.highlight(v.response) %></pre>
 					</p>
 					<%
-						var env = api.env.which(v.interf);
-						var envDesc = env.desc + '  ' + env.name;
+						var envDesc = env.desc + '  ' + env.type.name + (lemon.isBlank(env.note) ? '' : (' - ' + env.note));
 						var theStyle = 'PRODUCT' === env.env ? 'danger' : 'success';
 					%>
   					<footer><font class="text-<%= theStyle %>"><%= envDesc %></font></footer>
@@ -252,12 +283,11 @@
 
 				$('#btn_request_tab').click(function() {
 					if (!api.chkRequest()) { return; }
-					var param = api.getRequestData();
-					var storeParam = lemon.clone(param);
-					delete storeParam['admin_token'];
+					var cleanData = api.getCleanRequestData();
+					var param = api.getRequestData(cleanData);
 					lemon.store.set(api.uniqueId(), {
 						when: lemon.when(),
-						request: storeParam, 
+						request: cleanData, 
 						response: null,
 						interf: lemon.getEnv()
 					});
@@ -276,12 +306,16 @@
 
 					var regEx = new RegExp(key);
 					var apis = {};
-					lemon.each(definedAPIs.items, function(v, k) {
+					var items = definedAPIs.items.sort(function(a, b) {
+						return a.type.id - b.type.id;
+					});
+					lemon.each(items, function(v, k) {
 						if (justAllAPI || regEx.test(v.api) || regEx.test(v.desc)) {
 							apis['api_' + v.api] = {
 								name: v.api,
 								desc: v.desc,
 								note: v.note,
+								type: v.type,
 								when: '',
 								request: v.request,
 								response: '',
@@ -429,15 +463,15 @@
 			}).on('shown.bs.popover', function() {
 				$('#btn_tgl_api').click(function() {
 					$(this).button('toggle');
-					$('[tgl-api="tgl"]').fadeToggle("slow", "linear");
+					$('pre[tgl-api="tgl"]').fadeToggle("slow", "linear");
 				});
 				$('#btn_tgl_requ').click(function() {
 					$(this).button('toggle');
-                	$('[tgl-requ="tgl"]').fadeToggle("slow", "linear");
+                	$('pre[tgl-requ="tgl"]').fadeToggle("slow", "linear");
 				});
 				$('#btn_tgl_resp').click(function() {
 					$(this).button('toggle');
-                	$('[tgl-resp="tgl"]').fadeToggle("slow", "linear");
+                	$('pre[tgl-resp="tgl"]').fadeToggle("slow", "linear");
                 });
                 $('#btn_tgl_interval').click(function() {
                 	$(this).button('toggle');
@@ -445,6 +479,52 @@
                     	api.interval(v);
                     });
                 });
+                $('#btn_tgl_interf').click(function() {
+                	$(this).button('toggle');
+                	lemon.each(interf, function(v, k) {
+                    	api.interfType(v.id);
+                    });
+                });
+
+                api.filters = {
+                	env: [],
+                	interf: []
+                };
+                $('button[id^="env_filter_"],button[id^="filter_"]').click(function() {
+					var isActive = $(this).hasClass('active');
+					var id = $(this).attr('id');
+					var mark = lemon.ltrim(id, 'env_filter_|filter_');
+					var isEnv = lemon.startWith(id, 'env_filter_');
+					var exp = lemon.format(isEnv ? '[env="{0}"]' : '[interf="{0}"]', mark);
+					
+					$(this).button('toggle');
+					if (isActive) {
+						if (isEnv) {
+							api.filters.env.pop(exp);
+						} else {
+							api.filters.interf.pop(exp);
+						}
+					} else {
+						if (isEnv) {
+							if (api.filters.env.length > 0) {
+								$('#env_filter_' + api.filters.env.pop()).button('toggle');
+							}
+							api.filters.env.push(mark);
+						} else {
+							if (api.filters.interf.length > 0) {
+								$('#filter_' + api.filters.interf.pop()).button('toggle');
+							}
+							api.filters.interf.push(mark);
+						}
+					}
+					
+						var exp = (api.filters.env.length > 0 ? lemon.format('[env="{0}"]', api.filters.env[0]) : '') + 
+								(api.filters.interf.length > 0 ? lemon.format('[interf="{0}"]', api.filters.interf[0]) : '');
+						$('tr[his="1"]').show();
+						if (!lemon.isBlank(exp)) {
+							$('tr[his="1"]:not(' + exp + ')').hide();
+						}
+				});
 			});
 		},
 		popover: function(selector, content, options) {
@@ -499,13 +579,22 @@
 			
 			return true;
 		},
-		getRequestData: function() {
-			var request = $.parseJSON($('#request').val() || {});
-			if (lemon.getEnv().indexOf('rpd-manager') > 0) {
-				request['admin_token'] = '9VHmAsYNPUDCO0Il6a4Yec9VHmAsYNPUBHw9G';
+		getCleanRequestData: function(data) {
+			var data = $('#request').val();
+			if (lemon.isBlank(data)) {
+				lemon.warn(data, 'request params is not valid.');
+				return {};
 			}
-
-			return request;
+			
+			return $.parseJSON(data || {});
+		},
+		getRequestData: function(data) {
+			data = lemon.clone(data || {});
+			var env = api.env.which(lemon.getEnv());
+			if (!lemon.isBlank(env.params)) {
+				lemon.extend(data, env.params);
+			}
+			return data;
 		},
 		getHoverOrSelectItem: function(key) {
 			var result = {};
@@ -532,7 +621,18 @@
 			return result;
 		},
 		interval: function(batch) {
-			$('[batch="' + batch + '"]').fadeToggle("slow", "linear");
+			var exp = (api.filters.env.length > 0 ? lemon.format('[env="{0}"]', api.filters.env[0]) : '') + 
+			(api.filters.interf.length > 0 ? lemon.format('[interf="{0}"]', api.filters.interf[0]) : '');
+	
+			if (!lemon.isBlank(exp)) {
+				$('tr[batch="' + batch + '"]' + exp).fadeToggle("slow", "linear");
+			} else {
+				$('tr[batch="' + batch + '"]').fadeToggle("slow", "linear");
+			}
+	
+		},
+		interfType: function(type) {
+			$('[type="' + type + '"]').fadeToggle("slow", "linear");
 		},
 		onSelect: function(key) {
 			var item = api.getHoverOrSelectItem(key);
@@ -560,7 +660,8 @@
 			}
 		},
 		request: function(success) {
-			var request = api.getRequestData();
+			var cleanData = api.getCleanRequestData();
+			var request = api.getRequestData(cleanData);
 			lemon.info(request, 'request');
 			$.ajax({  
 	             type: "get",  
@@ -571,14 +672,12 @@
 	         }).done(function(data, textStatus, jqXHR) {
             	 lemon.info(textStatus, 'request status');
             	 lemon.info(data, 'response');
-            	 var storeParam = lemon.clone(request);
-				 delete storeParam['admin_token'];
             	 lemon.store.set(api.uniqueId(), {
      				when: lemon.when(),
-     				request: storeParam, 
+     				request: cleanData, 
      				response: data,
      				interf: lemon.getEnv(),
-     				name: api.getAPI(storeParam.cmd).desc
+     				name: api.getAPI(cleanData.cmd).desc
      			 });
 		         success && success(data);
 		         api.nav.view('#response', true);
@@ -613,10 +712,13 @@
 				var $env = $('#which_env'); $env.empty();
 				
 				lemon.each(definedServs, function(v, k) {
-					var title = $(document.createElement('li')).attr({ 
-						role:'presentation', 
-						class:'dropdown-header' 
-					}).text(v.desc);
+					var isProduct = 'PRODUCT' === v.env;
+					var clazz = isProduct ? 'danger' : 'info';
+					var title = [
+						'<li role="presentation" class="dropdown-header"><h4>',
+						'<span class="label label-' + clazz + '">' + v.desc + '</span>',
+						'</h4></li>'
+						].join('');
 					
 					var presentation = $(document.createElement('li')).attr({ 
 						role:'presentation', 
@@ -624,11 +726,9 @@
 					});
 					$env.append(presentation).append(title);
 					
-					var envType = v.env;
-					var envDesc = v.desc;
 					lemon.each(v.serv, function(v, k) {
-						envDesc = envDesc + '   ' + v.name;
-						var href = $(document.createElement('a')).text(v.name);
+						var servName = v.type.name + (lemon.isBlank(v.note) ? '' : (' - ' + v.note));
+						var href = $(document.createElement('a'));
 						if (v.asDefault && 1 === v.asDefault) {
 							href.attr({id: 'default_env'});
 						}
@@ -636,6 +736,7 @@
 							lemon.setEnv(v.interf);
 							api.env.change(v.interf);
 						});
+						href.append('<p class="text-' + (isProduct ? 'warning' : 'info') + '">' + servName + '</p>');
 						var aEnv = $(document.createElement('li')).append(href);
 						$env.append(aEnv);
 					});
@@ -645,7 +746,7 @@
 			},
 			change: function(interf) {
 				var env = api.env.which(interf);
-				var desc = env.desc + '  ' + env.name;
+				var desc = env.desc + '  ' + env.type.name + (lemon.isBlank(env.note) ? '' : (' - ' + env.note));
 				switch(env.env) {
 				case 'TEST': 
 					api.msg('success', desc , interf);
@@ -672,12 +773,13 @@
 								desc: v.desc,
 								type: v1.type,
 								interf: v1.interf,
-								name: v1.name
+								note: v1.note,
+								params: v1.params
 							};
 							if (lemon.isUndefined(envType)) {
 								result = tmp;
 								return false;
-							} else if (envType === tmp.type) {
+							} else if (envType === tmp.type.id) {
 								result = tmp;
 								return false;
 							}
@@ -691,19 +793,20 @@
 			render: function() {
 				var $cmd = $('#which_api'); $cmd.empty();
 				lemon.each(definedServs[0].serv, function(serv, k) {
-					var title = $(document.createElement('li')).attr({ 
-						role:'presentation', 
-						class:'dropdown-header',
-					}).text(serv.name);
+					var title = [
+						'<li role="presentation" class="dropdown-header"><h4>',
+						'<span class="label label-info">' + serv.type.name + '</span>',
+						'</h4></li>'
+						].join('');
 					
-					var presentation = $(document.createElement('li')).attr({ 
+					var presentation = $(document.createElement('li')).attr({
 						role:'presentation', 
 						class:'divider' 
 					});
 					$cmd.append(presentation).append(title);
 
 					lemon.each(definedAPIs.items, function(item, k) {
-						if (serv.type === item.type) {
+						if (serv.type.id === item.type.id) {
 							var dropItem = [
 								'<h5>' + item.api + '</h5>',
 								'<h6 class="text-muted" style="width:200px;">' + item.desc + '</h6>'
@@ -809,9 +912,18 @@
 	$(function(){ api.initialize(); });
 
 	var interf = {
-		manager: 1,
-		appapi: 2,
-		enterprise: 3
+		manager: {
+			id: 1,
+			name: "Manager API"
+		},
+		appapi: {
+			id: 2,
+			name: "App API"
+		},
+		enterprise: {
+			id: 3,
+			name: "Enterprise API"
+		}
 	};
 
 	var definedServs = [
@@ -822,18 +934,34 @@
 				{
 					type: interf.manager,
 					interf: "http://192.168.2.151:8080/rpd-manager/xv1.rp",
-					name: "Manager API",
+					note: "2.151",
+					params: {
+						'admin_token': '9VHmAsYNPUDCO0Il6a4Yec9VHmAsYNPUBHw9G'
+					},
 					asDefault: 1	//默认环境
+				},
+				{
+					type: interf.manager,
+					interf: "http://rpdapp.51test.top:8080/rpd-manager/xv1.rp",
+					note: "51test.top",
+					params: {
+						'admin_token': '9VHmAsYNPUDCO0Il6a4Yec9VHmAsYNPUBHw9G'
+					}
+				},
+				{
+					type: interf.appapi,
+					interf: "https://10.0.40.101:443/51rp/rpdservice/xv3.htm",
+					note: "51test.top"
 				},
 				{
 					type: interf.appapi,
 					interf: "http://192.168.2.151:8080/rpdservice/xv3.htm",
-					name: "App API"
+					note: "2.151"
 				},
 				{
 					type: interf.enterprise,
 					interf: "http://192.168.2.151:8080/rpdservice/ev1web.htm",
-					name: "Enterprise API"
+					note: "2.151"
 				}
 			]
 		},
@@ -844,17 +972,17 @@
 				{
 					type: interf.manager,
 					interf: "https://www.xx.com/rpd-manager/xv1.rp",
-					name: "Manager API"
+					params: {
+						'admin_token': '9VHmAsYNPUDCO0Il6a4Yec9VHmAsYNPUBHw9G'
+					}
 				},
 				{
 					type: interf.appapi,
-					interf: "https://www.xx.com/xx/rpdservice/xv3.htm",
-					name: "App API"
+					interf: "https://www.xx.com/xx/rpdservice/xv3.htm"
 				},
 				{
 					type: interf.enterprise,
-					interf: "https://www.xx.com/xx/rpdservice/ev1web.htm",
-					name: "Enterprise API"
+					interf: "https://www.xx.com/xx/rpdservice/ev1web.htm"
 				}
 			]
 		}
