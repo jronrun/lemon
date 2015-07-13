@@ -171,20 +171,27 @@
 	<table class="table table-hover">
 		<caption>History Request</caption>
         <thead> <tr> <th>#</th> <th>
+			<h5><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Request OR Response</span></h5>
 			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_requ">Request</button> 
 			& <button type="button" class="btn btn-default btn-xs" id="btn_tgl_resp">Response</button>
 			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_interval">Collapse Toggle</button>
 
-			<h5><span class="label label-default">Filter Server</span></h5>
+			<h5><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Server</span></h5>
 			<%
-				lemon.each(interf, function(v, k) {
+				lemon.each(definedServs, function(env, k) {
 			%>
-					<button type="button" class="btn btn-default btn-xs" id="filter_<%= v.id %>"><%= v.name %></button>
+					<h6><span class="label label-info"><%= env.env %></span></h6>
 			<%
+					lemon.each(env.serv, function(serv, k) {
+						var servName = serv.type.name + (lemon.isBlank(serv.note) ? '' : (' - ' + serv.note));
+			%>
+						<button type="button" class="btn btn-default btn-xs" id="filter_<%= serv.id %>"><%= servName %></button>
+			<%
+					});
 				});
 			%>
 
-			<h5><span class="label label-default">Filter Environment</span></h5>
+			<h5><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Environment</span></h5>
 			<%
 				lemon.each(definedServs, function(v, k) {
 			%>
@@ -213,7 +220,7 @@
 			   }
 			   
 		%>
-		   <tr onclick="api.onSelect('<%= v.k %>')" id="<%= v.k %>" batch="<%= batch %>" interf="<%= env.type.id %>" env="<%= env.env %>" his="1">
+		   <tr onclick="api.onSelect('<%= v.k %>')" id="<%= v.k %>" batch="<%= batch %>" interf="<%= env.id %>" env="<%= env.env %>" his="1">
             <th scope="row"><%= no++ %></th>
             <td>
 				<blockquote style="width:<%=clientW%>px;">
@@ -774,7 +781,8 @@
 								type: v1.type,
 								interf: v1.interf,
 								note: v1.note,
-								params: v1.params
+								params: v1.params,
+								id: v1.id
 							};
 							if (lemon.isUndefined(envType)) {
 								result = tmp;
@@ -938,6 +946,7 @@
 		    desc: "Test Environment",
 		    serv: [
 				{
+					id: 1001,
 					type: interf.manager,
 					interf: "http://192.168.2.151:8080/rpd-manager/xv1.rp",
 					note: "2.151",
@@ -947,6 +956,7 @@
 					asDefault: 1	//默认环境
 				},
 				{
+					id: 1002,
 					type: interf.manager,
 					interf: "http://rpdapp.51test.top:8080/rpd-manager/xv1.rp",
 					note: "51test.top",
@@ -955,16 +965,19 @@
 					}
 				},
 				{
+					id: 1003,
 					type: interf.appapi,
 					interf: "https://10.0.40.101:443/51rp/rpdservice/xv3.htm",
 					note: "51test.top"
 				},
 				{
+					id: 1004,
 					type: interf.appapi,
 					interf: "http://192.168.2.151:8080/rpdservice/xv3.htm",
 					note: "2.151"
 				},
 				{
+					id: 1005,
 					type: interf.enterprise,
 					interf: "http://192.168.2.151:8080/rpdservice/ev1web.htm",
 					note: "2.151"
@@ -976,6 +989,7 @@
 		    desc: "Product Environment",
 		    serv: [
 				{
+					id: 8001,
 					type: interf.manager,
 					interf: "https://www.xx.com/rpd-manager/xv1.rp",
 					params: {
@@ -983,10 +997,12 @@
 					}
 				},
 				{
+					id: 8002,
 					type: interf.appapi,
 					interf: "https://www.xx.com/xx/rpdservice/xv3.htm"
 				},
 				{
+					id: 8003,
 					type: interf.enterprise,
 					interf: "https://www.xx.com/xx/rpdservice/ev1web.htm"
 				}
@@ -998,7 +1014,7 @@
 		items: [
 			 {
 				 api:"M000913",
-				 desc:"user",
+				 desc:"User",
 				 note:"",
 				 type: interf.manager,
 				 request:{"cmd":"M000913","userId":"1","token":"","version":"1.0.0","data":{"name":"name","mobile":"mobile"}}
