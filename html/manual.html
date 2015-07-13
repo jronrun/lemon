@@ -792,7 +792,13 @@
 		cmd: {
 			render: function() {
 				var $cmd = $('#which_api'); $cmd.empty();
+				var servTypes = [];
 				lemon.each(definedServs[0].serv, function(serv, k) {
+					if (servTypes.indexOf(serv.type) >= 0) {
+						return;
+					}
+					servTypes.push(serv.type);
+					
 					var title = [
 						'<li role="presentation" class="dropdown-header"><h4>',
 						'<span class="label label-info">' + serv.type.name + '</span>',
