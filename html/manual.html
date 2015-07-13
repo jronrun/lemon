@@ -180,7 +180,7 @@
 			<%
 				lemon.each(definedServs, function(env, k) {
 			%>
-					<h6><span class="label label-info"><%= env.env %></span></h6>
+					<h6><span class="label label-info"><span class="glyphicon glyphicon-hand-down"></span> <%= env.env %></span></h6>
 			<%
 					lemon.each(env.serv, function(serv, k) {
 						var servName = serv.type.name + (lemon.isBlank(serv.note) ? '' : (' - ' + serv.note));
@@ -1014,10 +1014,10 @@
 		items: [
 			 {
 				 api:"M000913",
-				 desc:"User",
+				 desc:"Query User",
 				 note:"",
 				 type: interf.manager,
-				 request:{"cmd":"M000913","userId":"1","token":"","version":"1.0.0","data":{"name":"name","mobile":"mobile"}}
+				 request:{"cmd":"M000913","userId":"1","token":"","version":"1.0.0","data":{"name":"","mobile":""}}
 			 }
 		]
 	};
