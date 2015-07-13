@@ -144,7 +144,7 @@
 					if (interfType != v.type.id) {
 						interfType = v.type.id;
 		%>
-			<tr onclick="api.interfType(<%= interfType %>)"> <th></th> <td> <h4><span class="label label-info"><%= v.type.name %></span></h4> </td> </tr>
+			<tr onclick="api.interfType(<%= interfType %>)"> <th></th> <td> <h4><span class="label label-info"><span class="glyphicon glyphicon-flag"></span> <%= v.type.name %></span></h4> </td> </tr>
 		<%
 					}
 		%>
@@ -215,7 +215,7 @@
 					batch = lemon.uniqueId();
 					api.batches.push(batch);
 		%>
-					<tr onclick="api.interval(<%= batch %>)"> <th></th> <td> <h4><span class="label label-info"><%= interval %></span></h4> </td> </tr>
+					<tr onclick="api.interval(<%= batch %>)"> <th></th> <td> <h4><span class="label label-info"><span class="glyphicon glyphicon-time"></span> <%= interval %></span></h4> </td> </tr>
 		<%
 			   }
 			   
