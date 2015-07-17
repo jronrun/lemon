@@ -77,6 +77,8 @@
 					<!-- <h3 class="panel-title">Request </h3> -->
 					Request
 					<div class="btn-group btn-group-xs pull-right">
+						<button type="button" class="btn btn-success" id="copy_url">
+						<span class="glyphicon glyphicon-copy"></span></button>
 						<button type="button" class="btn btn-success" data-element="#request" data-toggle="modal" data-target="#modal_tpl">
 						<span class="glyphicon glyphicon-tree-deciduous"></span></button>
 						<button type="button" class="btn btn-success" data-element="both" data-toggle="modal" data-target="#modal_tpl">
@@ -262,10 +264,6 @@
 			this.cmd.render();
 			this.nav.render();
 			this.mod.render();
-			$('#request').change(function() {
-				try { $(this).val(lemon.json($(this).val())); } 
-				catch (e) { lemon.warn(e, 'Can not parse JSON string.'); }
-			});
 		},
 		nav: {
 			render: function() {
@@ -299,6 +297,37 @@
 						interf: lemon.getEnv()
 					});
 					window.open(lemon.getUrl(lemon.getEnv(), {data: lemon.json.reverse(param)}));
+				});
+
+				api.popover('#copy_url', function() {
+					var cleanData = api.getCleanRequestData();
+					var param = api.getRequestData(cleanData);
+					var requestURL = lemon.format('{0}?data={1}', lemon.getEnv(), lemon.json.reverse(param));
+					lemon.info(requestURL, 'Request URL');
+
+					var h = 80;
+			  		var w = document.body.clientWidth / 2;
+			  		
+			  		var html = [
+							'<textarea id="request_url" style="border:0px solid #ffffff;height:' + h + 'px;width:' + w + 'px">' + requestURL + '</textarea>',
+						].join('');
+					
+					return html;
+				}, { title: 'Request URL', placement: 'top'}).on('show.bs.popover', function() { 
+					$(this).data("bs.popover").tip().css({
+						maxWidth: (document.body.clientWidth / 2) + 200
+					});
+				}).on('shown.bs.popover', function() {
+					$("#request_url").focus(function() {
+					    var $this = $(this); $this.select();
+
+					    // Work around Chrome's little problem
+					    $this.mouseup(function() {
+					        // Prevent further mouseup intervention
+					        $this.unbind("mouseup");
+					        return false;
+					    });
+					});
 				});
 
 				$('#input_search').focus(function() {
@@ -363,6 +392,16 @@
 				});
 				api.nav.dblclick('#request');
 				api.nav.dblclick('#response');
+				
+				$('#request').change(function() {
+					var val = $(this).val();
+					try { $(this).val(lemon.json(val)); } 
+					catch (e) { lemon.warn(e, 'Can not parse JSON string.'); }
+
+					var param = api.getRequestData($.parseJSON(val || {}));
+					var requestURL = lemon.format('{0}?data={1}', lemon.getEnv(), lemon.json.reverse(param));
+					$('#request_url').text(requestURL);
+				});
 			},
 			dblclick: function(selector) {
 				//forbiden right click context menu
