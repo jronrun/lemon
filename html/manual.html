@@ -300,10 +300,7 @@
 				});
 
 				api.popover('#copy_url', function() {
-					var cleanData = api.getCleanRequestData();
-					var param = api.getRequestData(cleanData);
-					var requestURL = lemon.format('{0}?data={1}', lemon.getEnv(), lemon.json.reverse(param));
-					lemon.info(requestURL, 'Request URL');
+					var requestURL = api.nav.humanreadRequest();
 
 					var h = 80;
 			  		var w = document.body.clientWidth / 2;
@@ -394,13 +391,9 @@
 				api.nav.dblclick('#response');
 				
 				$('#request').change(function() {
-					var val = $(this).val();
-					try { $(this).val(lemon.json(val)); } 
+					try { $(this).val(lemon.json($(this).val())); } 
 					catch (e) { lemon.warn(e, 'Can not parse JSON string.'); }
-
-					var param = api.getRequestData($.parseJSON(val || {}));
-					var requestURL = lemon.format('{0}?data={1}', lemon.getEnv(), lemon.json.reverse(param));
-					$('#request_url').text(requestURL);
+					$('#request_url').text(api.nav.humanreadRequest());
 				});
 			},
 			dblclick: function(selector) {
@@ -421,6 +414,13 @@
 						}
 					}
 				});
+			},
+			humanreadRequest: function() {
+				var cleanData = api.getCleanRequestData();
+				var param = api.getRequestData(cleanData);
+				var requestURL = lemon.format('{0}?data={1}', lemon.getEnv(), lemon.json.reverse(param));
+				lemon.info(requestURL, 'Request URL');
+				return requestURL;
 			},
 			textarea: function(selector, options) {
 				api.popover(selector, function() {
@@ -801,6 +801,9 @@
 					api.msg('danger', desc, interf)
 						.append('&nbsp;&nbsp;&nbsp;&nbsp;<strong>Danger !!!</strong>');
 					break;
+				}
+				if ($('#request_url').length) {
+					$('#request_url').text(api.nav.humanreadRequest());
 				}
 			},
 			isProduct: function(interf) {
