@@ -1,6 +1,6 @@
 //json format plugin see https://github.com/phoboslab/json-format
 (function(kiwi, component) {
-	var chk, fmt, pop, proto, tabs, trims, unfmt;
+	var chk, fmt, pop, proto, tabs, trims, unfmt, filter;
 	proto = function(json) {
 		return fmt(json);
 	};
@@ -12,6 +12,10 @@
 	proto.highlight = function(json) {
 		return syntax(json);
 	};
+	
+	proto.get = function(json, prop) {
+	    return value(json, prop);
+	}
 
 	pop = function(m, i) {
 		return p[i - 1];
@@ -21,6 +25,16 @@
 		return new Array(count + 1).join('\t');
 	};
 
+	value = function(json, prop) {
+		prop = prop || '';
+		var props = prop.indexOf('.') > 0 ? prop.split('.') : [prop];
+		var val = json;
+		kiwi.each(props, function(v, k) {
+			val = val && val[v];
+		});
+		return val;
+	};
+	
 	trims = function(fragment, split, isJoinEmpty) {
 		var afterTrim, arrEl, out, tmp;
 		out = "";
