@@ -321,6 +321,46 @@ _.sleep = (milliseconds) ->
 		i++
 		break if (_.now() - start) >= milliseconds
 	return
+
+###
+var strtest = '<div>abc</div>happy<div>efg</div>';
+kiwi.betn(strtest , '<div>', '</div>', true);
+<div>abc</div>,<div>efg</div>
+kiwi.betn(strtest , '<div>', '</div>');
+abc,efg
+###
+_.betn = (target, startTag, endTag, isContainTag) ->
+	if _.isBlank(startTag) or _.isBlank(endTag) then return target
+	result = new Array(); re = new RegExp("(?:\\" + startTag + ")([\\s\\S]*?)(?:" + endTag + ")", 'gim')
+	if isContainTag 
+		_.each(target.match(re), (v, k) -> result.push v; return)
+		
+	tmp = null; len = target.match(re)
+	if _.isNull len then return result
+	(tmp = re.exec target;if !_.isNull tmp then result.push tmp[1]) for i in [0..len.length]
+	result
+	
+###
+callback
+arg1 include start/end tag substring
+arg2 exclude start/end tag substring
+arg3 substring start position
+
+var strtest = '<div>abc</div>happy<div>efg</div>';
+kiwi.betns(strtest , '<div>', '</div>', function(a, b, c){
+	return '<span>' + b + '</span>';
+});
+<span>abc</span>happy<span>efg</span>
+
+var replace = { abc : 'red', efg : 'green' };
+kiwi.betns(strtest , '<div>', '</div>', function(a, b, c){
+	return '<li>' + replace[b] + '</li>';
+});
+<li>red</li>happy<li>green</li>
+###
+_.betns = (target, startTag, endTag, callback) ->
+	if _.isBlank(startTag) or _.isBlank(endTag) or !_.isFunc(callback) then return target
+	return target.replace(new RegExp("(?:\\" + startTag + ")([\\s\\S]*?)(?:" + endTag + ")", 'gim'), callback)
 	
 # paramters
 # expression, errorMsg || errorMsg Template, template args

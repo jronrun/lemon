@@ -553,6 +553,68 @@
     }
   };
 
+
+  /*
+  var strtest = '<div>abc</div>happy<div>efg</div>';
+  kiwi.betn(strtest , '<div>', '</div>', true);
+  <div>abc</div>,<div>efg</div>
+  kiwi.betn(strtest , '<div>', '</div>');
+  abc,efg
+   */
+
+  _.betn = function(target, startTag, endTag, isContainTag) {
+    var i, len, q, re, ref, result, tmp;
+    if (_.isBlank(startTag) || _.isBlank(endTag)) {
+      return target;
+    }
+    result = new Array();
+    re = new RegExp("(?:\\" + startTag + ")([\\s\\S]*?)(?:" + endTag + ")", 'gim');
+    if (isContainTag) {
+      _.each(target.match(re), function(v, k) {
+        result.push(v);
+      });
+    }
+    tmp = null;
+    len = target.match(re);
+    if (_.isNull(len)) {
+      return result;
+    }
+    for (i = q = 0, ref = len.length; 0 <= ref ? q <= ref : q >= ref; i = 0 <= ref ? ++q : --q) {
+      tmp = re.exec(target);
+      if (!_.isNull(tmp)) {
+        result.push(tmp[1]);
+      }
+    }
+    return result;
+  };
+
+
+  /*
+  callback
+  arg1 include start/end tag substring
+  arg2 exclude start/end tag substring
+  arg3 substring start position
+  
+  var strtest = '<div>abc</div>happy<div>efg</div>';
+  kiwi.betns(strtest , '<div>', '</div>', function(a, b, c){
+  	return '<span>' + b + '</span>';
+  });
+  <span>abc</span>happy<span>efg</span>
+  
+  var replace = { abc : 'red', efg : 'green' };
+  kiwi.betns(strtest , '<div>', '</div>', function(a, b, c){
+  	return '<li>' + replace[b] + '</li>';
+  });
+  <li>red</li>happy<li>green</li>
+   */
+
+  _.betns = function(target, startTag, endTag, callback) {
+    if (_.isBlank(startTag) || _.isBlank(endTag) || !_.isFunc(callback)) {
+      return target;
+    }
+    return target.replace(new RegExp("(?:\\" + startTag + ")([\\s\\S]*?)(?:" + endTag + ")", 'gim'), callback);
+  };
+
   _.querySelector = function(selector, isAll, context) {
     if (isAll == null) {
       isAll = false;
