@@ -332,12 +332,14 @@ abc,efg
 _.betn = (target, startTag, endTag, isContainTag) ->
 	if _.isBlank(startTag) or _.isBlank(endTag) then return target
 	result = new Array(); re = new RegExp("(?:\\" + startTag + ")([\\s\\S]*?)(?:" + endTag + ")", 'gim')
+	len = target.match(re)
 	if isContainTag 
-		_.each(target.match(re), (v, k) -> result.push v; return)
+		(result.push len[v]) for v in [0..len.length - 1]
+		return result
 		
-	tmp = null; len = target.match(re)
+	tmp = null;
 	if _.isNull len then return result
-	(tmp = re.exec target;if !_.isNull tmp then result.push tmp[1]) for i in [0..len.length]
+	(tmp = re.exec target;if !_.isNull tmp then result.push tmp[1]) for i in [0..len.length - 1]
 	result
 	
 ###

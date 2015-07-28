@@ -563,23 +563,24 @@
    */
 
   _.betn = function(target, startTag, endTag, isContainTag) {
-    var i, len, q, re, ref, result, tmp;
+    var i, len, q, r, re, ref, ref1, result, tmp, v;
     if (_.isBlank(startTag) || _.isBlank(endTag)) {
       return target;
     }
     result = new Array();
     re = new RegExp("(?:\\" + startTag + ")([\\s\\S]*?)(?:" + endTag + ")", 'gim');
+    len = target.match(re);
     if (isContainTag) {
-      _.each(target.match(re), function(v, k) {
-        result.push(v);
-      });
+      for (v = q = 0, ref = len.length - 1; 0 <= ref ? q <= ref : q >= ref; v = 0 <= ref ? ++q : --q) {
+        result.push(len[v]);
+      }
+      return result;
     }
     tmp = null;
-    len = target.match(re);
     if (_.isNull(len)) {
       return result;
     }
-    for (i = q = 0, ref = len.length; 0 <= ref ? q <= ref : q >= ref; i = 0 <= ref ? ++q : --q) {
+    for (i = r = 0, ref1 = len.length - 1; 0 <= ref1 ? r <= ref1 : r >= ref1; i = 0 <= ref1 ? ++r : --r) {
       tmp = re.exec(target);
       if (!_.isNull(tmp)) {
         result.push(tmp[1]);

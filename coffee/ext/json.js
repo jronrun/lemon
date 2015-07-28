@@ -30,7 +30,22 @@
 		var props = prop.indexOf('.') > 0 ? prop.split('.') : [prop];
 		var val = json;
 		kiwi.each(props, function(v, k) {
+			var original = v;
+			if (v.indexOf('[') > 0 && v.indexOf(']') > 0) {
+				var tags = kiwi.betn(v, '[', ']', true);
+				v = v.replace(tags.join(''), '');
+			}
 			val = val && val[v];
+			if (kiwi.isArray(val)) {
+				var idxs = kiwi.betn(original, '[', ']');
+				if (idxs.length > 0) {
+					var tmp = val;
+					kiwi.each(idxs, function(v, k) {
+						tmp = tmp && tmp[parseInt(v)];
+					});
+					val = tmp;
+				}
+			}
 		});
 		return val;
 	};
