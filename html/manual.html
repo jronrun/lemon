@@ -73,18 +73,20 @@
 	<div class="row">
 		<div class="col-md-6">
 			<div class="panel panel-default">
-				<div class="panel-heading">
+				<div class="panel-heading" title="Right Click Toggle Edit and View Mode">
 					<!-- <h3 class="panel-title">Request </h3> -->
 					Request
 					<div class="btn-group btn-group-xs pull-right">
 						<button type="button" class="btn btn-success" id="as_default">
-						<span class="glyphicon glyphicon-tag"></span></button>
+						<span class="glyphicon glyphicon-camera" title="Set Request Default Value"></span></button>
 						<button type="button" class="btn btn-success" id="copy_url">
-						<span class="glyphicon glyphicon-copy"></span></button>
+						<span class="glyphicon glyphicon-copy" title="Show Request URL"></span></button>
 						<button type="button" class="btn btn-success" data-element="#request" data-toggle="modal" data-target="#modal_tpl">
-						<span class="glyphicon glyphicon-tree-deciduous"></span></button>
+						<span class="glyphicon glyphicon-tree-deciduous" title="Show Request In Fullscreen (Esc Quit)"></span></button>
 						<button type="button" class="btn btn-success" data-element="both" data-toggle="modal" data-target="#modal_tpl">
-						<span class="glyphicon glyphicon-eye-open"></span></button>
+						<span class="glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
+						<button type="button" class="btn btn-success" id="api_define">
+						<span class="glyphicon glyphicon-question-sign" title="Show the Define API"></span></button>
 					</div>
 				</div>
 				<div class="panel-body">
@@ -100,13 +102,13 @@
 		</div>
 		<div class="col-md-6">
 			<div class="panel panel-default">
-				<div class="panel-heading">
+				<div class="panel-heading" title="Right Click Toggle Edit and View Mode">
 					Response
 					<div class="btn-group btn-group-xs pull-right">
 						<button type="button" class="btn btn-success" data-element="#response" data-toggle="modal" data-target="#modal_tpl">
-						<span class="glyphicon glyphicon-leaf"></span></button>
+						<span class="glyphicon glyphicon-leaf" title="Show Response In Fullscreen (Esc Quit)"></span></button>
 						<button type="button" class="btn btn-success" data-element="both" data-toggle="modal" data-target="#modal_tpl">
-						<span class="glyphicon glyphicon-eye-open"></span></button>
+						<span class="glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
 					</div>
 				</div>
 				<div class="panel-body">
@@ -128,6 +130,9 @@
   <!-- <div class="panel-heading">Panel heading</div> -->
   <%
 	var clientW = document.body.clientWidth - 110;
+	if (lemon.isBlank(histories)) {
+		clientW = clientW + 35;
+	}
     var panelH = document.body.clientHeight - 150;
   %>
   <div class="panel-body fixed-panel" style="height:<%=panelH%>px;max-height:<%=panelH%>px;">
@@ -152,9 +157,14 @@
 		<%
 					}
 		%>
-		   <tr onclick="api.onSelect('<%= k %>')" id="<%= k %>" type="<%= interfType %>">
-            <th scope="row"><%= v.name %></th>
-			<td>
+		   <tr id="<%= k %>" type="<%= interfType %>">
+            <th scope="row">
+				<button type="button" class="btn btn-default btn-xs" onclick="api.setAPIDefaultVal('<%= v.name %>')" id="set_default_<%= v.name %>">
+					<span class="glyphicon glyphicon-camera" title="Set API Default Value"></span>
+				</button>
+			</th>
+			<td onDblClick="api.onSelect('<%= k %>')">
+			<span class="badge"><%= v.name %></span>
 			<blockquote style="width:<%=clientW - 50%>px;">
   				<p>
 					<pre style="background-color:#ffffff;" tgl-api="tgl"><%= lemon.json.highlight(v.request) %></pre>
@@ -179,6 +189,9 @@
 			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_requ">Request</button> 
 			& <button type="button" class="btn btn-default btn-xs" id="btn_tgl_resp">Response</button>
 			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_interval">Collapse Toggle</button>
+
+			<h5><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Favourite</span></h5>
+			<button type="button" class="btn btn-default btn-xs" id="prop_filter_1"><span class="glyphicon glyphicon-star"></span>Favourite</button>
 
 			<h5><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Server</span></h5>
 			<%
@@ -224,10 +237,30 @@
 			   }
 			   
 		%>
-		   <tr onclick="api.onSelect('<%= v.k %>')" id="<%= v.k %>" batch="<%= batch %>" interf="<%= env.id %>" env="<%= env.env %>" his="1">
-            <th scope="row"><%= no++ %></th>
-            <td>
+		   <tr id="<%= v.k %>" batch="<%= batch %>" interf="<%= env.id %>" env="<%= env.env %>" his="1" prop="<%= api.customHis(v.k,'fav') %>">
+            <th scope="row">
+				<button type="button" class="btn btn-default btn-xs" onclick="api.favourite(this, <%= v.k %>)">
+					<% if (1 == api.customHis(v.k,'fav')) { %>
+						<span class="glyphicon glyphicon-star" title="Toggle Favourite"></span>
+					<% } else { %>
+						<span class="glyphicon glyphicon-star-empty" title="Toggle Favourite"></span>
+					<% } %>
+				</button>
+				<button type="button" class="btn btn-default btn-xs" onclick="api.pencil(<%= v.k %>, <%= no %>)" id="pencil_<%= v.k %>">
+					<span class="glyphicon glyphicon-pencil" title="Note"></span>
+				</button>
+			</th>
+            <td onDblClick="api.onSelect('<%= v.k %>')">
+				<span class="badge"><%= no++ %></span>
 				<blockquote style="width:<%=clientW%>px;">
+					<div id="show_note_<%= v.k %>">
+					<% 
+						var note = api.customHis(v.k, 'note') || '';
+						if (!lemon.isBlank(note)) {
+					%>
+						<div class="alert alert-warning" role="alert" id=""><%= note %></div>
+					<% } %>
+					</div>
   					<p>
 						<pre style="background-color:#ffffff;height:100%;" tgl-requ="tgl"><%= lemon.json.highlight(v.request) %></pre>
 						<pre style="background-color:#ffffff;height:100%;" tgl-resp="tgl"><%= lemon.json.highlight(v.response) %></pre>
@@ -301,6 +334,25 @@
 					window.open(lemon.getUrl(lemon.getEnv(), {data: lemon.json.reverse(param)}));
 				});
 
+				$('#as_default').click(function() {
+					var data = api.getCleanRequestData();
+					var cmd = data.cmd;
+					if (cmd) {
+						api.defaultValue(cmd, data);
+					}
+				});
+
+				api.popover('#api_define', function() {
+					var apiDefined = lemon.json.highlight(api.getAPI((api.getCleanRequestData() || {cmd : ''}).cmd));
+					return '<pre style="width:500px;background-color:#ffffff;">' + apiDefined + '</pre>';
+				}, { 
+					title: 'API Description', placement: 'right'
+				}).on('show.bs.popover', function() { 
+					$(this).data("bs.popover").tip().css({
+						maxWidth: (document.body.clientWidth / 2) + 200
+					});
+				});
+
 				api.popover('#copy_url', function() {
 					var requestURL = api.nav.humanreadRequest();
 
@@ -336,6 +388,8 @@
 				});
 
 				api.popoverOnBtn('#btn_search', function() {
+					lemon.notes = [];
+					lemon.defaults = [];
 					var key = $('#input_search').val();
 					var justAllAPI = lemon.isBlank(key);
 
@@ -410,6 +464,7 @@
 				}, { title: 'Search Result', trigger: 'click' } );
 
 				api.popoverOnBtn("#btn_history", function() {
+					lemon.notes = [];
                     return lemon.tmpl($('#table_tmpl').html(), {histories: lemon.store.getAll(), apis: {}});
                 }, { title: 'API History', trigger: 'click' } );
 
@@ -530,6 +585,152 @@
 				return b.k - a.k;
 			});
 		},
+		defaultValue: function(cmd, val) {
+			var key = "defaultApiVal";
+			var hold = lemon.store(key) || {};
+			if (lemon.isUndefined(cmd)) {
+				return hold;
+			}
+
+			var defaultCmdVal = hold[cmd] || {};
+			if (lemon.isUndefined(val)) {
+				return hold[cmd];
+			}
+
+			hold[cmd] = val;
+			lemon.store(key, hold);
+			return {};
+		},
+		customHis: function(hisId, key, val) {
+			var defineHisKey = 'definehis';
+			var cust = lemon.store(defineHisKey) || {};
+			if (lemon.isUndefined(hisId)) {
+				return cust;
+			}
+
+			var tmp = cust[hisId] || {};
+			if (lemon.isUndefined(key)) {
+				return tmp;
+			}
+			
+			if (lemon.isUndefined(val)) {
+				return tmp[key];
+			} else {
+				tmp[key] = val;
+				cust[hisId] = tmp;
+				lemon.store(defineHisKey, cust);
+			}
+			return {};
+		},
+		setAPIDefaultValClose: function(theAPI) {
+			$('#set_default_' + theAPI).popover('hide');
+		},
+		setAPIDefaultVal: function(theAPI) {
+			var apiDefaultId = '#set_default_' + theAPI;
+			var title = [
+			 	theAPI + ' Default Value',
+			 	'<div class="pull-right">',
+			 	'<span class="glyphicon glyphicon-remove" title="Close" onclick="api.setAPIDefaultValClose(\'' + theAPI + '\');"></span></div>'
+			 ].join('');
+			 
+			if (lemon.defaults.indexOf(theAPI) == -1) {
+				api.popover(apiDefaultId, function() {
+					var apiVal = lemon.json(api.getAPIDefaultVal(theAPI, api.getAPI(theAPI).request));
+					return '<textarea id="api_default_edit_' + theAPI + '" style="height:300px;width:500px;border:0px solid #ffffff;">' + apiVal + '</textarea>';
+				}, { 
+					title: title, placement: 'right'
+				}).on('show.bs.popover', function() { 
+					$(this).data("bs.popover").tip().css({
+						maxWidth: (document.body.clientWidth / 2) + 200
+					});
+					$(apiDefaultId).addClass('active');
+				}).on('hidden.bs.popover', function() {
+					$(apiDefaultId).removeClass('active');
+				}).on('hide.bs.popover', function() {
+					var data = $('#api_default_edit_' + theAPI).val();
+					if (!lemon.isBlank(data)) {
+						data = $.parseJSON(data || {});
+						var cmd = data.cmd;
+						if (cmd) {
+							api.defaultValue(cmd, data);
+						}
+					}
+				});
+
+				lemon.defaults.push(theAPI);
+				$(apiDefaultId).popover('show');
+			}
+		},
+		pencil: function(hisId, no) {
+			var pencilId = '#pencil_' + hisId;
+			var title = [
+			 	'Note <span class="badge">' + no + '</span>',
+			 	'<div class="pull-right">',
+			 	'<span class="glyphicon glyphicon-trash" title="Clean Note" onclick="api.pencilClose(' + hisId + ', 1);"></span>  ',
+			 	'<span class="glyphicon glyphicon-remove" title="Close" onclick="api.pencilClose(' + hisId + ');"></span></div>'
+			 	].join('');
+			if (lemon.notes.indexOf(hisId) == -1) {
+				api.popover(pencilId, function() {
+			  		var html = [
+							'<textarea id="his_note_' + hisId + '" style="border:0px solid #ffffff;height:150px;width:500px"></textarea>',
+						].join('');
+					
+					return html;
+				}, { 
+					title: title,
+					placement: 'right'
+				}).on('show.bs.popover', function() {
+					$(this).data("bs.popover").tip().css({
+						maxWidth: (document.body.clientWidth / 2) + 200
+					});
+				}).on('shown.bs.popover', function() {
+					$(pencilId).addClass('active');
+					var note = api.customHis(hisId, 'note') || '';
+					$('#his_note_' + hisId).val(note);
+				}).on('hidden.bs.popover', function() {
+					$(pencilId).removeClass('active')
+				}).on('hide.bs.popover', function() {
+					var note = $('#his_note_' + hisId).val() || '';
+					api.customHis(hisId, 'note', note);
+					
+					var showNoteId = '#show_note_' + hisId;
+					if (!lemon.isBlank(note)) {
+						$(showNoteId).html('<div class="alert alert-warning" role="alert" id="">' + note + '</div>');
+					} else {
+						$(showNoteId).empty();
+					}
+				});
+				lemon.notes.push(hisId);
+				$(pencilId).popover('show');
+			}
+		},
+		pencilClose: function(hisId, trash) {
+			$('#pencil_' + hisId).popover('hide');
+			if (1 == trash) {
+				api.customHis(hisId, 'note', '');
+				$('#show_note_' + hisId).empty();
+			}
+		},
+		favourite: function(el, hisId) {
+			var $span = $(el).children('span');
+			var isFavShow = $('#prop_filter_1').hasClass('active');
+            //unfav
+            if ($span.hasClass('glyphicon-star')) {
+                $span.removeClass('glyphicon-star');
+                $span.addClass('glyphicon-star-empty');
+                api.customHis(hisId, 'fav', 0);
+                if (isFavShow) {
+                    $('#' + hisId).attr({prop: 0}).fadeToggle("slow", "linear");
+                }
+            } 
+            //fav
+            else {
+            	$span.removeClass('glyphicon-star-empty');
+                $span.addClass('glyphicon-star');
+				api.customHis(hisId, 'fav', 1);
+				$('#' + hisId).attr({prop: 1});
+            }
+		},
 		popoverOnBtn: function(selector, content, options) {
 			api.popover(selector, content, options)
 			  .on('show.bs.popover', function() { 
@@ -565,42 +766,72 @@
 
                 api.filters = {
                 	env: [],
-                	interf: []
+                	interf: [],
+                	prop: []
                 };
-                $('button[id^="env_filter_"],button[id^="filter_"]').click(function() {
+                $('button[id^="env_filter_"],button[id^="filter_"],button[id^="prop_filter_"]').click(function() {
 					var isActive = $(this).hasClass('active');
 					var id = $(this).attr('id');
-					var mark = lemon.ltrim(id, 'env_filter_|filter_');
-					var isEnv = lemon.startWith(id, 'env_filter_');
-					var exp = lemon.format(isEnv ? '[env="{0}"]' : '[interf="{0}"]', mark);
+					var mark = lemon.ltrim(id, 'env_filter_|filter_|prop_filter_');
+					
+					var whichGroup = 0;
+					var expTpl = '';
+					if (lemon.startWith(id, 'env_filter_')) {
+						whichGroup = 1;
+						expTpl = '[env="{0}"]';
+					} else if (lemon.startWith(id, 'filter_')) {
+						whichGroup = 2;
+						expTpl = '[interf="{0}"]';
+					} else if (lemon.startWith(id, 'prop_filter_')) {
+						whichGroup = 3;
+						expTpl = '[prop="{0}"]';
+					}
+					
+					var exp = lemon.format(expTpl, mark);
 					
 					$(this).button('toggle');
 					if (isActive) {
-						if (isEnv) {
+						switch (whichGroup) {
+						case 1:
 							api.filters.env.pop(exp);
-						} else {
+							break;
+						case 2:
 							api.filters.interf.pop(exp);
+							break;
+						case 3:
+							api.filters.prop.pop(exp);
+							break;
 						}
 					} else {
-						if (isEnv) {
+						switch (whichGroup) {
+						case 1:
 							if (api.filters.env.length > 0) {
 								$('#env_filter_' + api.filters.env.pop()).button('toggle');
 							}
 							api.filters.env.push(mark);
-						} else {
+							break;
+						case 2:
 							if (api.filters.interf.length > 0) {
 								$('#filter_' + api.filters.interf.pop()).button('toggle');
 							}
 							api.filters.interf.push(mark);
+							break;
+						case 3:
+							if (api.filters.interf.length > 0) {
+								$('#prop_filter_' + api.filters.prop.pop()).button('toggle');
+							}
+							api.filters.prop.push(mark);
+							break;
 						}
 					}
 					
-						var exp = (api.filters.env.length > 0 ? lemon.format('[env="{0}"]', api.filters.env[0]) : '') + 
-								(api.filters.interf.length > 0 ? lemon.format('[interf="{0}"]', api.filters.interf[0]) : '');
-						$('tr[his="1"]').show();
-						if (!lemon.isBlank(exp)) {
-							$('tr[his="1"]:not(' + exp + ')').hide();
-						}
+					var exp = (api.filters.env.length > 0 ? lemon.format('[env="{0}"]', api.filters.env[0]) : '') + 
+							(api.filters.interf.length > 0 ? lemon.format('[interf="{0}"]', api.filters.interf[0]) : '') +
+							(api.filters.prop.length > 0 ? lemon.format('[prop="{0}"]', api.filters.prop[0]) : '');
+					$('tr[his="1"]').show();
+					if (!lemon.isBlank(exp)) {
+						$('tr[his="1"]:not(' + exp + ')').hide();
+					}
 				});
 			});
 		},
@@ -697,6 +928,10 @@
 			});
 			return result;
 		},
+		getAPIDefaultVal: function(theAPI, defaultVal) {
+			var dv = api.defaultValue(theAPI)
+			return lemon.isBlank(dv) ? defaultVal : dv;
+		},
 		interval: function(batch) {
 			var exp = (api.filters.env.length > 0 ? lemon.format('[env="{0}"]', api.filters.env[0]) : '') + 
 			(api.filters.interf.length > 0 ? lemon.format('[interf="{0}"]', api.filters.interf[0]) : '');
@@ -715,7 +950,11 @@
 			var item = api.getHoverOrSelectItem(key);
 			if (!lemon.isBlank(item)) {
 				if (lemon.startWith(key, 'api_')) {
-					$('#request').val(lemon.json(item.request || {}));
+					var requestV = item.request || {};
+					if (requestV.cmd) {
+						requestV = api.getAPIDefaultVal(requestV.cmd, requestV);
+					}
+					$('#request').val(lemon.json(requestV));
 					$('#response').val(item.response);
 					$("#btn_search").click();
 				} else {
@@ -730,6 +969,8 @@
 						$('#btn_search').click();
 					}
 				}
+				
+				lemon.setApi(item.request.cmd);
 				if (!$('#request:visible').length) {
 					api.nav.view('#request', true);
 				}
@@ -910,7 +1151,7 @@
 
 							href.click(function() {
 								lemon.setApi(item.api);
-								$('#request').val(lemon.json(item.request));
+								$('#request').val(lemon.json(api.getAPIDefaultVal(item.api, item.request)));
 							});
 
 							var anApi = $(document.createElement('li')).append(href);
