@@ -25,7 +25,6 @@
 </style>
 </head>
 <body>
-
 	<nav class="navbar navbar-default">
 		<div class="container-fluid">
 			<div class="navbar-header">
@@ -142,9 +141,9 @@
 	<table class="table table-hover">
 		<caption>API</caption>
         <thead> <tr> <th>#</th> <th>
-			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_api">Request</button>
-			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_interf">Collapse Toggle</button>
-			</th> </tr> </thead>
+			<button type="button" class="btn btn-default btn-sm" id="btn_tgl_api">Request</button>
+			<button type="button" class="btn btn-default btn-sm" id="btn_tgl_interf">Collapse Toggle</button>
+			</th> <th></th></tr> </thead>
         <tbody>
 		<% 
 		   var interfType = '';
@@ -159,18 +158,23 @@
 		%>
 		   <tr id="<%= k %>" type="<%= interfType %>">
             <th scope="row">
-				<button type="button" class="btn btn-default btn-xs" onclick="api.setAPIDefaultVal('<%= v.name %>')" id="set_default_<%= v.name %>">
-					<span class="glyphicon glyphicon-camera" title="Set API Default Value"></span>
-				</button>
 			</th>
 			<td onDblClick="api.onSelect('<%= k %>')">
-			<span class="badge"><%= v.name %></span>
-			<blockquote style="width:<%=clientW - 50%>px;">
+			<!-- <span class="badge"><%= v.name %></span> -->
+			<blockquote style="width:<%=clientW - 60%>px;">
   				<p>
 					<pre style="background-color:#ffffff;" tgl-api="tgl"><%= lemon.json.highlight(v.request) %></pre>
 				</p>
-				<footer><%= v.name %> <cite><%= v.desc %></cite></footer>
+				<%= api.showNote(v.note) %>
+				<footer>
+					<%= v.name %> <cite><%= v.desc %></cite>
+				</footer>
 			</blockquote>
+			</td>
+			<td>
+				<button type="button" class="btn btn-default btn-xs" onclick="api.setAPIDefaultVal('<%= v.name %>')" id="set_default_<%= v.name %>">
+					<span class="glyphicon glyphicon-camera" title="Set API Default Value"></span>
+				</button>
 			</td>
           </tr>
 		<% }}); %>
@@ -185,39 +189,76 @@
 	<table class="table table-hover">
 		<caption>History Request</caption>
         <thead> <tr> <th>#</th> <th>
-			<h5><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Request OR Response</span></h5>
-			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_requ">Request</button> 
-			& <button type="button" class="btn btn-default btn-xs" id="btn_tgl_resp">Response</button>
-			<button type="button" class="btn btn-default btn-xs" id="btn_tgl_interval">Collapse Toggle</button>
+			<div class="row">
+  				<div class="col-md-6">
 
-			<h5><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Favourite</span></h5>
-			<button type="button" class="btn btn-default btn-xs" id="prop_filter_1"><span class="glyphicon glyphicon-star"></span>Favourite</button>
+				<h4><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Request Response</span></h4>
+				<button type="button" class="btn btn-default btn-sm" id="btn_tgl_requ">Request</button> 
+				& <button type="button" class="btn btn-default btn-sm" id="btn_tgl_resp">Response</button>
+				<button type="button" class="btn btn-default btn-sm" id="btn_tgl_interval">Collapse Toggle</button>
 
-			<h5><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Server</span></h5>
-			<%
-				lemon.each(definedServs, function(env, k) {
-			%>
-					<h6><span class="label label-info"><span class="glyphicon glyphicon-hand-down"></span> <%= env.env %></span></h6>
-			<%
-					lemon.each(env.serv, function(serv, k) {
-						var servName = serv.type.name + (lemon.isBlank(serv.note) ? '' : (' - ' + serv.note));
-			%>
-						<button type="button" class="btn btn-default btn-xs" id="filter_<%= serv.id %>"><%= servName %></button>
-			<%
+				<h4><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Favourite</span></h4>
+				<button type="button" class="btn btn-default btn-sm" id="prop_filter_1"><span class="glyphicon glyphicon-star"></span>Favourite</button>
+
+				<h4>
+					<span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Tags</span>
+					<div class="input-group input-group-sm"> 
+						<span class="input-group-addon"><span title="Toggle Tag Manage Bar" class="glyphicon glyphicon-tag"></span></span>
+						<input type="text" class="form-control" placeholder="Tag" id="tag_input">
+      					<span class="input-group-btn input-group-sm"> 
+							<button class="btn btn-default btn-sm" type="button" id="tag_add"><span class="glyphicon glyphicon-plus"></span></button> 
+							<button class="btn btn-default btn-sm" type="button" id="tag_edit"><span class="glyphicon glyphicon-edit"></span></button> 
+							<button class="btn btn-default btn-sm" type="button" id="tag_rem"><span class="glyphicon glyphicon-minus"></span></button> 
+						</span>
+    				</div>
+				</h4>
+				<div id="tag_group">
+				<%
+					lemon.each(api.tag(), function(v, k) {
+						var tagName = decodeURI(v.name);
+						var aTag = [
+								' <button type="button" onclick="api.ontag('+ v.id + ');"',
+								' class="btn btn-default btn-sm" style="margin-top:5px;" ',
+								' id="tag_filter_'+ v.id + '"> ' + tagName + ' </button> '
+                            	].join('');
+				%>
+				<%= aTag %>
+				<%
 					});
-				});
-			%>
+				%>
+				</div>
 
-			<h5><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Environment</span></h5>
-			<%
-				lemon.each(definedServs, function(v, k) {
-			%>
-					<button type="button" class="btn btn-default btn-xs" id="env_filter_<%= v.env %>"><%= v.desc %></button>
-			<%
-				});
-			%>
+				</div>
+  				<div class="col-md-6">
 
-			</th></tr> </thead>
+					<h4><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Environment</span></h4>
+					<%
+						lemon.each(definedServs, function(v, k) {
+					%>
+						<button type="button" class="btn btn-default btn-sm" id="env_filter_<%= v.env %>"><%= v.desc %></button>
+					<%
+						});
+					%>
+
+					<h4><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Server</span></h4>
+					<%
+						lemon.each(definedServs, function(env, k) {
+					%>
+						<h6><span class="label label-info"><span class="glyphicon glyphicon-hand-down"></span> <%= env.env %></span></h6>
+					<%
+						lemon.each(env.serv, function(serv, k) {
+							var servName = serv.type.name + (lemon.isBlank(serv.note) ? '' : (' - ' + serv.note));
+					%>
+							<button type="button" class="btn btn-default btn-sm" style="margin-top:5px;" id="filter_<%= serv.id %>"><%= servName %></button>
+					<%
+							});
+						});
+					%>
+
+				</div>
+			</div>
+
+			</th><th></th></tr> </thead>
         <tbody>
 		<% 
 		   var interval = '';
@@ -237,8 +278,49 @@
 			   }
 			   
 		%>
-		   <tr id="<%= v.k %>" batch="<%= batch %>" interf="<%= env.id %>" env="<%= env.env %>" his="1" prop="<%= api.customHis(v.k,'fav') %>">
+					<%
+						var hisTags = api.customHis(v.k, 'tag') || [];
+						var hisTagMark = [];
+						var hisShowTags = [];
+						lemon.each(hisTags, function(tagId, idx) {
+							var aTag = api.tag(tagId);
+							hisTagMark.push('tag' + tagId + '="' + tagId + '"');
+							hisShowTags.push(api.elhistag(v.k, tagId, aTag.name));
+						});
+					%>
+		   <tr id="<%= v.k %>" batch="<%= batch %>" <%= hisTagMark.join(' ') %> interf="<%= env.id %>" env="<%= env.env %>" his="1" prop="<%= api.customHis(v.k,'fav') %>">
             <th scope="row">
+			</th>
+            <td onDblClick="api.onSelect('<%= v.k %>')">
+				<blockquote style="width:<%=clientW - 25%>px;">
+					<div id="tag_area_<%= v.k %>"><%= hisShowTags.join(' ') %></div>
+  					<p>
+						<pre style="background-color:#ffffff;height:100%;" tgl-requ="tgl"><%= lemon.json.highlight(v.request) %></pre>
+						<pre style="background-color:#ffffff;height:100%;" tgl-resp="tgl"><%= lemon.json.highlight(v.response) %></pre>
+					</p>
+					<%
+						var envDesc = env.desc + '  ' + env.type.name + (lemon.isBlank(env.note) ? '' : (' - ' + env.note));
+						var theStyle = 'PRODUCT' === env.env ? 'danger' : 'success';
+					%>
+					<div id="show_note_<%= v.k %>">
+					<% 
+						var note = api.customHis(v.k, 'note') || '';
+						if (!lemon.isBlank(note)) {
+					%>
+						<div class="alert alert-warning" role="alert" id=""><%= note %></div>
+					<% } %>
+					</div>
+					<footer><span class="badge"><%= no++ %></span> <font class="text-<%= theStyle %>"><%= envDesc %></font></footer>
+					<footer>
+						<%= (v.name || '') + '  ' + v.api %> 
+						<cite><code><font class="text-<%= theStyle %>"><%= v.interf %></font></code><%= ' ' + v.when %></cite>
+					</footer>
+				</blockquote>
+			</td>
+			<td>
+				<button type="button" class="btn btn-default btn-xs" onclick="api.historyAPIDesc(<%= v.k %>, '<%= v.api %>')" id="desc_<%= v.k %>">
+					<span class="glyphicon glyphicon-question-sign" title="Show the Define API Description"></span>
+				</button>
 				<button type="button" class="btn btn-default btn-xs" onclick="api.favourite(this, <%= v.k %>)">
 					<% if (1 == api.customHis(v.k,'fav')) { %>
 						<span class="glyphicon glyphicon-star" title="Toggle Favourite"></span>
@@ -249,32 +331,9 @@
 				<button type="button" class="btn btn-default btn-xs" onclick="api.pencil(<%= v.k %>, <%= no %>)" id="pencil_<%= v.k %>">
 					<span class="glyphicon glyphicon-pencil" title="Note"></span>
 				</button>
-			</th>
-            <td onDblClick="api.onSelect('<%= v.k %>')">
-				<span class="badge"><%= no++ %></span>
-				<blockquote style="width:<%=clientW%>px;">
-					<div id="show_note_<%= v.k %>">
-					<% 
-						var note = api.customHis(v.k, 'note') || '';
-						if (!lemon.isBlank(note)) {
-					%>
-						<div class="alert alert-warning" role="alert" id=""><%= note %></div>
-					<% } %>
-					</div>
-  					<p>
-						<pre style="background-color:#ffffff;height:100%;" tgl-requ="tgl"><%= lemon.json.highlight(v.request) %></pre>
-						<pre style="background-color:#ffffff;height:100%;" tgl-resp="tgl"><%= lemon.json.highlight(v.response) %></pre>
-					</p>
-					<%
-						var envDesc = env.desc + '  ' + env.type.name + (lemon.isBlank(env.note) ? '' : (' - ' + env.note));
-						var theStyle = 'PRODUCT' === env.env ? 'danger' : 'success';
-					%>
-  					<footer><font class="text-<%= theStyle %>"><%= envDesc %></font></footer>
-					<footer>
-						<%= (v.name || '') + '  ' + v.api %> 
-						<cite><code><font class="text-<%= theStyle %>"><%= v.interf %></font></code><%= ' ' + v.when %></cite>
-					</footer>
-				</blockquote>
+				<button type="button" class="btn btn-default btn-xs" onclick="api.itemTag(<%= v.k %>, <%= no %>)" id="tags_<%= v.k %>">
+					<span class="glyphicon glyphicon-tags" title="Tags"></span>
+				</button>
 			</td>
           </tr>
 		<% }); %>
@@ -339,20 +398,11 @@
 					var cmd = data.cmd;
 					if (cmd) {
 						api.defaultValue(cmd, data);
+						api.inlineTip('#as_default');
 					}
 				});
 
-				api.popover('#api_define', function() {
-					var apiDefined = lemon.json.highlight(api.getAPI((api.getCleanRequestData() || {cmd : ''}).cmd));
-					return '<pre style="width:500px;background-color:#ffffff;">' + apiDefined + '</pre>';
-				}, { 
-					title: 'API Description', placement: 'right'
-				}).on('show.bs.popover', function() { 
-					$(this).data("bs.popover").tip().css({
-						maxWidth: (document.body.clientWidth / 2) + 200
-					});
-				});
-
+				api.description('#api_define');
 				api.popover('#copy_url', function() {
 					var requestURL = api.nav.humanreadRequest();
 
@@ -390,6 +440,8 @@
 				api.popoverOnBtn('#btn_search', function() {
 					lemon.notes = [];
 					lemon.defaults = [];
+					lemon.tags = [];
+					lemon.descs = [];
 					var key = $('#input_search').val();
 					var justAllAPI = lemon.isBlank(key);
 
@@ -465,6 +517,8 @@
 
 				api.popoverOnBtn("#btn_history", function() {
 					lemon.notes = [];
+					lemon.descs = [];
+					lemon.tags = [];
                     return lemon.tmpl($('#table_tmpl').html(), {histories: lemon.store.getAll(), apis: {}});
                 }, { title: 'API History', trigger: 'click' } );
 
@@ -572,6 +626,47 @@
 				});
 			},
 		},
+		description: function(selector, cmd, onShown, onHidden, options) {
+			api.popover(selector, function() {
+				var cloneAPI = lemon.clone(api.getAPI(cmd || (api.getCleanRequestData() || {cmd : ''}).cmd));
+				var note = cloneAPI.note;
+				delete cloneAPI.note;
+				var apiDefined = lemon.json.highlight(cloneAPI);
+				return [
+					api.showNote(note),
+					'<pre style="width:500px;background-color:#ffffff;">' + apiDefined + '</pre>'
+				].join('');
+			}, lemon.extend({ 
+				placement: 'right',
+				title: 'API Description'
+			}, options || {})).on('show.bs.popover', function() { 
+				$(this).data("bs.popover").tip().css({
+					maxWidth: (document.body.clientWidth / 2) + 200
+				});
+			}).on('shown.bs.popover', function() { 
+				lemon.isFunc(onShown) && onShown();
+			}).on('hidden.bs.popover', function() { 
+				lemon.isFunc(onHidden) && onHidden();
+			});
+		},
+		showNote: function(note) {
+			if (!lemon.isBlank(note)) {
+				if (lemon.isFunc(note)) {
+					return note();
+				} else if (lemon.isArray(note)) {
+					var html = ['<ul class="list-group">'];
+
+					lemon.each(note, function(v, k) {
+						html.push('<li class="list-group-item"><h6 class="text-muted">' + v + '</h6></li>');
+					});
+					
+					html.push('</ul>');
+					return html.join('');
+				} else {
+					return '<div class="panel panel-default"><div class="panel-body"><h6 class="text-muted">' + note + '</h6></div></div>';
+				}
+			}
+		},
 		historySortDesc: function(histories) {
 			var items = [];
 			lemon.each(histories, function(v, k) {
@@ -584,6 +679,83 @@
 			return items.sort(function(a, b) {
 				return b.k - a.k;
 			});
+		},
+		inlineTip: function(selector, msg, delay) {
+			var tipSel = selector + ' .inlinetip';
+			var isBtn = $(selector).get(0).tagName == 'BUTTON';
+			if (!$(tipSel).length) {
+				$(selector).append('<span class="inlinetip"></span>');
+			}
+			if (isBtn) {
+				$(selector).attr({disabled: 'disabled'}).addClass('disabled');
+			}
+			$(tipSel).html(msg || ' done!');
+			lemon.delay(function(){
+				$(tipSel).empty();
+				$(selector).removeAttr('disabled').removeClass('disabled');
+			}, delay || 1500);
+		},
+		elhistag: function(hisId, tagId, tagName) {
+			return '<span id="t_' + hisId + '_' + tagId + '">&nbsp;<span class="label label-success"> ' + tagName + ' </span></span>';
+		},
+		onhistag: function(hisId, tagId) {
+			var id = '#tag_his_' + hisId + '_' + tagId;
+			var hisTags = api.customHis(hisId, 'tag') || [];
+			if (hisTags.indexOf(tagId) == -1) {
+				hisTags.push(tagId);
+				$(id).addClass('active');
+				$('#tag_area_' + hisId).append(api.elhistag(hisId, tagId, $(id).text()));
+				$('#' + hisId).attr('tag' + tagId, tagId);
+			} else {
+				lemon.rmByVal(hisTags, tagId);
+				$(id).removeClass('active');
+				$('#t_' + hisId + '_' + tagId).remove();
+				$('#' + hisId).removeAttr('tag' + tagId).hide();
+			}
+			api.customHis(hisId, 'tag', hisTags);
+		},
+		tag: function(tagId, tagName) {
+			var key = "definedTag";
+			var tags = lemon.store(key) || {};
+			if (lemon.isUndefined(tagId)) {
+				return tags;
+			}
+
+			var aTag = tags[tagId] || {};
+			if (lemon.isUndefined(tagName)) {
+				aTag.name = decodeURI(aTag.name);
+				return aTag;
+			}
+
+			var existsTag = 1;
+			var encodeTagName = encodeURI(tagName);
+			if (-1 == tagName) {
+				delete tags[tagId];
+				lemon.store(key, tags);
+				return aTag;
+			} else {
+				lemon.each(tags, function(v, k) {
+					if (encodeTagName == v.name) {
+						existsTag = 2;
+						aTag = v;
+					}
+				});
+			}
+
+			if (1 == existsTag) {
+				tags[tagId] = {
+					id: tagId,
+					name: encodeTagName
+				};
+				lemon.store(key, tags);
+				return {
+					id: tagId,
+					name: tagName
+				};
+			}
+
+			aTag.exists = true;
+			return aTag;
 		},
 		defaultValue: function(cmd, val) {
 			var key = "defaultApiVal";
@@ -599,7 +771,7 @@
 
 			hold[cmd] = val;
 			lemon.store(key, hold);
-			return {};
+			return hold[cmd];
 		},
 		customHis: function(hisId, key, val) {
 			var defineHisKey = 'definehis';
@@ -620,7 +792,7 @@
 				cust[hisId] = tmp;
 				lemon.store(defineHisKey, cust);
 			}
-			return {};
+			return cust[hisId];
 		},
 		setAPIDefaultValClose: function(theAPI) {
 			$('#set_default_' + theAPI).popover('hide');
@@ -638,7 +810,7 @@
 					var apiVal = lemon.json(api.getAPIDefaultVal(theAPI, api.getAPI(theAPI).request));
 					return '<textarea id="api_default_edit_' + theAPI + '" style="height:300px;width:500px;border:0px solid #ffffff;">' + apiVal + '</textarea>';
 				}, { 
-					title: title, placement: 'right'
+					title: title, placement: 'left'
 				}).on('show.bs.popover', function() { 
 					$(this).data("bs.popover").tip().css({
 						maxWidth: (document.body.clientWidth / 2) + 200
@@ -661,12 +833,77 @@
 				$(apiDefaultId).popover('show');
 			}
 		},
+		itemTag: function(hisId, no) {
+			var tagBtnId = '#tags_' + hisId;
+			var title = [
+			 	'Tags <span class="badge">' + no + '</span>',
+			 	'<div class="pull-right">',
+			 	'<span class="glyphicon glyphicon-remove" title="Close" onclick="api.itemTagClose(' + hisId + ');"></span></div>'
+			 	].join('');
+			if (lemon.tags.indexOf(hisId) == -1) {
+				api.popover(tagBtnId, function() {
+			  		var html = [
+						'<div style="height:300px;width:500px;overflow-y:auto;">'
+						];
+			  		var hisTags = api.customHis(hisId, 'tag') || [];
+
+			  		var definedTags = api.tag();
+			  		lemon.each(definedTags, function(v, k) {
+						var tagName = decodeURI(v.name);
+						var aTag = [
+								' <button type="button" onclick="api.onhistag(' + hisId + ','+ v.id + ');"',
+								' class="btn btn-default ' + ((hisTags.indexOf(v.id) > -1) ? 'active' : '') + '" style="margin-top:5px;" ',
+								' id="tag_his_' + hisId + '_' + v.id + '"> ' + tagName + ' </button> '
+                            	].join('');
+                    	html.push(aTag);
+					});
+
+					if (lemon.isBlank(definedTags)) {
+						return '<div style="width:500px" class="alert alert-info" role="alert">No tag defined.</div>';
+					}
+					html.push('</div>');
+			  		
+					return html.join('');
+				}, { 
+					title: title,
+					placement: 'left'
+				}).on('show.bs.popover', function() {
+					$(this).data("bs.popover").tip().css({
+						maxWidth: (document.body.clientWidth / 2) + 200
+					});
+				}).on('shown.bs.popover', function() {
+					$(tagBtnId).addClass('active');
+				}).on('hidden.bs.popover', function() {
+					$(tagBtnId).removeClass('active')
+				}).on('hide.bs.popover', function() {
+					
+				});
+				lemon.tags.push(hisId);
+				$(tagBtnId).popover('show');
+			}
+		},
+		itemTagClose: function(hisId) {
+			$('#tags_' + hisId).popover('hide');
+		},
+		historyAPIDesc: function(hisId, cmd) {
+			var descId = '#desc_' + hisId;
+			if (lemon.descs.indexOf(hisId) == -1) {
+				api.description(descId, cmd, function() {
+					$(descId).addClass('active');
+				}, function() {
+					$(descId).removeClass('active');
+				}, {placement: 'left'});
+				lemon.descs.push(hisId);
+				$(descId).popover('show');
+			}
+		},
 		pencil: function(hisId, no) {
 			var pencilId = '#pencil_' + hisId;
 			var title = [
 			 	'Note <span class="badge">' + no + '</span>',
 			 	'<div class="pull-right">',
-			 	'<span class="glyphicon glyphicon-trash" title="Clean Note" onclick="api.pencilClose(' + hisId + ', 1);"></span>  ',
+			 	'<span class="glyphicon glyphicon-trash" title="Clean Note" onclick="api.pencilClose(' + hisId + ', 1);"></span>',
+			 	'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
 			 	'<span class="glyphicon glyphicon-remove" title="Close" onclick="api.pencilClose(' + hisId + ');"></span></div>'
 			 	].join('');
 			if (lemon.notes.indexOf(hisId) == -1) {
@@ -678,7 +915,7 @@
 					return html;
 				}, { 
 					title: title,
-					placement: 'right'
+					placement: 'left'
 				}).on('show.bs.popover', function() {
 					$(this).data("bs.popover").tip().css({
 						maxWidth: (document.body.clientWidth / 2) + 200
@@ -688,7 +925,7 @@
 					var note = api.customHis(hisId, 'note') || '';
 					$('#his_note_' + hisId).val(note);
 				}).on('hidden.bs.popover', function() {
-					$(pencilId).removeClass('active')
+					$(pencilId).removeClass('active');
 				}).on('hide.bs.popover', function() {
 					var note = $('#his_note_' + hisId).val() || '';
 					api.customHis(hisId, 'note', note);
@@ -764,10 +1001,67 @@
                     });
                 });
 
+                $('#tag_edit').click(function() {
+                	var $input = $('#tag_input');
+                	var tagId = $input.attr('tagId');
+                	var msg = '';
+                	var tagNmae = $input.val();
+                	if (tagId && !lemon.isBlank(tagNmae)) {
+	                    var id = '#tag_filter_' + tagId;
+	                    api.tag(tagId, tagNmae);
+	                    $(id).text(tagNmae);
+	                    msg = ' Edit Done!';
+                    } else {
+                        msg = ' None Exist Tag.';
+                    }
+                	api.inlineTip('#tag_edit', msg);
+                });
+                $('#tag_add').click(function() {
+                    $(this).button('disable');
+                    var $input = $('#tag_input');
+                    var $group = $('#tag_group');
+                    var tag = $input.val();
+                    if (!lemon.isBlank(tag)) {
+                        var tagId = api.autoId();
+                        var theTag = api.tag(tagId, tag);
+                        var msg = '';
+                        if (!theTag.exists) {
+                            var tagBtn = [
+								' <button type="button" onclick="api.ontag('+ tagId + ');"',
+								' class="btn btn-default btn-xs" style="margin-top:5px;" ',
+								' id="tag_filter_'+ tagId + '"> ' + tag + ' </button> '
+                            	].join('');
+	                        $group.append(tagBtn);
+	                        $input.attr({tagId: theTag.id});
+	                        msg = ' Add Done!';
+                        } else {
+                            msg = ' Tag Exists.';
+                        }
+                        
+                        api.inlineTip('#tag_add', msg);
+                    }
+                });
+                $('#tag_rem').click(function() {
+                	var $input = $('#tag_input');
+                	var tagId = $input.attr('tagId');
+                	var msg = '';
+                	if (tagId) {
+	                    var id = '#tag_filter_' + tagId;
+	                    api.tag(tagId, -1);
+	                    $(id).remove();
+	                    $input.removeAttr('tagId');
+	                    msg = ' Remove Done!';
+                    } else {
+                        msg = ' None Exist Tag.';
+                    }
+                	api.inlineTip('#tag_rem', msg);
+                });
+
                 api.filters = {
                 	env: [],
                 	interf: [],
-                	prop: []
+                	prop: [],
+                	tag: []
                 };
                 $('button[id^="env_filter_"],button[id^="filter_"],button[id^="prop_filter_"]').click(function() {
 					var isActive = $(this).hasClass('active');
@@ -787,19 +1081,17 @@
 						expTpl = '[prop="{0}"]';
 					}
 					
-					var exp = lemon.format(expTpl, mark);
-					
 					$(this).button('toggle');
 					if (isActive) {
 						switch (whichGroup) {
 						case 1:
-							api.filters.env.pop(exp);
+							api.filters.env.pop();
 							break;
 						case 2:
-							api.filters.interf.pop(exp);
+							api.filters.interf.pop();
 							break;
 						case 3:
-							api.filters.prop.pop(exp);
+							api.filters.prop.pop();
 							break;
 						}
 					} else {
@@ -825,15 +1117,43 @@
 						}
 					}
 					
-					var exp = (api.filters.env.length > 0 ? lemon.format('[env="{0}"]', api.filters.env[0]) : '') + 
-							(api.filters.interf.length > 0 ? lemon.format('[interf="{0}"]', api.filters.interf[0]) : '') +
-							(api.filters.prop.length > 0 ? lemon.format('[prop="{0}"]', api.filters.prop[0]) : '');
-					$('tr[his="1"]').show();
-					if (!lemon.isBlank(exp)) {
-						$('tr[his="1"]:not(' + exp + ')').hide();
-					}
+					api.doHisFilter();
 				});
 			});
+		},
+		doHisFilter: function() {
+			var exp = [
+				(api.filters.env.length > 0 ? lemon.format('[env="{0}"]', api.filters.env[0]) : ''),
+				(api.filters.interf.length > 0 ? lemon.format('[interf="{0}"]', api.filters.interf[0]) : ''),
+				(api.filters.prop.length > 0 ? lemon.format('[prop="{0}"]', api.filters.prop[0]) : '')
+			];
+
+			lemon.each(api.filters.tag, function(tagId, k) {
+				exp.push(lemon.format('[tag{0}={0}]', tagId));
+			});
+
+			var filterExp = exp.join('');
+			lemon.info(filterExp, 'History filter expression');
+			$('tr[his="1"]').show();
+			if (!lemon.isBlank(filterExp)) {
+				$('tr[his="1"]:not(' + filterExp + ')').hide();
+			}
+		},
+		ontag: function(tagId) {
+			var id = '#tag_filter_' + tagId;
+			var aTag = api.tag(tagId);
+			var $input = $('#tag_input');
+            $input.val(aTag.name).attr({tagId: aTag.id});
+
+            var isActive = $(id).hasClass('active');
+            if (isActive) {
+            	api.filters.tag = lemon.rmByVal(api.filters.tag, tagId);
+            } else {
+            	api.filters.tag.push(tagId);
+            }
+            $('#tag_filter_' + tagId).button('toggle');
+
+            api.doHisFilter();
 		},
 		popover: function(selector, content, options) {
 			var popoverTemplate = [
@@ -855,10 +1175,14 @@
             
 			return thePopover;
 		},
+		autoId: function(key) {
+			key = key || 'autoid';
+			return lemon.store.set(key, parseInt(lemon.store.get(key) || 0) + 1);
+		},
 		uniqueId: function() {
-			var historySize = 500;
-			var maxId = lemon.store.set('last', parseInt(lemon.store.get('last') || 0) + 1)
-			if (maxId >= historySize) {
+			var historySize = config.history.max;
+			var maxId = lemon.store.set('last', parseInt(lemon.store.get('last') || 0) + 1);
+			if (historySize > 0 && maxId >= historySize) {
 				lemon.store.forEach(function(k) {
 					if (k <= (maxId - historySize + 1)) {
 						lemon.store(k, null);
@@ -1239,6 +1563,13 @@
 
 	$(function(){ api.initialize(); });
 
+	var config = {
+		history: {
+			//keep history size less than 0 unlimit
+			max: -1
+		}
+	};
+
 	var interf = {
 		manager: {
 			id: 1,
@@ -1354,7 +1685,6 @@
 				 type: interf.manager,
 				 request:{"cmd":"M000913","userId":"","token":"","version":"1.0.0","data":{"name":"","mobile":""}}
 			 }
-
 		]
 	};
 
