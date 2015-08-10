@@ -175,6 +175,9 @@
 				<button type="button" class="btn btn-default btn-xs" onclick="api.setAPIDefaultVal('<%= v.name %>')" id="set_default_<%= v.name %>">
 					<span class="glyphicon glyphicon-camera" title="Set API Default Value"></span>
 				</button>
+				<button type="button" class="btn btn-default btn-xs" onclick="api.hisTglRequResp('<%= k %>', 3)" id="his_api_requ_<%= v.k %>">
+					<span class="glyphicon glyphicon-tree-deciduous" title="Toggle Request"></span>
+				</button>
 			</td>
           </tr>
 		<% }}); %>
@@ -284,8 +287,12 @@
 						var hisShowTags = [];
 						lemon.each(hisTags, function(tagId, idx) {
 							var aTag = api.tag(tagId);
-							hisTagMark.push('tag' + tagId + '="' + tagId + '"');
-							hisShowTags.push(api.elhistag(v.k, tagId, aTag.name));
+							if (lemon.isBlank(aTag)) {
+								api.customHis(v.k, 'tag', -1, tagId);
+							} else {
+								hisTagMark.push('tag' + tagId + '="' + tagId + '"');
+								hisShowTags.push(api.elhistag(v.k, tagId, aTag.name));
+							}
 						});
 					%>
 		   <tr id="<%= v.k %>" batch="<%= batch %>" <%= hisTagMark.join(' ') %> interf="<%= env.id %>" env="<%= env.env %>" his="1" prop="<%= api.customHis(v.k,'fav') %>">
@@ -320,6 +327,12 @@
 			<td>
 				<button type="button" class="btn btn-default btn-xs" onclick="api.historyAPIDesc(<%= v.k %>, '<%= v.api %>')" id="desc_<%= v.k %>">
 					<span class="glyphicon glyphicon-question-sign" title="Show the Define API Description"></span>
+				</button>
+				<button type="button" class="btn btn-default btn-xs" onclick="api.hisTglRequResp(<%= v.k %>, 1)" id="his_tgl_requ_<%= v.k %>">
+					<span class="glyphicon glyphicon-tree-deciduous" title="Toggle Request"></span>
+				</button>
+				<button type="button" class="btn btn-default btn-xs" onclick="api.hisTglRequResp(<%= v.k %>, 2)" id="his_tgl_resp_<%= v.k %>">
+					<span class="glyphicon glyphicon-leaf" title="Toggle Response"></span>
 				</button>
 				<button type="button" class="btn btn-default btn-xs" onclick="api.favourite(this, <%= v.k %>)">
 					<% if (1 == api.customHis(v.k,'fav')) { %>
@@ -723,6 +736,10 @@
 
 			var aTag = tags[tagId] || {};
 			if (lemon.isUndefined(tagName)) {
+				if (lemon.isBlank(aTag)) {
+					return aTag;
+				}
+				
 				aTag.name = decodeURI(aTag.name);
 				return aTag;
 			}
@@ -773,7 +790,7 @@
 			lemon.store(key, hold);
 			return hold[cmd];
 		},
-		customHis: function(hisId, key, val) {
+		customHis: function(hisId, key, val, rmVal) {
 			var defineHisKey = 'definehis';
 			var cust = lemon.store(defineHisKey) || {};
 			if (lemon.isUndefined(hisId)) {
@@ -787,6 +804,26 @@
 			
 			if (lemon.isUndefined(val)) {
 				return tmp[key];
+			} else if (-1 == val) {
+				if (lemon.isUndefined(rmVal)) {
+					delete tmp[key];
+					lemon.store(defineHisKey, cust);
+					return tmp;
+				} else {
+					var aVal = tmp[key];
+					if (lemon.isBlank(aVal)) {
+						return aVal;
+					}
+					if (lemon.isArray(aVal)) {
+						aVal = lemon.rmByVal(aVal, rmVal);
+						lemon.store(defineHisKey, cust);
+						return aVal;
+					} else {
+						delete aVal[rmVal];
+						lemon.store(defineHisKey, cust);
+						return aVal;
+					}
+				}
 			} else {
 				tmp[key] = val;
 				cust[hisId] = tmp;
@@ -884,6 +921,19 @@
 		},
 		itemTagClose: function(hisId) {
 			$('#tags_' + hisId).popover('hide');
+		},
+		hisTglRequResp: function(hisId, type) {
+			switch (type) {
+			case 1: type = 'requ'; break;
+			case 2: type = 'resp'; break;
+			case 3: type = 'api'; break;
+			}
+			var id = lemon.format('#his_tgl_{0}_{1}', type, hisId);
+			if (3 == type) {
+				id = hisId;
+			}
+			$(id).button('toggle');
+			$(lemon.format('#{0} pre[tgl-{1}="tgl"]', hisId, type)).fadeToggle("slow", "linear");
 		},
 		historyAPIDesc: function(hisId, cmd) {
 			var descId = '#desc_' + hisId;
@@ -1011,6 +1061,7 @@
 	                    api.tag(tagId, tagNmae);
 	                    $(id).text(tagNmae);
 	                    msg = ' Edit Done!';
+	                    $('span[id$=' + tagId + ']').children('span').text(tagNmae);
                     } else {
                         msg = ' None Exist Tag.';
                     }
@@ -1028,7 +1079,7 @@
                         if (!theTag.exists) {
                             var tagBtn = [
 								' <button type="button" onclick="api.ontag('+ tagId + ');"',
-								' class="btn btn-default btn-xs" style="margin-top:5px;" ',
+								' class="btn btn-default btn-sm" style="margin-top:5px;" ',
 								' id="tag_filter_'+ tagId + '"> ' + tag + ' </button> '
                             	].join('');
 	                        $group.append(tagBtn);
@@ -1051,6 +1102,11 @@
 	                    $(id).remove();
 	                    $input.removeAttr('tagId');
 	                    msg = ' Remove Done!';
+
+	                    $('span[id$=' + tagId + ']').remove();
+	                    $(lemon.format('[tag{0}="{0}"]', tagId)).removeAttr('tag' + tagId).hide();
+	                    api.filters.tag = lemon.rmByVal(api.filters.tag, parseInt(tagId));
+	                    api.doHisFilter();
                     } else {
                         msg = ' None Exist Tag.';
                     }
@@ -1685,6 +1741,7 @@
 				 type: interf.manager,
 				 request:{"cmd":"M000913","userId":"","token":"","version":"1.0.0","data":{"name":"","mobile":""}}
 			 }
+
 		]
 	};
 
