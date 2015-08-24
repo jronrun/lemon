@@ -743,7 +743,11 @@ _::value = ->
 	proto.time = (target) ->
 		target = target || new Date()
 		if !kiwi.isDate target
-			target = new Date(target)
+			tmp = new Date(target)
+			if isNaN tmp
+				target = new Date(target.replace(/-/g, '/'))
+			else
+				target = tmp
 		target.getTime()
 	
 	proto.interval = (target) ->

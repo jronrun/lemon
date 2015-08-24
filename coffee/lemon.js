@@ -1168,9 +1168,15 @@
       just: 'just now'
     };
     proto.time = function(target) {
+      var tmp;
       target = target || new Date();
       if (!kiwi.isDate(target)) {
-        target = new Date(target);
+        tmp = new Date(target);
+        if (isNaN(tmp)) {
+          target = new Date(target.replace(/-/g, '/'));
+        } else {
+          target = tmp;
+        }
       }
       return target.getTime();
     };
