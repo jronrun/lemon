@@ -2134,7 +2134,7 @@
 				{
 					id: 8001,
 					type: interf.manager,
-					interf: "https://www.xx.com/rpd-manager/xv1.rp",
+					interf: "https://www.u51.com/rpd-manager/xv1.rp",
 					params: {
 						'admin_token': '9VHmAsYNPUDCO0Il6a4Yec9VHmAsYNPUBHw9G'
 					}
@@ -2142,17 +2142,17 @@
 				{
 					id: 8002,
 					type: interf.appapi,
-					interf: "https://www.xx.com/51rp/rpdservice/xv3.htm"
+					interf: "https://www.u51.com/51rp/rpdservice/xv3.htm"
 				},
 				{
 					id: 8003,
 					type: interf.enterprise,
-					interf: "https://www.xx.com/51rp/rpdservice/ev1web.htm"
+					interf: "https://www.u51.com/51rp/rpdservice/ev1web.htm"
 				},
 				{
 					id: 8004,
 					type: interf.rpbrepayment,
-					interf: "https://www.xx.com/51rp/rpdservice/cr1.htm"
+					interf: "https://www.u51.com/51rp/rpdservice/cr1.htm"
 				}
 			]
 		}
@@ -2166,6 +2166,440 @@
 				 note:"",
 				 type: interf.manager,
 				 request:{"cmd":"M000913","userId":"","token":"","version":"1.0.0","data":{"name":"","mobile":""}}
+			 },
+			 {
+				 api:"M000908",
+				 desc:"比对账号余额",
+				 note:"",
+				 type: interf.manager,
+				 request:{"cmd":"M000908","userId":"","token":"","version":"1.0.0"}
+			 },
+			 {
+				 api:"M000909",
+				 desc:"查询新浪账户明细",
+				 note:"",
+				 type: interf.manager,
+				 request:{"cmd":"M000909","userId":"","token":"","version":"1.0.0","data":{"pn":"1","ps":"30","start":"20150526101010","end":"20150527101010","account_type":"SAVING_POT"}}
+			 },
+			 {
+				 api:"M000915",
+				 desc:"交易查询",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000915","userId":"","token":"","version":"1.0.0","data":{"user_id":"user id","order_no":"order no"}}
+			 },
+			 {
+				 api:"M000920",
+				 desc:"根据sinacardId查银行卡信息",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000920","userId":"","token":"","version":"1.0.0","data":{"user_id":"用户ID","sina_card_id":"新浪卡ID"}}
+			 },
+			 {
+				 api:"M000900",
+				 desc:"认购流程: 募集成功代付给用户;借款流程: 代付给用户",
+				 note:"",
+				 type: interf.manager,
+				 request:{"cmd":"M000900","userId":"","token":"","version":"1.0.0","data":{"tenderId":"标ID","recordId":"OperatorRecordId"}}
+			 },
+			 {
+				 api:"M000901",
+				 desc:"逻辑流程: OperatorRecord异步回调后逻辑未执行",
+				 note:"",
+				 type: interf.manager,
+				 request:{"cmd":"M000901","userId":"","token":"","version":"1.0.0","data":{"recordId":"OperatorRecordId"}}
+			 },
+			 {
+				 api:"M000902",
+				 desc:"hostPayBack,人品转让失败处理",
+				 note:"",
+				 type: interf.manager,
+				 request:{"cmd":"M000902","userId":"","token":"","version":"1.0.0","data":{"recordId":"OperatorRecordId"}}
+			 },
+			 {
+				 api:"M000903",
+				 desc:"hostCollectBack,人品转让失败处理",
+				 note:"",
+				 type: interf.manager,
+				 request:{"cmd":"M000903","userId":"","token":"","version":"1.0.0","data":{"recordId":"OperatorRecordId"}}
+			 },
+			 {
+				 api:"M000904",
+				 desc:"分账",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000904","userId":"","token":"","version":"1.0.0","data":{ "type":"1 cellRepaymentService.createRepayment, 2 cellRepaymentService.doRepayment, 3 enterpriseEnsureAccountService.hostCollect, 4 enterpriseBasicAccountService.companyEarn", "plan_id":"TenderPlanId"}}
+			 },
+			 {
+				 api:"M000905",
+				 desc:"提现",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000905","userId":"","token":"","version":"1.0.0","data":{"withdraw_id":"withdrawId","operator_auto_id":"operatorAutoId"}}
+			 },
+			 {
+				 api:"M000906",
+				 desc:"hostCollectFail,人品转让代收失败手动处理",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000906","userId":"","token":"","version":"1.0.0","data":{"recordId":"OperatorRecordId"}}
+			 },
+			 {
+				 api:"M000907",
+				 desc:"全新提现",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000907","userId":"","token":"","version":"1.0.0","data":{"amount":"取现金额","type":"1 正常提现, 2 转让Amount对应的金额但不触发提现, 3 不检余额 转让Amount对应的金额但不触发提现","way":"0 T+1或T+2提现, 1 闪电提现"}}
+			 },
+			 {
+				 api:"M000910",
+				 desc:"hostCollectFail,人品宝认购代收失败，手动处理（针对钱未到托管账户的处理）",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000910","userId":"","token":"","version":"1.0.0","data":{"recordId":"OperatorRecordId"}}
+			 },
+			 {
+				 api:"M000911",
+				 desc:"hostCollect,向用户存钱罐代收钱到托管账户,金额的减少不反应到用户界面",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000911","userId":"","token":"","version":"1.0.0","data":{"user_id":"用户ID","money":"金额","reason":"原因","recordId":"起因OperatorId"}}
+			 },
+			 {
+				 api:"M000912",
+				 desc:"hostPay,将托管账户的钱打到用户存钱罐,金额的增加不反应到用户界面",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000912","userId":"","token":"","version":"1.0.0","data":{"user_id":"用户ID","money":"金额","reason":"原因","recordId":"起因OperatorId"}}
+			 },
+			 {
+				 api:"M000914",
+				 desc:"贷款提现",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000914","userId":"0","token":"","version":"1.0.0","data":{"user_id":"","amount":"","tender_id":""}}
+			 },
+			 {
+				 api:"M000916",
+				 desc:"手动代收",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000916","userId":"","token":"","version":"1.0.0","data":{"recordId":"OperatorRecordId"}}
+			 },
+			 {
+				 api:"M000917",
+				 desc:"批量检查用户余额与新浪余额是否一致",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000917","userId":"","token":"","version":"1.0.0","data":{"pn":"page no","ps":"page size","page_count":"大于0为该值指定的页数,0则全部"}}
+			 },
+			 {
+				 api:"M000918",
+				 desc:"用户查询接口",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000918","userId":"","token":"","version":"1.0.0","data":{"pn":"page no","ps":"page size", "user_id":"用户ID(可不传)","pot_amount":"存钱罐金额大于等于该值(可不传)","rpb_amount":"人品宝金额大于等于该值(可不传)","name":"用户姓名(可不传)"}}
+			 },
+			 {
+				 api:"M000919",
+				 desc:"翻倍奖励分发接口",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000919","userId":"","token":"","version":"1.0.0","data":{"statistics_id":"活动统计ID"}}
+			 },
+			 {
+				 api:"M000921",
+				 desc:"人品转让代付失败,再次发起代付请求",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000921","userId":"","token":"","version":"1.0.0","data":{"recordId":"代付失败的RecordAutoId","collectRecordId":"代收成功的RecordAutoId"}}
+			 },
+			 {
+				 api:"M000922",
+				 desc:"提现失败,针对托管账户钱已经扣除，本地却做了失败处理",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000922","userId":"","token":"","version":"1.0.0","data":{"recordId":"提现成功的RecordAutoId"}}
+			 },
+			 {
+				 api:"M000923",
+				 desc:"借款人还款收益转入基本户， Pre执行完成  pay未执行",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000923","userId":"","token":"","version":"1.0.0","data":{"recordId":"未发送命令的RecordAutoId"}}
+			 },
+			 {
+				 api:"M000924",
+				 desc:"提现时一个人品宝被多次转让, type ",
+				 note:[
+					'{"type":1代收,"recordId":"转让代付成功的代付RecordID，人品宝没有到位（被另外一个用户覆盖了）","transferId":"重复转让被覆盖的记录"}',
+					'{"type":2执行代收成功逻辑,"recordId":"代收成功的RecordID"}',
+					'{"type":3代付,"recordId":"代收成功的RecordID"}',
+					'{"type":4执行代付成功逻辑,"recordId":"代付成功的RecordID"}'
+				 	],
+				 type: interf.manager,
+				 request: {"cmd":"M000924","userId":"","token":"","version":"1.0.0","data":{"type":""}}
+			 },
+			 {
+				 api:"M000031",
+				 desc:"为企业用户申请51用户ID",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000031","userId":"","token":"","version":"1.0.0","data":{"user_id":"user id","name":"name"}}
+			 },
+			 {
+				 api:"M000011",
+				 desc:"加密内容",
+				 note:"",
+				 type: interf.manager,
+				 request: { "cmd": "M000011", "version": "1.0.0", "data": "需加密的内容" }
+			 },
+			 {
+				 api:"M000925",
+				 desc:"逾期滞纳金查询",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000925","userId":"","token":"","version":"1.0.0","data":{"auto_id":"订单autoid"}}
+			 },
+			 {
+				 api:"M000926",
+				 desc:"还款: 自动代收还款",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000926","userId":"","token":"","version":"1.0.0","data":{"type":"1发送代收命令, 2执行代收成功逻辑, 3发送代收分账差额命令, 4执行代收分账差额成功逻辑","planId":"还款计划ID","recordId":0}}
+			 },
+			 {
+				 api:"M000927",
+				 desc:"用户当前拥有的标细胞信息",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000927","userId":"","token":"","version":"1.0.0","data":{"user_id":"userId","show_detail":"1 show","date":""}}
+			 },
+			 {
+				 api:"M000928",
+				 desc:"人品宝转让代付的时候代付给了自己的UserId",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000928","userId":"用户Id","token":"登陆TOKEN","version":"1.0.0","data":{"recordId":"代付成功的OperatorAutoId"}}
+			 },
+			 {
+				 api:"M000929",
+				 desc:"闪电提现",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000929","userId":"","token":"","version":"1.0.0","data":{"type":"1发送代收命令, 2执行代收成功逻辑, 3发送代代付命令, 4执行代付成功逻辑， 5 发送打款命令 6 执行打款成功命令 7 发送转账命令 8 执行转账成功命令","operatorId":"操作ID","amount":"10.00"}}
+			 },
+			 {
+				 api:"M000930",
+				 desc:"人品系统或新浪或银行维护公告",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000930","userId":"","token":"","version":"1.0.0","data": {"start":"开始时间yyyy-MM-dd HH:mm:ss","end":"结束时间yyyy-MM-dd HH:mm:ss","notice":"维护公告","cmds":"维护的接口 多个则逗号分隔","banks":"银行编码 多个则逗号分隔"}}
+			 },
+			 {
+				 api:"M000931",
+				 desc:"重新发送新浪订单，(订单号在新浪不存在的情况下)",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000931","userId":"","token":"","version":"1.0.0","data":{"recordId":"生成但是发送失败的指令（新浪那边查不到的订单号）"}}
+			 },
+			 {
+				 api:"M000932",
+				 desc:"根据标信息代收代付",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000932","userId":"","token":"","version":"1.0.0","data":{"tender_id":"tenderId","type":"1 基本户代收, 2 基本户代付"}}
+			 },
+			 {
+				 api:"M000933",
+				 desc:"批量检查用户人品宝余额与所拥有的细胞总和是否一致, 单用户:M000927",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000933","userId":"","token":"","version":"1.0.0","data":{"pn":"page no","ps":"page size","page_count":"大于0为该值指定的页数,0则全部"}}
+			 },
+			 {
+				 api:"M000934",
+				 desc:"人品宝被多次转让处理",
+				 note:[
+					'{"type":1发送代收命令,"tempTransferAutoId":""}',
+					'{"type":2执行代收成功逻辑,"recordId":"代收成功的OperatorRecordAutoI"}',
+					'{"type":3发送代付命令,"recordId":"代收成功的OperatorRecordAutoId","tempTransferAutoId":""}',
+					'{"type":4执行付收成功逻辑,"recordId":"代付成功的OperatorRecordAutoId"}',
+					'{"type":11同步Transfer信息,"tempUserAutoId":""}',
+					'{"type":12核对并执行Transfer信息,"tempUserAutoId":""}'
+				 	],
+				 type: interf.manager,
+				 request: {"cmd":"M000934","userId":"","token":"","version":"1.0.0","data":{"type":""}}
+			 },
+			 {
+				 api:"M000938",
+				 desc:"代发工资",
+				 note:[
+					'{"type":1发送工资代收命令,"salaryPlanId":""}',
+					'{"type":2执行代收成功逻辑,"recordId":"代收成功的OperatorRecordAutoI"}',
+					'{"type":3循环发送代付命令,"salaryPlanId":""}',
+					'{"type":4执行单个付收成功逻辑,"recordId":"代付成功的OperatorRecordAutoId"}'
+				 	],
+				 type: interf.manager,
+				 request: {"cmd":"M000938","userId":"","token":"","version":"1.0.0","data":{"type":""}}
+			 },
+			 {
+				 api:"M000939",
+				 desc:"代发佣金",
+				 note:[
+					'{"type":1发送佣金代收命令,"statisticsId":""}',
+					'{"type":2执行代收成功逻辑,"recordId":"代收成功的OperatorRecordAutoI"}',
+					'{"type":3循环发送代付命令,"statisticsId":""}',
+					'{"type":4执行单个付收成功逻辑,"recordId":"代付成功的OperatorRecordAutoId"}',
+					'{"type":5生成当日佣金统计记录,"day":"2015-07-30"}'
+				 	],
+				 type: interf.manager,
+				 request: {"cmd":"M000939","userId":"","token":"","version":"1.0.0","data":{"type":""}}
+			 },
+			 {
+				 api:"M000610",
+				 desc:"根据用户ID取用户名信息",
+				 note: "",
+				 type: interf.manager,
+				 request: {"cmd":"M000610","userId":"","token":"","version":"1.0.0", "data":{"uids":"多个逗号分隔"}}
+			 },
+			 {
+				 api:"M000935",
+				 desc:"B2C垫付金充值,确认已线下充值",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000935","userId":"","token":"","version":"1.0.0","data":{"company_id":"1","amount":""}}
+			 },
+			 {
+				 api:"M000936",
+				 desc:"存钱罐代收代付",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000936","userId":"","token":"","version":"1.0.0", "data":{"money":"","type":"1 存钱罐代收, 2 存钱罐代付","operator_id":"type 1时产生代收原因的ID, type 2时临时代收的OperatorRecordAutoId"}}
+			 },
+			 {
+				 api:"M000937",
+				 desc:"通过细胞收益计划生成 细胞收益",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000937","userId":"","token":"","version":"1.0.0", "data":{"type":"1生成所有计划, 2生成单独计划","id":"type 1：不需要, type 2：指定标ID  "}}
+			 },
+			 {
+				 api:"M000940",
+				 desc:"人品宝信用卡还款垫付金充值,确认已线下充值",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000940","userId":"","token":"","version":"1.0.0","data":{"company_id":"1","amount":""}}
+			 },
+			 {
+				 api:"M000941",
+				 desc:"民生银行接口测试-查询交易状态",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000941","userId":"","token":"","version":"1.0.0","data":{"transactionId":""}}
+			 },
+			 {
+				 api:"M000942",
+				 desc:"解冻资产",
+				 note:'business_type: 1 提现, 2 自动还款代收, 3 信用卡还款, 5 充值还款代收',
+				 type: interf.manager,
+				 request: {"cmd":"M000942","userId":"","token":"","version":"1.0.0","data":{"business_type":"","business_id":""}}
+			 },
+			 {
+				 api:"M000943",
+				 desc:"解绑认证信息",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000943","userId":"","token":"","version":"1.0.0"} 
+			 },
+			 {
+				 api:"M000944",
+				 desc:"风险保证金充值,确认已线下充值",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000944","userId":"","token":"","version":"1.0.0","data":{"company_id":"1","amount":""}} 
+			 },
+			 {
+				 api:"M000945",
+				 desc:"PushMethod",
+				 note: [
+					"method: 1 充值, 2 提现, 3 标细胞认购代收, 4 标细胞认购代付, 5 标细胞转让代收, 6 标细胞转让代付",
+					"8 还款代收, 10, 标细胞本息回款代付, 11 保证金代收, 12 保证金代付, 13 贷款打款",
+					"14 还款充值, 15 还款充值代收, 16 闪电提现代收, 17 闪电提现代付, 18 闪电提现打款, 19 闪电提现转账",
+					"20 闪电提现退款代付, 35 人品宝转让失败代付, 36 人品宝信用卡还款代收, 37 人品宝信用卡还款代付"
+				 	],
+				 type: interf.manager,
+				 request: {"cmd":"M000945","userId":"","token":"","version":"1.0.0","data":{"method":"","operator_auto_id":"","args":""}} 
+			 },
+			 {
+				 api:"M000946",
+				 desc:"企业用户充值,确认已线下充值",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000946","userId":"","token":"","version":"1.0.0","data":{"amount":""}} 
+			 },
+			 {
+				 api:"M000947",
+				 desc:"信用卡还款民生已垫款,但做了失败处理",
+				 note:"M000941 接口确认交易状态后操作",
+				 type: interf.manager,
+				 request: {"cmd":"M000947","userId":"","token":"","version":"1.0.0","data":{"operator_auto_id":""}} 
+			 },
+			 {
+				 api:"M000948",
+				 desc:"信用卡还款结果通知管家",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000948","userId":"","token":"","version":"1.0.0","data":{"refund_id":"多个以逗号分隔","state":"0 还款中, 1 还款失败, 2 还款成功"}} 
+			 },
+			 {
+				 api:"M000951",
+				 desc:"公司基本户金额充正",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000951","userId":"","token":"","version":"1.0.0","data": {"company_balance_auto_id":"多个逗号分隔","trans_txt":"","trans_party":""}} 
+			 },
+			 {
+				 api:"R000001",
+				 desc:"检测人品宝开户状态",
+				 note:"",
+				 type: interf.rpbrepayment,
+				 request: {"cmd":"R000001","userId":"","token":"","version":"1.0.0","data":{"user_name":""}}
+			 },
+			 {
+				 api:"R000002",
+				 desc:"获取人品宝账号余额",
+				 note:"",
+				 type: interf.rpbrepayment,
+				 request: {"cmd":"R000002","userId":"","token":"","version":"1.0.0"}
+			 },
+			 {
+				 api:"R000003",
+				 desc:"提交人品宝信用卡还款订单",
+				 note:"",
+				 type: interf.rpbrepayment,
+				 request: {"cmd":"R000003","userId":"","token":"","version":"1.0.0","data": {"bill_id":"信用卡账单ID","credit_acco":"信用卡全卡号","amount":"还款金额","bank_id":"银行ID","trade_pwd":"交易密码","user_name":""}}
+			 },
+			 {
+				 api:"R000004",
+				 desc:"检测人品宝信用卡还款状态",
+				 note:"",
+				 type: interf.rpbrepayment,
+				 request: {"cmd":"R000004","userId":"","token":"","version":"1.0.0","data":{"order_no":"还款订单号"}}
+			 },
+			 {
+				 api:"R000005",
+				 desc:"人品宝开户(一) 提交开户信息",
+				 note:"",
+				 type: interf.rpbrepayment,
+				 request: {"cmd":"R000005","userId":"","token":"","version":"1.0.0","data":	{"realname":"真实姓名","identity":"身份证","card_no":"银行卡号","mobile":"银行预留手机号","provice":"开卡省份","city":"开卡城市","card_type":"(可选)卡类型,DEBIT：借记卡，CREDIT: 贷记(信用卡)","bank_code":"(可选)银行编号"}}
+			 },
+			 {
+				 api:"R000006",
+				 desc:"人品宝开户(二) 校验手机验证码",
+				 note:"",
+				 type: interf.rpbrepayment,
+				 request: {"cmd":"R000006","userId":"","token":"","version":"1.0.0","data":{"order_no":"开户绑卡交易号","ticket":"ticket","sms_code":"手机验证码"}}
 			 }
 
 		]
