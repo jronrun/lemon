@@ -68,6 +68,7 @@
 					      <div class="input-group-btn">
 					        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> <span class="caret"></span></button>
 					        <ul class="dropdown-menu">
+					          <li role="separator" class="divider"></li>
 					          <li><a href="javascript:void(0);" onclick="api.typeSearch(1)">Defined APIs</a></li>
 					          <li><a href="javascript:void(0);" onclick="api.typeSearch(4)">Tag</a></li>
 					          <li><a href="javascript:void(0);" onclick="api.typeSearch(5)">Favourite</a></li>
@@ -924,6 +925,9 @@
 			});
 		},
 		showNote: function(note) {
+			if (lemon.isBlank(note)) {
+				return '';
+			}
 			if (!lemon.isBlank(note)) {
 				if (lemon.isFunc(note)) {
 					return note();
@@ -936,7 +940,10 @@
 					
 					html.push('</ul>');
 					return html.join('');
-				} else {
+				} else if (lemon.isJson(note)) {
+					return '<pre title="Property Description">' + lemon.json.highlight(note) + '</pre>';
+				} 
+				else {
 					return '<div class="panel panel-default"><div class="panel-body"><h6 class="text-muted">' + note + '</h6></div></div>';
 				}
 			}
@@ -1128,7 +1135,9 @@
 			var title = [
 			 	theAPI + ' Default Value',
 			 	'<div class="pull-right">',
-			 	'<span class="glyphicon glyphicon-remove" title="Close" onclick="api.setAPIDefaultValClose(\'' + theAPI + '\');"></span></div>'
+			 	'<button type="button" class="close" aria-label="Close" onclick="api.setAPIDefaultValClose(\'' + theAPI + '\');">',
+			 	'<span aria-hidden="true">&times;</span></button>',
+			 	'</div>'
 			 ].join('');
 			 
 			if (lemon.defaults.indexOf(theAPI) == -1) {
@@ -1137,6 +1146,13 @@
 					return '<textarea id="api_default_edit_' + theAPI + '" style="height:300px;width:500px;border:0px solid #ffffff;">' + apiVal + '</textarea>';
 				}, { 
 					title: title, placement: 'left'
+				}).on('shown.bs.popover', function() {
+					if (after.styled) {
+						after[theAPI] = after.mirror('#api_default_edit_' + theAPI, {
+							width: 500,
+							height: 305
+						});
+					}
 				}).on('show.bs.popover', function() { 
 					$(this).data("bs.popover").tip().css({
 						maxWidth: (document.body.clientWidth / 2) + 200
@@ -1146,6 +1162,10 @@
 					$(apiDefaultId).removeClass('active');
 				}).on('hide.bs.popover', function() {
 					var data = $('#api_default_edit_' + theAPI).val();
+					if (after.styled) {
+						data = after[theAPI].getValue();
+						after[theAPI] = null;
+					}
 					if (!lemon.isBlank(data)) {
 						data = $.parseJSON(data || {});
 						var cmd = data.cmd;
@@ -1164,7 +1184,9 @@
 			var title = [
 			 	'Tags <span class="badge">' + no + '</span>',
 			 	'<div class="pull-right">',
-			 	'<span class="glyphicon glyphicon-remove" title="Close" onclick="api.itemTagClose(' + hisId + ');"></span></div>'
+			 	'<button type="button" class="close" aria-label="Close" onclick="api.itemTagClose(' + hisId + ');">',
+			 	'<span aria-hidden="true">&times;</span></button>',
+			 	'</div>'
 			 	].join('');
 			if (lemon.tags.indexOf(hisId) == -1) {
 				api.popover(tagBtnId, function() {
@@ -1243,7 +1265,9 @@
 			 	'<div class="pull-right">',
 			 	'<span class="glyphicon glyphicon-trash" title="Clean Note" onclick="api.pencilClose(' + hisId + ', 1);"></span>',
 			 	'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
-			 	'<span class="glyphicon glyphicon-remove" title="Close" onclick="api.pencilClose(' + hisId + ');"></span></div>'
+			 	'<button type="button" class="close" aria-label="Close" onclick="api.pencilClose(' + hisId + ');">',
+			 	'<span aria-hidden="true">&times;</span></button>',
+			 	'</div>'
 			 	].join('');
 			if (lemon.notes.indexOf(hisId) == -1) {
 				api.popover(pencilId, function() {
@@ -1977,7 +2001,8 @@
 								'data-container': 'body',
 								'data-toggle': 'popover',
 								'data-placement': 'right',
-								'data-content': '<pre style="width:500px;background-color:#ffffff;">' + lemon.json.highlight(item.request) + '</pre>',
+								'data-content': api.showNote(item.note || '') 
+									+ '<pre style="width:500px;background-color:#ffffff;">' + lemon.json.highlight(item.request) + '</pre>',
 								title: item.api + ' ' + item.desc
 							}).append(dropItem);
 
@@ -2105,6 +2130,7 @@
 			$(rightId).html(rightHtml);
 			after.request = after.mirror('#request');
 			after.response = after.mirror('#response');
+			
 			$('[data-element="#request"],[data-element="#response"]')
 				.removeAttr('data-target')
 				.click(function() {
@@ -2113,10 +2139,13 @@
 					case '#request': after.rich.fullscreenTgl(after.request); break;
 					case '#response': after.rich.fullscreenTgl(after.response); break;
 					}
-				});
-				;
+				}
+			);
+
+			$('.col-md-6 .panel-heading').attr({title: ''});
 		},
 		mirror: function(elId, options) {
+			options = options || {};
 			var rich = CodeMirror.fromTextArea(lemon.query(lemon.startIf(elId, '#')), lemon.extend({
 				lineNumbers: false,
 				matchBrackets: true,
@@ -2141,10 +2170,10 @@
 					    	cm.foldCode(cm.getCursor()); 
 					    }
 				  	}
-				}, options || {})
+				}, options)
 			);
 
-			rich.setSize(null, 435);
+			rich.setSize(options.width || null, options.height || 435);
 			rich.on('inputRead', function(cm, changeObj) {
 				after.rich.fmt(cm);
 			});
@@ -2156,13 +2185,13 @@
 				cm.setOption("fullScreen", lemon.isUndefined(full) ? !cm.getOption("fullScreen") : full);
 			},
 			fmt: function(cm) {
-				var cursor = after.request.getCursor();
+				var cursor = cm.getCursor();
 				try {
 					cm.setValue(lemon.json(cm.getValue()));
 				} catch (e) {
 					lemon.warn(e, 'format error.');
 				}
-				after.request.setCursor(cursor);
+				cm.setCursor(cursor);
 			}
 		}
 	};
@@ -2466,7 +2495,7 @@
 			 },
 			 {
 				 api:"M000924",
-				 desc:"提现时一个人品宝被多次转让, type ",
+				 desc:"提现时一个人品宝被多次转让",
 				 note:[
 					'{"type":1代收,"recordId":"转让代付成功的代付RecordID，人品宝没有到位（被另外一个用户覆盖了）","transferId":"重复转让被覆盖的记录"}',
 					'{"type":2执行代收成功逻辑,"recordId":"代收成功的RecordID"}',
@@ -2659,10 +2688,11 @@
 				 api:"M000945",
 				 desc:"PushMethod",
 				 note: [
-					"method: 1 充值, 2 提现, 3 标细胞认购代收, 4 标细胞认购代付, 5 标细胞转让代收, 6 标细胞转让代付",
+					"method (MethodEnum): 1 充值, 2 提现, 3 标细胞认购代收, 4 标细胞认购代付, 5 标细胞转让代收, 6 标细胞转让代付",
 					"8 还款代收, 10, 标细胞本息回款代付, 11 保证金代收, 12 保证金代付, 13 贷款打款",
 					"14 还款充值, 15 还款充值代收, 16 闪电提现代收, 17 闪电提现代付, 18 闪电提现打款, 19 闪电提现转账",
-					"20 闪电提现退款代付, 35 人品宝转让失败代付, 36 人品宝信用卡还款代收, 37 人品宝信用卡还款代付"
+					"20 闪电提现退款代付, 35 人品宝转让失败代付, 36 人品宝信用卡还款代收, 37 人品宝信用卡还款代付",
+					"38 银商充值代收, 39 银商充值代付"
 				 	],
 				 type: interf.manager,
 				 request: {"cmd":"M000945","userId":"","token":"","version":"1.0.0","data":{"method":"","operator_auto_id":"","args":""}} 
@@ -2701,6 +2731,18 @@
 				 note:"",
 				 type: interf.manager,
 				 request: {"cmd":"M000952","userId":"","token":"","version":"1.0.0"} 
+			 },
+			 {
+				 api:"M000953",
+				 desc:"AsyncQueue",
+				 note: {
+					 type: '1 addSyncQueue, 2 addSyncQueueDelay, 3 removeSyncQueue',
+					 'record_type': 'see OperatorRecordEnums',
+					 'create_time': '空则使用当前时间',
+					 minutes: '延迟时间(分钟), type为2时使用'
+			     },
+				 type: interf.manager,
+				 request: {"cmd":"M000953","userId":"","token":"","version":"1.0.0", "data":{"type":"","record_id":"","record_type":"","minutes":"","create_time":""}}
 			 },
 			 {
 				 api:"R000001",
