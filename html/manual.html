@@ -47,7 +47,7 @@
 						data-toggle="dropdown" role="button" aria-expanded="false">Environment
 							<span class="caret"></span>
 					</a>
-						<ul class="dropdown-menu" role="menu" id="which_env">
+						<ul class="dropdown-menu fixed-dropdown" role="menu" id="which_env">
 							<li><a href="#">Test</a></li>
 							<li><a href="#">Product</a></li>
 						</ul></li>
@@ -68,19 +68,35 @@
 					      <div class="input-group-btn">
 					        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> <span class="caret"></span></button>
 					        <ul class="dropdown-menu">
-					          <li><a href="javascript:void(0);" onclick="api.typeSearch(1)">All APIs</a></li>
+					          <li><a href="javascript:void(0);" onclick="api.typeSearch(1)">Defined APIs</a></li>
 					          <li><a href="javascript:void(0);" onclick="api.typeSearch(4)">Tag</a></li>
 					          <li><a href="javascript:void(0);" onclick="api.typeSearch(5)">Favourite</a></li>
-					          <li><a href="javascript:void(0);" onclick="api.typeSearch(6)">All Histories</a></li>
+					          <li><a href="javascript:void(0);" onclick="api.typeSearch(6)">The Histories</a></li>
 					          <li role="separator" class="divider"></li>
 					        </ul>
 					      </div>
-					      <input type="text" class="form-control" id="input_search" placeholder="API or Histories..">
+					      <input type="text" class="form-control" id="input_search" placeholder="API & Histories..">
 					    </div>
 					</div>
-					<button type="submit" class="btn btn-default" id="btn_search">Search</button>
-					<button type="submit" class="btn btn-default" id="btn_request">Request</button>
-					<button type="submit" class="btn btn-default" id="btn_request_tab">Request In New Tab</button>
+					<button type="submit" class="btn btn-default" id="btn_search">
+						<span class="glyphicon glyphicon-search" title="Search"></span>
+					</button>
+					<button type="submit" class="btn btn-default" id="btn_request">Request</button>					
+					<div class="btn-group">
+					  <button type="submit" class="btn btn-default" id="btn_request_tab">Request In New Tab</button>
+					  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					    <span class="caret"></span>
+					    <span class="sr-only">Toggle Dropdown</span>
+					  </button>
+					  <ul class="dropdown-menu">
+					    <li role="separator" class="divider"></li>
+					    <li><a href="javascript:void(0);" id="btn_request_get">Request with Get</a></li>
+					    <li role="separator" class="divider"></li>
+					    <li><a href="javascript:void(0);" id="btn_request_post">Request with Post</a></li>
+					    <li role="separator" class="divider"></li>
+					  </ul>
+					</div>
+					
 					<button type="submit" class="btn btn-default" id="btn_history">History</button>
 				</form>
 				<ul class="nav navbar-nav navbar-right">
@@ -97,6 +113,8 @@
 					<!-- <h3 class="panel-title">Request </h3> -->
 					Request
 					<div class="btn-group btn-group-xs pull-right">
+						<button type="button" class="btn btn-success" id="from_url">
+						<span class="glyphicon glyphicon-subscript" title="Set Request Data From URL"></span></button>
 						<button type="button" class="btn btn-success" id="as_default">
 						<span class="glyphicon glyphicon-camera" title="Set Request Default Value"></span></button>
 						<button type="button" class="btn btn-success" id="copy_url">
@@ -166,32 +184,33 @@
 	.script(lemon.getUrl('/bootstrap/3.3.5/js/bootstrap.min.js'))
 	.wait(function() { api.initialize(); });
 
+	var cmprfix = 'codemirror/5.6.0/';
 	var queue = $LAB
-		.queueScript(lemon.getUrl('codemirror/5.5.0/codemirror.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'codemirror.min.js'))
 		.queueWait()
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/dialog/dialog.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/search/searchcursor.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/search/matchesonscrollbar.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/search/search.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/scroll/annotatescrollbar.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/edit/matchbrackets.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/lint/javascript-lint.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/hint/javascript-hint.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/mode/javascript/javascript.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/lint/json-lint.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/selection/active-line.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/edit/closebrackets.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/display/fullscreen.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/hint/show-hint.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/comment/comment.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/comment/continuecomment.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/fold/foldcode.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/fold/foldgutter.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/fold/brace-fold.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/fold/indent-fold.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/fold/comment-fold.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/hint/anyword-hint.min.js'))
-		.queueScript(lemon.getUrl('codemirror/5.5.0/addon/search/match-highlighter.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/dialog/dialog.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/search/searchcursor.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/search/matchesonscrollbar.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/search/search.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/scroll/annotatescrollbar.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/edit/matchbrackets.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/lint/javascript-lint.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/javascript-hint.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'mode/javascript/javascript.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/lint/json-lint.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/selection/active-line.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/edit/closebrackets.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/display/fullscreen.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/show-hint.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/comment/comment.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/comment/continuecomment.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/foldcode.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/foldgutter.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/brace-fold.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/indent-fold.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/comment-fold.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/anyword-hint.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/search/match-highlighter.min.js'))
 		//.queueWait(function() {});
 		.queueWait(function() { after.initialize(); });
 	
@@ -201,12 +220,12 @@
 		}
 		
 		lemon.css([
-		    'codemirror/5.5.0/codemirror.min.css',
-		    'codemirror/5.5.0/addon/dialog/dialog.min.css',
-		    'codemirror/5.5.0/addon/search/matchesonscrollbar.min.css',
-		    'codemirror/5.5.0/addon/display/fullscreen.min.css',
-		    'codemirror/5.5.0/addon/hint/show-hint.min.css',
-		    'codemirror/5.5.0/addon/fold/foldgutter.min.css'
+		    cmprfix + 'codemirror.min.css',
+		    cmprfix + 'addon/dialog/dialog.min.css',
+		    cmprfix + 'addon/search/matchesonscrollbar.min.css',
+		    cmprfix + 'addon/display/fullscreen.min.css',
+		    cmprfix + 'addon/hint/show-hint.min.css',
+		    cmprfix + 'addon/fold/foldgutter.min.css'
 		]);
 		queue.runQueue();
 	}, 500);
@@ -511,6 +530,9 @@
 					
 				});
 
+				api.requestGetPost('#btn_request_post');
+				api.requestGetPost('#btn_request_get', 'get');
+
 				$('#btn_request_tab').click(function() {
 					if (!api.chkRequest()) { return; }
 					var cleanData = api.getCleanRequestData();
@@ -530,6 +552,17 @@
 					if (cmd) {
 						api.defaultValue(cmd, data);
 						api.inlineTip('#as_default');
+					}
+				});
+
+				$('#from_url').click(function() {
+					var data = api.requ();
+					data = decodeURI(data);
+					data = decodeURIComponent(data);
+					var lidx = data.indexOf('{');
+					var ridx = data.lastIndexOf('}');
+					if (lidx >= 0 && ridx >= 0) {
+						api.requ(lemon.json(data.substring(lidx, ridx + 1)));
 					}
 				});
 
@@ -699,6 +732,7 @@
 						break;
 					}
 
+					//var empty = 'Couldn’t find any APIs or histories';
 					return lemon.tmpl($('#table_tmpl').html(), {
 						histories: histories, 
 						apis: apis, 
@@ -1532,12 +1566,12 @@
 		},
 		chkRequest: function() {
 			if (null == lemon.getEnv()) {
-				api.msg('warning', 'Choose environment first!');
+				api.tip('Choose an environment first!');
 				return false;
 			}
 
 			if (lemon.isBlank(api.requ())) {
-				api.msg('warning', 'Choose or define API first!');
+				api.tip('Choose or define an API first!');
 				return false;
 			}
 
@@ -1684,37 +1718,104 @@
 			$(respId).val(data);
 			return data;
 		},
-		request: function(success) {
+		requestGetPost: function(selector, type) {
+			$(selector).click(function() {
+				if ($(selector).parent().hasClass('disabled')) {
+					return;
+				}
+				if (!api.chkRequest()) { return; }
+									
+				$('#btn_request').button('loading');
+				$(selector).parent().addClass('disabled');
+				api.resp('');
+				api.request(function(data) {
+					api.resp(lemon.json(data));
+					$('#btn_request').button('reset');
+					$(selector).removeClass('disabled');
+				}, function(jqXHR, textStatus, errorThrown) {
+					$(selector).parent().removeClass('disabled');
+				}, type || 'post');
+			});
+		},
+		request: function(success, failure, type) {
 			var cleanData = api.getCleanRequestData();
 			var request = api.getRequestData(cleanData);
 			lemon.info(request, 'request');
-			$.ajax({  
-	             type: "get",  
-	             async: false,  
-	             url: lemon.getEnv(),  
-	             data: {data : lemon.json.reverse(request)},
-	             dataType: "jsonp" 
-	         }).done(function(data, textStatus, jqXHR) {
-            	 lemon.info(textStatus, 'request status');
-            	 lemon.info(data, 'response');
-            	 lemon.store.set(api.uniqueId(), {
-     				when: lemon.when(),
-     				request: cleanData, 
-     				response: data,
-     				interf: lemon.getEnv(),
-     				name: api.getAPI(cleanData.cmd).desc
-     			 });
+
+			var done = function(data, textStatus, jqXHR) {
+	           	 lemon.info(textStatus, 'request status');
+	        	 lemon.info(data, 'response');
+	        	 lemon.store.set(api.uniqueId(), {
+	 				when: lemon.when(),
+	 				request: cleanData, 
+	 				response: data,
+	 				interf: lemon.getEnv(),
+	 				name: api.getAPI(cleanData.cmd).desc
+	 			 });
 		         success && success(data);
 		         if (!after.styled) {
 		        	 api.nav.view('#response', true);
 			     }
-		     }).fail(function(jqXHR, textStatus, errorThrown){  
+		     };
+
+		     type = type || 'jsonp';
+		     var url = lemon.getEnv(), rdata = {data : lemon.json.reverse(request)};
+		     var fail = function(jqXHR, textStatus, errorThrown){  
             	 lemon.error(jqXHR);
             	 lemon.error(textStatus, 'request status');
             	 lemon.error(errorThrown);
-            	 api.resp(textStatus);
+            	 
+            	 api.resp(lemon.json({
+                	 title: 'Request Failed (' + type.toUpperCase() + ')',
+                	 cause: (!lemon.startWith(location.href, url) && (type != 'jsonp')) 
+                	 	? 'Cross domain issue. No \'Access-Control-Allow-Origin\' header is present on the requested resource.' : '',
+                	 jqXHR: jqXHR,
+                	 textStatus: textStatus,
+                	 errorThrown: errorThrown,
+                	 server: url
+               	 }));
             	 $('#btn_request').button('reset');
-             });
+            	 failure && failure(jqXHR, textStatus, errorThrown);
+             }
+
+			switch (type) {
+			case 'jsonp':
+				$.ajax({  
+		             type: "get",
+		             async: false,
+		             url: url,
+		             data: rdata,
+		             dataType: "jsonp" 
+		        }).done(done).fail(fail);
+				break;
+
+			case 'get':
+				$.get(url, rdata).success(done).error(fail);
+				break;
+
+			case 'post':
+				$.post(url, rdata).success(done).error(fail);
+				break;
+			}
+		},
+		tip: function(text, type) {
+			var tipId = '#tip_id', msgId = '#msg_id';
+			var msg = $(tipId);
+			if (!msg.length) {
+				msg = $(document.createElement('div')).attr({
+					class: 'alert alert-' + (type || 'warning'),
+					role: 'alert',
+					id: 'tip_id',
+					style: 'display:none'
+				}).text(text);
+			}
+			$('#message').append(msg);
+			$(msgId).slideToggle();  
+			$(tipId).slideToggle();
+			lemon.delay(function() {
+				$(msgId).slideToggle();  
+				$(tipId).slideToggle()
+			}, 3000);
 		},
 		msg: function(type, text, title) {
 			var msg = $(document.createElement('div')).attr({
@@ -1735,15 +1836,20 @@
 			return msg;
 		},
 		env: {
+			servSortEsc: function(items) {
+				return items.sort(function(a, b) {
+					return a.type.id - b.type.id;
+				});
+			},
 			render: function() {
 				var $env = $('#which_env'); $env.empty();
 				
-				lemon.each(definedServs, function(v, k) {
-					var isProduct = 'PRODUCT' === v.env;
+				lemon.each(definedServs, function(envGroup, k) {
+					var isProduct = 'PRODUCT' === envGroup.env;
 					var clazz = isProduct ? 'danger' : 'info';
 					var title = [
 						'<li role="presentation" class="dropdown-header"><h4>',
-						'<span class="label label-' + clazz + '">' + v.desc + '</span>',
+						'<span class="label label-' + clazz + '">' + envGroup.desc + '</span>',
 						'</h4></li>'
 						].join('');
 					
@@ -1752,21 +1858,38 @@
 						class:'divider' 
 					});
 					$env.append(presentation).append(title);
-					
-					lemon.each(v.serv, function(v, k) {
-						var servName = v.type.name + (lemon.isBlank(v.note) ? '' : (' - ' + v.note));
+
+					var prevServTypeId = -1;
+					lemon.each(api.env.servSortEsc(envGroup.serv), function(serv, k) {
+						var blankNote = lemon.isBlank(serv.note);
+						if (!blankNote && prevServTypeId != serv.type.id) {
+							var miniG = [
+								'<li role="presentation" class="dropdown-header"><h5>',
+								lemon.repeat('&nbsp;', 2) + serv.type.name,
+								'</h5></li>'
+							].join('');
+							$env.append(miniG);
+							prevServTypeId = serv.type.id;
+						}
+						
+						var servName = (blankNote ? serv.type.name : (lemon.repeat('&nbsp;', 5) + serv.note));
+						var liTitle = serv.type.name + (blankNote ? '' : (' - ' + serv.note));
 						var href = $(document.createElement('a'));
-						if (v.asDefault && 1 === v.asDefault) {
+						if (serv.asDefault && 1 === serv.asDefault) {
 							href.attr({id: 'default_env'});
 						}
 						href.click(function() {
-							lemon.setEnv(v.interf);
-							api.env.change(v.interf);
+							lemon.setEnv(serv.interf);
+							api.env.change(serv.interf);
 						});
-						href.append('<p class="text-' + (isProduct ? 'warning' : 'info') + '">' + servName + '</p>');
-						var aEnv = $(document.createElement('li')).append(href);
+						href.append('<p class="text-' + (isProduct ? 'warning' : 'info') + '">' + lemon.repeat('&nbsp;', 2) + servName + '</p>');
+						var aEnv = $(document.createElement('li')).attr({
+							title : liTitle
+						}).append(href);
 						$env.append(aEnv);
 					});
+
+					$env.append('<li>' + lemon.repeat('&nbsp;', 80) + '</li>');
 				});
 
 				$('#default_env').click();
@@ -2096,16 +2219,28 @@
 					}
 				},
 				{
+					id: 1009,
+					type: interf.appapi,
+					interf: "https://10.0.40.101:443/51rp/rpdservice/xv2.htm",
+					note: "51test.top xv2"
+				},
+				{
 					id: 1003,
 					type: interf.appapi,
 					interf: "https://10.0.40.101:443/51rp/rpdservice/xv3.htm",
-					note: "51test.top"
+					note: "51test.top xv3"
+				},
+				{
+					id: 1008,
+					type: interf.appapi,
+					interf: "http://192.168.2.151:8080/rpdservice/xv2.htm",
+					note: "2.151 xv2"
 				},
 				{
 					id: 1004,
 					type: interf.appapi,
 					interf: "http://192.168.2.151:8080/rpdservice/xv3.htm",
-					note: "2.151"
+					note: "2.151 xv3"
 				},
 				{
 					id: 1005,
@@ -2125,6 +2260,7 @@
 					interf: "https://10.0.40.101:443/51rp/rpdservice/cr1.htm",
 					note: "51test.top"
 				}
+
 			]
 		},
 		{
@@ -2558,6 +2694,13 @@
 				 note:"",
 				 type: interf.manager,
 				 request: {"cmd":"M000951","userId":"","token":"","version":"1.0.0","data": {"company_balance_auto_id":"多个逗号分隔","trans_txt":"","trans_party":""}} 
+			 },
+			 {
+				 api:"M000952",
+				 desc:"人品宝首页数据(竞标,转让,提现进度等)",
+				 note:"",
+				 type: interf.manager,
+				 request: {"cmd":"M000952","userId":"","token":"","version":"1.0.0"} 
 			 },
 			 {
 				 api:"R000001",
