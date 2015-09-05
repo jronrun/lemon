@@ -241,7 +241,7 @@
 	if (lemon.isBlank(histories)) {
 		clientW = clientW + 35;
 	}
-    var panelH = document.body.clientHeight - 150;
+    var panelH = document.body.clientHeight - 110;
   %>
   <div class="panel-body fixed-panel" style="height:<%=panelH%>px;max-height:<%=panelH%>px;">
 
@@ -343,7 +343,7 @@
 
 					<h4><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Environment</span></h4>
 					<%
-						lemon.each(definedServs, function(v, k) {
+						lemon.each(api.preference.service(), function(v, k) {
 					%>
 						<button type="button" class="btn btn-default btn-sm" id="env_filter_<%= v.env %>"><%= v.desc %></button>
 					<%
@@ -352,7 +352,7 @@
 
 					<h4><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Server</span></h4>
 					<%
-						lemon.each(definedServs, function(env, k) {
+						lemon.each(api.preference.service(), function(env, k) {
 					%>
 						<h6><span class="label label-info"><span class="glyphicon glyphicon-hand-down"></span> <%= env.env %></span></h6>
 					<%
@@ -388,15 +388,13 @@
 		}
 	    var panelH = document.body.clientHeight - 150;
 	
-	   var interval = '';
 	   var tmp = '';
 	   var batch = 0;
 	   lemon.each(api.historySortDesc(histories), function(v, k) {
 		   var env = api.env.which(v.interf);
 		   if (lemon.isBlank(env)) { return; }
-			no++;
-	       if (interval != (tmp = lemon.when.interval(v.when)) && tmp != api.previousInterval.when) {
-				interval = tmp;
+		   no++, tmp = lemon.when.interval(v.when);
+	       if (tmp != api.previousInterval.when) {
 				batch = lemon.uniqueId();
 
 				api.previousInterval = {
@@ -406,7 +404,7 @@
 
 				api.batches.push(batch);
 		%>
-				<tr onclick="api.interval(<%= batch %>)"> <th></th> <td> <h4><span class="label label-info"><span class="glyphicon glyphicon-time"></span> <%= interval %></span></h4> </td> </tr>
+				<tr onclick="api.interval(<%= batch %>)"> <th></th> <td> <h4><span class="label label-info"><span class="glyphicon glyphicon-time"></span> <%= api.previousInterval.when %></span></h4> </td> </tr>
 		<%
 		   } else {
 				batch = api.previousInterval.batch;
@@ -487,7 +485,84 @@
 	<% }); }%>
 </script>
 
+<script type="text/html" id="setting_tmpl">
+<%
+	var clientW = document.body.clientWidth - 30;
+    var panelH = document.body.clientHeight - 90;
+%>
+<div id="settings" style="height:<%=panelH%>px;max-height:<%=panelH%>px;width:<%=clientW%>px;">
+    <ul id="" class="nav nav-tabs" role="tablist">
+      <li role="presentation" class="">
+      	<a href="#basic" id="basic-tab" role="tab" data-toggle="tab" aria-controls="basic" aria-expanded="true">Basic Setting</a>
+      </li>
+      <li role="presentation" class="">
+      	<a href="#server" role="tab" id="server-tab" data-toggle="tab" aria-controls="server" aria-expanded="false">Define Server</a>
+      </li>
+      <li role="presentation" class="active">
+      	<a href="#theapic" role="tab" id="theapic-tab" data-toggle="tab" aria-controls="theapic" aria-expanded="false">Define API</a>
+      </li>
+      <li role="presentation" class="dropdown">
+        <a href="#" id="import_export_tab" class="dropdown-toggle" data-toggle="dropdown" aria-controls="import_export_tab-contents">
+        	Import & Export <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="import_export_tab" id="import_export_tab-contents">
+          <li><a href="#import_tab" role="tab" id="import_tab-tab" data-toggle="tab" aria-controls="import_tab">@Import</a></li>
+          <li><a href="#export_tab" role="tab" id="export_tab-tab" data-toggle="tab" aria-controls="export_tab">@Export</a></li>
+        </ul>
+      </li>
+    </ul>
+    <div id="myTabContent" class="tab-content">
+      <div id="message_settings"></div>
+      <div role="tabpanel" class="tab-pane fade in" id="basic" aria-labelledby="basic-tab">
+        <div class="row">
+
+		  <div class="col-md-4">
+		  	<h4>Interface Group</h4>
+		  	<div class="panel panel-default">
+			  <div class="panel-body">
+			    <textarea id="p_interf" style="border:0px solid #ffffff;width:368px;height:450px;"></textarea>
+			  </div>
+			</div>
+		  </div>
+		  
+		  <div class="col-md-4">
+		  	<h4>Environment</h4>
+		  	<div class="panel panel-default">
+			  <div class="panel-body">
+			    <textarea id="p_env" style="border:0px solid #ffffff;width:368px;height:450px;"></textarea>
+			  </div>
+			</div>
+		  </div>
+
+		  <div class="col-md-4">
+		  	<h4>Configuration</h4>
+		  	<div class="panel panel-default">
+			  <div class="panel-body">
+			    <textarea id="p_config" style="border:0px solid #ffffff;width:368px;height:450px;"></textarea>
+			  </div>
+			</div>
+		  </div>
+
+		</div>
+      </div>
+      <div role="tabpanel" class="tab-pane fade" id="server" aria-labelledby="server-tab">
+        
+      </div>
+      <div role="tabpanel" class="tab-pane fade active" id="theapic" aria-labelledby="theapic-tab">
+        
+      </div>
+      <div role="tabpanel" class="tab-pane fade" id="import_tab" aria-labelledby="import_tab-tab">
+        
+      </div>
+      <div role="tabpanel" class="tab-pane fade" id="export_tab" aria-labelledby="export_tab-tab">
+        
+      </div>
+    </div>
+ </div>
+</script>
+
 <script type="text/javascript">
+	root = window;
 	location.hash = 'api';
 	lemon.console();
 	lemon.getset({
@@ -596,6 +671,10 @@
 					});
 				});
 
+				$('.navbar-brand').click(function() {
+					api.typeSearch(7);
+				});
+
 				$('#input_search').focus(function() {
 					if ($('#btn_search').hasClass('active')) {
 						$('#btn_search').click();
@@ -607,8 +686,12 @@
 					lemon.defaults = [];
 					lemon.tags = [];
 					lemon.descs = [];
+					api.previousInterval = {
+				   		when: '',
+				   		batch: 0
+				    };
 					var key = $('#input_search').val();
-					//1 Just All API, 2 Normal Search, 3 Advance, 4 Tag, 5 Fav, 6 ALL History
+					//1 Just All API, 2 Normal Search, 3 Advance, 4 Tag, 5 Fav, 6 ALL History, 7 Settings
 					var searchType = 1;
 					var searchProp = '';
 					if (!lemon.isBlank(key)) {
@@ -626,9 +709,12 @@
 								searchType = 5;
 							} else if ('ALL' == key) {
 								searchType = 6;
+							} else if ('SETTING' == key) {
+								searchType = 7;
 							}
 						}
 					}
+					lemon.searchType = searchType;
 
 					var regEx = new RegExp(key);
 					var apis = {};
@@ -640,7 +726,7 @@
 					case 3:
 						var isAdvance = 3 == searchType;
 						var justAllAPI = 1 == searchType;
-						var items = definedAPIs.items.sort(function(a, b) {
+						var items = api.preference.defines().items.sort(function(a, b) {
 							return a.type.id - b.type.id;
 						});
 						
@@ -731,6 +817,9 @@
 							}
 						});
 						break;
+
+					case 7: //Settings
+						return lemon.tmpl($('#setting_tmpl').html(), {});
 					}
 
 					//var empty = 'Couldn’t find any APIs or histories';
@@ -739,13 +828,40 @@
 						apis: apis, 
 						theHisTrs: api.getTrHis(1, histories)
 					});
-				}, { title: 'Search Result', trigger: 'click' } );
+				}, { title: '', trigger: 'click' }, function(el) {
+					switch(lemon.searchType) {
+					case 1:
+					case 2:
+					case 3:
+						$('#btn_tgl_api').click(function() {
+							$(el).button('toggle');
+							$('pre[tgl-api="tgl"]').fadeToggle("slow", "linear");
+						});
+						$('#btn_tgl_interf').click(function() {
+		                	$(el).button('toggle');
+		                	lemon.each(api.preference.interf(), function(v, k) {
+		                    	api.interfType(v.id);
+		                    });
+		                });
+						break;
+					case 7:
+						$(el).data("bs.popover").tip().css({left:0});
+						api.mirrorVal('#p_interf', api.preference.interf());
+						api.mirrorVal('#p_env', api.preference.env());
+						api.mirrorVal('#p_config', api.preference.basic());
+						break;
+					};
+				});
 
 				api.popoverOnBtn("#btn_history", function() {
 					lemon.notes = [];
 					lemon.descs = [];
 					lemon.tags = [];
 					lemon.currentP = 1;
+					api.previousInterval = {
+				   		when: '',
+				   		batch: 0
+				    };
                     return lemon.tmpl($('#table_tmpl').html(), {histories: 1, apis: {}, theHisTrs: api.getTrHis()});
                 }, { title: 'API History', trigger: 'click' }, function(el) {
                 	$(el).data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_body'});
@@ -881,10 +997,19 @@
 			case 4: val = 'TAG:'; break;
 			case 5: val = 'FAV'; break;
 			case 6: val = 'ALL'; break;
+			case 7: val = 'SETTING'; break;
 			}
 			$('#input_search').val(val);
 			if (4 != type) {
 				$('#btn_search').click();
+			}
+
+			switch (type) {
+			case 5:
+			case 6:
+			case 7: 
+				$('#input_search').val('');
+				break;
 			}
 		},
 		scroll: function(selector, handle) {
@@ -964,12 +1089,12 @@
 		getTrHis: function(pn, histories) {
 			pn = pn || lemon.currentP;
         	var histories = histories || api.getHistories(pn);
-        	var intlNo = (pn - 1) * config.history.pageSize + 1;
+        	var intlNo = (pn - 1) * api.preference.basic().history.pageSize + 1;
 			return lemon.tmpl($('#his_tr_tmpl').html(), {histories: histories, intlNo: intlNo});
 		},
 		getHistories: function(pn) {
 			var lastId = parseInt(lemon.store('last') || '0');
-			var items = {}, ps = config.history.pageSize, pn = pn || 1, offset = (pn - 1) * ps;
+			var items = {}, ps = api.preference.basic().history.pageSize, pn = pn || 1, offset = (pn - 1) * ps;
 			var startId = lastId - offset;
 			
 			for (var idx = 0; idx < ps; idx++) {
@@ -1349,10 +1474,7 @@
 				$(selector).button('toggle');
 			}).on('shown.bs.popover', function() {
 				lemon.isFunc(onShown) && onShown(this);
-				$('#btn_tgl_api').click(function() {
-					$(this).button('toggle');
-					$('pre[tgl-api="tgl"]').fadeToggle("slow", "linear");
-				});
+
 				$('#btn_tgl_requ').click(function() {
 					$(this).button('toggle');
 					lemon.scrollNext = true;
@@ -1380,12 +1502,6 @@
                 		} else {
                 			$(target).show("slow", "linear");
                     	}
-                    });
-                });
-                $('#btn_tgl_interf').click(function() {
-                	$(this).button('toggle');
-                	lemon.each(interf, function(v, k) {
-                    	api.interfType(v.id);
                     });
                 });
 
@@ -1577,7 +1693,7 @@
 			return lemon.store.set(key, parseInt(lemon.store.get(key) || 0) + 1);
 		},
 		uniqueId: function() {
-			var historySize = config.history.max;
+			var historySize = api.preference.basic().history.max;
 			var maxId = lemon.store.set('last', parseInt(lemon.store.get('last') || 0) + 1);
 			if (historySize > 0 && maxId >= historySize) {
 				lemon.store.forEach(function(k) {
@@ -1641,7 +1757,7 @@
 		},
 		getAPI: function(theAPI) {
 			var result = {};
-			lemon.each(definedAPIs.items, function(v, k) {
+			lemon.each(api.preference.defines().items, function(v, k) {
 				if (v.api === theAPI) {
 					result = v;
 					return false;
@@ -1704,6 +1820,31 @@
 					}
 					api.nav.view('#response', true);
 				}
+			}
+		},
+		mirrorVal: function(selector, value, options) {
+			var theK = lemon.ltrim(selector, '#'); lemon.mirror = lemon.mirror || {};
+			if (lemon.isUndefined(value)) {
+				if (after.styled) {
+					if (lemon.mirror[theK]) {
+						return lemon.mirror[theK].getValue();
+					}
+					return {};
+				}
+
+				return $(selector).val();
+			} else {
+				value = lemon.json(value);
+				if (after.styled) {
+					lemon.mirror[theK] = after.mirror(selector, lemon.extend({
+						width: 368,
+						height: 360
+					}, options || {}));
+					
+					return lemon.mirror[theK].setValue(value);
+				}
+
+				return $(selector).val(value);
 			}
 		},
 		requ: function(data) {
@@ -1791,8 +1932,8 @@
             	 
             	 api.resp(lemon.json({
                 	 title: 'Request Failed (' + type.toUpperCase() + ')',
-                	 cause: (!lemon.startWith(location.href, url) && (type != 'jsonp')) 
-                	 	? 'Cross domain issue. No \'Access-Control-Allow-Origin\' header is present on the requested resource.' : '',
+                	 cause: ((!lemon.startWith(location.href, url) && (type != 'jsonp'))
+                	 	? 'May cross domain issue. ' : '') + 'See browser console for more information',
                 	 jqXHR: jqXHR,
                 	 textStatus: textStatus,
                 	 errorThrown: errorThrown,
@@ -1822,24 +1963,52 @@
 				break;
 			}
 		},
-		tip: function(text, type) {
-			var tipId = '#tip_id', msgId = '#msg_id';
-			var msg = $(tipId);
-			if (!msg.length) {
-				msg = $(document.createElement('div')).attr({
-					class: 'alert alert-' + (type || 'warning'),
-					role: 'alert',
-					id: 'tip_id',
-					style: 'display:none'
-				}).text(text);
-			}
-			$('#message').append(msg);
-			$(msgId).slideToggle();  
-			$(tipId).slideToggle();
-			lemon.delay(function() {
+		tip: function(text, options) {
+			options = lemon.extend({
+				//1 main page, 2 settings page
+				where: 1,
+				level: 'warning',
+				delay: 3000,
+				//auto: disappear when options.delay millesecond, manual: manual close
+				close: 'auto'
+			}, options || {});
+
+			var tipId = '#tip_id_' + options.where + lemon.uniqueId(), msgId = '#msg_id';
+			var msg = $(document.createElement('div')).attr({
+				class: 'alert alert-' + options.level,
+				role: 'alert',
+				id: lemon.ltrim(tipId, '#'),
+				style: 'display:none'
+			}).text(text);
+
+			switch (options.where) {
+			case 1:
+				$('#message').append(msg);
 				$(msgId).slideToggle();  
-				$(tipId).slideToggle()
-			}, 3000);
+				break;
+			case 2:
+				$('#message_settings').append(msg);
+				break;
+			}
+			
+			if (options.close == 'manual') {
+				msg.append([
+					'<button type="button" class="close" data-dismiss="alert" aria-label="Close">',
+					'<span aria-hidden="true">&times;</span></button>'
+				].join(''));
+			};
+
+			$(tipId).slideToggle();
+			if (options.close == 'auto') {
+				lemon.delay(function() {
+					if (1 == options.where) {
+						$(msgId).slideToggle(); 
+					}
+					$(tipId).slideToggle(function() {
+						$(tipId).remove();
+					});
+				}, options.delay);
+			}
 		},
 		msg: function(type, text, title) {
 			var msg = $(document.createElement('div')).attr({
@@ -1859,16 +2028,115 @@
 			});
 			return msg;
 		},
+		preference: {
+			basic: function(preference) {
+				return api.preference.val('basic', preference);
+			},
+			interf: function(preference) {
+				return api.preference.val('interf', preference);
+			},
+			env: function(preference) {
+				var env = {
+					environment: []
+				};
+				lemon.each(api.preference.service(), function(v, k) {
+					env.environment.push({
+						env: v.env,
+						desc: v.desc
+					});
+				});
+				return env;
+			},
+			service: function(preference) {
+				return api.preference.val('service', preference);
+			},
+			defines: function(preference) {
+				return api.preference.val('defines', preference);
+			},
+			val: function(key, val) {
+				var preference = 'preference';
+				var preferences = lemon.store(preference) || {};
+				if (lemon.isUndefined(key)) {
+					return preferences;
+				}
+
+				var defined = preferences[key] || {};
+				if (lemon.isUndefined(val)) {
+					return defined;
+				}
+
+				preferences[key] = lemon.extend(defined, val);
+				lemon.store(preference, preferences);
+				return preferences[key];
+			},
+			isExists: function(objArr, key, target) {
+				for (var i = objArr.length - 1; i >= 0; i--) {
+					if (objArr[i][key] == target[key]) {
+						return true;
+					}
+				};
+				return false;
+			}
+		},
 		env: {
 			servSortEsc: function(items) {
 				return items.sort(function(a, b) {
 					return a.type.id - b.type.id;
 				});
 			},
+			load: function() {
+				var theDefined = null;
+				if (root.config) {
+					theDefined = api.preference.basic();
+					lemon.each(config, function(v, k) {if (!theDefined[k]) {theDefined[k] = v; } });
+					api.preference.basic(theDefined);
+					theDefined = null, config = undefined;
+				}
+				
+				if (root.interf) {
+					theDefined = api.preference.interf();
+					lemon.each(interf, function(v, k) {if (!theDefined[k]) {theDefined[k] = v; } });
+					api.preference.interf(theDefined);
+					theDefined = null, interf = undefined;
+				}
+				
+				if (root.definedServs) {
+					theDefined = api.preference.service();
+					lemon.each(root.definedServs, function(env, idx) {
+						if (theDefined[env.env]) {
+							var servs = theDefined[env.env].serv || [];
+							lemon.each(env.serv, function(service, idx2) {
+								if (!api.preference.isExists(servs, 'id', service)) {
+									servs.push(service);
+								}
+							});
+							theDefined[env.env].serv = servs;
+						} else {
+							theDefined[env.env] = env;
+						}
+					});
+					api.preference.service(theDefined);
+					theDefined = null, definedServs = undefined;
+				}
+
+				if (root.definedAPIs) {
+					theDefined = api.preference.defines();
+					var apis = theDefined.items || [];
+					lemon.each(definedAPIs.items, function(item, k) {
+						if (!api.preference.isExists(apis, 'api', item)) {
+							apis.push(item);
+						}
+					})
+					theDefined.items = apis;
+					api.preference.defines(theDefined);
+					theDefined = null, definedAPIs = undefined;
+				}
+			},
 			render: function() {
+				api.env.load();
 				var $env = $('#which_env'); $env.empty();
 				
-				lemon.each(definedServs, function(envGroup, k) {
+				lemon.each(api.preference.service(), function(envGroup, k) {
 					var isProduct = 'PRODUCT' === envGroup.env;
 					var clazz = isProduct ? 'danger' : 'info';
 					var title = [
@@ -1942,7 +2210,7 @@
 			},
 			which: function(interf, envType) {
 				var result = {};
-				lemon.each(definedServs, function(v, k) {
+				lemon.each(api.preference.service(), function(v, k) {
 					lemon.each(v.serv, function(v1, k1) {
 						if (v1.interf === interf) {
 							var tmp = {
@@ -1970,16 +2238,10 @@
 		cmd: {
 			render: function() {
 				var $cmd = $('#which_api'); $cmd.empty();
-				var servTypes = [];
-				lemon.each(definedServs[0].serv, function(serv, k) {
-					if (servTypes.indexOf(serv.type) >= 0) {
-						return;
-					}
-					servTypes.push(serv.type);
-					
+				lemon.each(api.preference.interf(), function(group, k) {
 					var title = [
 						'<li role="presentation" class="dropdown-header"><h4>',
-						'<span class="label label-info">' + serv.type.name + '</span>',
+						'<span class="label label-info">' + group.name + '</span>',
 						'</h4></li>'
 						].join('');
 					
@@ -1989,8 +2251,8 @@
 					});
 					$cmd.append(presentation).append(title);
 
-					lemon.each(definedAPIs.items, function(item, k) {
-						if (serv.type.id === item.type.id) {
+					lemon.each(api.preference.defines().items, function(item, k) {
+						if (group.id === item.type.id) {
 							var dropItem = [
 								'<h5>' + item.api + '</h5>',
 								'<h6 class="text-muted" style="width:200px;">' + item.desc + '</h6>'
