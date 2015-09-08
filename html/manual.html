@@ -620,7 +620,8 @@
 						response: null,
 						interf: lemon.getEnv()
 					});
-					window.open(lemon.getUrl(lemon.getEnv(), {data: lemon.json.reverse(param)}));
+					
+					window.open(api.nav.getRequestURLwithParams(lemon.json.reverse(param), true));
 				});
 
 				$('#as_default').click(function() {
@@ -973,12 +974,24 @@
 				var cleanData = api.getCleanRequestData();
 				var param = api.getRequestData(cleanData);
 				param = lemon.json.reverse(param);
-				if (encode) {
-					param = encodeURIComponent(param);
-				}
-				var requestURL = lemon.format('{0}?data={1}', lemon.getEnv(), param);
+				var requestURL = api.nav.getRequestURLwithParams(param, encode);
 				lemon.info(requestURL, 'Request URL');
 				return requestURL;
+			},
+			getRequestURLwithParams: function(param, encode) {
+				var curServ = api.env.which(lemon.getEnv());
+				var requCfg = curServ.request || api.preference.basic().request;
+				////1 using "format" property, 2 using lemon.getUrl eg: ?a=1&b=2
+				switch(requCfg.type) {
+				case 1:
+					if (encode) {
+						param = encodeURIComponent(param);
+					}
+					return lemon.format(requCfg.format, lemon.getEnv(), param);
+					
+				case 2:
+					return lemon.getUrl(lemon.getEnv(), $.parseJSON(param));
+				}
 			},
 			textarea: function(selector, options) {
 				api.popover(selector, function() {
@@ -2118,13 +2131,39 @@
 				current: '',
 				previous: ''
 			},
+			valid: {
+				basic: { 
+					"{{Group name}}" : {
+						id: "", 
+						name: "" 
+					}
+				},
+				env: { 
+					environment: [ 
+						{ 
+							env: "", 
+							desc: "" 
+						} 
+					]
+				},
+				serv: {
+					id: "",
+					interf: "[string, request url]",
+					note: "[string|string array|JSON]",
+					params: "[JSON optional, add to request parameters] ",
+					request: {
+						type: "[number 1 using 'format' property, 2 using lemon.getUrl eg: ?a=1&b=2]",
+						format: "[string, if type is 1 then must provide. arg {0} is url ('interf' defined), arg {1} is request JSON. eg: {0}?data={1} ]"
+					},
+					asDefault: "[number optional, 1 set default]"
+				}
+			},
 			saveBasic: function() {
 				if ($(api.preference.tab.current).attr('href') == '#basic') {
 					var step = 'Interface Group';
 					try {
 						var theErr = '', theInterf = {};
-						var theInterfs = $.parseJSON(api.mirrorVal('#p_interf'));
-						var ids = [], valid = { "{{Group name}}" : { "id": "", "name": "" }};
+						var theInterfs = $.parseJSON(api.mirrorVal('#p_interf')), ids = [];
 						lemon.each(theInterfs, function(v, k) {
 							if (v && v.id && v.name) {
 								if (ids.indexOf(v.id) == -1) {
@@ -2135,7 +2174,9 @@
 									return false;
 								}
 							} else {
-								theErr = api.preference.getWarn(valid, v);
+								var theV = {};
+								theV[k] = v;
+								theErr = api.preference.getWarn(api.preference.valid.basic, theV);
 								return false;
 							}
 						});
@@ -2147,7 +2188,7 @@
 						
 						step = 'Environment';
 						var theEnvs = $.parseJSON(api.mirrorVal('#p_env')).environment;
-						var theEnv = {}; theErr = '', valid = { "environment": [ { "env": "", "desc": "" } ] }, envs = [];
+						var theEnv = {}; theErr = '', valid = api.preference.valid.env, envs = [];
 						if (!theEnvs) {
 							api.preference.tip(step, api.preference.getWarn(valid));
 							return false;
@@ -2166,7 +2207,7 @@
 									return false;
 								}
 							} else {
-								theErr = api.preference.getWarn(valid, v);
+								theErr = api.preference.getWarn(valid, {environment:[v]});
 								return false;
 							}
 						});
@@ -2180,7 +2221,7 @@
 						var theConfig = $.parseJSON(api.mirrorVal('#p_config'));
 						api.preference.basic(theConfig);
 					} catch(e) {
-						api.preference.tip(step, ' invalid value, ' + e.message);
+						api.preference.tip(step, ' invalid JSON value, ' + e.message);
 						return false;
 					}
 				}
@@ -2413,7 +2454,8 @@
 								interf: v1.interf,
 								note: v1.note,
 								params: v1.params,
-								id: v1.id
+								id: v1.id,
+								request: v1.request
 							};
 							if (lemon.isUndefined(envType)) {
 								result = tmp;
@@ -2656,6 +2698,11 @@
 			//keep history size less than 0 unlimit
 			max: -1,
 			pageSize: 2
+		},
+		request: {
+			//1 using "format" property, 2 using lemon.getUrl eg: ?a=1&b=2
+			type: 1,
+			format: '{0}?data={1}'
 		}
 	};
 
