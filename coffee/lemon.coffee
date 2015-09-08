@@ -41,7 +41,7 @@ properties =
 		]
 	}
 	
-arrayForeach = Array::forEach; arrayFilter = Array::filter; breaker = {}; escape = encodeURIComponent
+arrayForeach = Array::forEach; arrayFilter = Array::filter; breaker = false; escape = encodeURIComponent
 
 _.each = (obj, iterator, context) ->
 	if obj is null then return obj

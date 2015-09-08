@@ -75,7 +75,7 @@
 
   arrayFilter = Array.prototype.filter;
 
-  breaker = {};
+  breaker = false;
 
   escape = encodeURIComponent;
 
