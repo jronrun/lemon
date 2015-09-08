@@ -981,13 +981,13 @@
 			getRequestURLwithParams: function(param, encode) {
 				var curServ = api.env.which(lemon.getEnv());
 				var requCfg = curServ.request || api.preference.basic().request;
-				////1 using "format" property, 2 using lemon.getUrl eg: ?a=1&b=2
+				//1 wrap request data into a parameter ('paramName' value), 2 using lemon.getUrl eg: ?a=1&b=2
 				switch(requCfg.type) {
 				case 1:
 					if (encode) {
 						param = encodeURIComponent(param);
 					}
-					return lemon.format(requCfg.format, lemon.getEnv(), param);
+					return lemon.format('{0}?{1}={2}', lemon.getEnv(), requCfg.paramName, param);
 					
 				case 2:
 					return lemon.getUrl(lemon.getEnv(), $.parseJSON(param));
@@ -2017,7 +2017,9 @@
 		     };
 
 		     type = type || 'jsonp';
-		     var url = lemon.getEnv(), rdata = {data : lemon.json.reverse(request)};
+		     var url = lemon.getEnv(), curServ = api.env.which(url), rdata = {};
+			 var requCfg = curServ.request || api.preference.basic().request;
+		     rdata[requCfg.paramName] = lemon.json.reverse(request);
 		     var fail = function(jqXHR, textStatus, errorThrown){  
             	 lemon.error(jqXHR);
             	 lemon.error(textStatus, 'request status');
@@ -2152,8 +2154,8 @@
 					note: "[string|string array|JSON]",
 					params: "[JSON optional, add to request parameters] ",
 					request: {
-						type: "[number 1 using 'format' property, 2 using lemon.getUrl eg: ?a=1&b=2]",
-						format: "[string, if type is 1 then must provide. arg {0} is url ('interf' defined), arg {1} is request JSON. eg: {0}?data={1} ]"
+						type: "[number, 1 wrap request data into a parameter ('paramName' value), 2 using lemon.getUrl eg: ?a=1&b=2]",
+						paramName: "[string, if type is 1 then must provide]"
 					},
 					asDefault: "[number optional, 1 set default]"
 				}
@@ -2193,14 +2195,20 @@
 							api.preference.tip(step, api.preference.getWarn(valid));
 							return false;
 						}
+						var theDefinedService = api.preference.service();
 						lemon.each(theEnvs, function(v, i) {
 							if (v && v.env && v.desc) {
 								if (envs.indexOf(v.env) == -1) {
-									theEnv[v.env] = {
+									var r = {
 										env: v.env,
-										desc: v.desc,
-										serv: []
+										desc: v.desc
 									};
+									if (theDefinedService[v.env]) {
+										r.serv = theDefinedService[v.env].serv;
+									} else {
+										r.serv = [];
+									}
+									theEnv[v.env] = r;
 									envs.push(v.env);
 								} else {
 									theErr = 'the env ' + v.env + ' is duplicated';
@@ -2700,9 +2708,9 @@
 			pageSize: 2
 		},
 		request: {
-			//1 using "format" property, 2 using lemon.getUrl eg: ?a=1&b=2
+			//1 wrap request data into a parameter ('paramName' value), 2 using lemon.getUrl eg: ?a=1&b=2
 			type: 1,
-			format: '{0}?data={1}'
+			paramName: 'data'
 		}
 	};
 
