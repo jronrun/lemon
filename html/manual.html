@@ -566,21 +566,27 @@
 <div class="row" style="margin: 0 5px;">
 
 <div class="col-md-6">
+	<h5> </h5>
+	<div class="form-group">
+    	<label for="ss_env"></label>
+		<select class="form-control" id="ss_env">
+			<%
+				lemon.each(api.preference.env().environment, function(env, idx)	{
+			%>
+    			<option value="<%= env.env %>"><%= env.desc %></option>
+			<%	}); %>
+    	</select>
+    </div>
 
-	<select class="form-control input-lg">
-    	<option value="">.input-lg</option>
-    </select>
+	<%= lemon.repeat('&nbsp;', 10) %>
+	<label class="radio-inline">
+  		<input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"> 1
+	</label>
+	<label class="radio-inline">
+  		<input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> 2
+	</label>
 
-<label class="radio-inline">
-  <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"> 1
-</label>
-<label class="radio-inline">
-  <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> 2
-</label>
-<label class="radio-inline">
-  <input type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3"> 3
-</label>
-
+	<h5> </h5>
 	<textarea id="p_server" style="border:0px solid #ffffff;width:580px;height:221px;"></textarea>
 </div>
 
@@ -2495,6 +2501,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			},
 			change: function(interf) {
 				var env = api.env.which(interf);
+				if (lemon.isBlank(env)) {
+					return;
+				}
 				var desc = env.desc + '  ' + env.type.name + (lemon.isBlank(env.note) ? '' : (' - ' + env.note));
 				switch(env.env) {
 				case 'TEST': 
