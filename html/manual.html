@@ -107,9 +107,9 @@
 	</nav>
 	<div id="message"></div>
 
-	<div class="row">
+	<div class="row" style="margin: 0 5px;">
 		<div class="col-md-6">
-			<div class="panel panel-default">
+			<div class="panel panel-default" style="margin-bottom:2px;">
 				<div class="panel-heading" title="Right Click Toggle Edit and View Mode">
 					<!-- <h3 class="panel-title">Request </h3> -->
 					Request
@@ -140,7 +140,7 @@
 			</div>
 		</div>
 		<div class="col-md-6">
-			<div class="panel panel-default">
+			<div class="panel panel-default"  style="margin-bottom:2px;">
 				<div class="panel-heading" title="Right Click Toggle Edit and View Mode">
 					Response
 					<div class="btn-group btn-group-xs pull-right">
@@ -488,7 +488,7 @@
 <script type="text/html" id="setting_tmpl">
 <%
 	var clientW = document.body.clientWidth - 30;
-    var panelH = document.body.clientHeight - 90;
+    var panelH = document.body.clientHeight - 70;
 %>
 <div id="settings" style="height:<%=panelH%>px;max-height:<%=panelH%>px;width:<%=clientW%>px;">
     <ul id="" class="nav nav-tabs" role="tablist">
@@ -511,10 +511,10 @@
         </ul>
       </li>
     </ul>
-    <div id="myTabContent" class="tab-content">
+    <div id="myTabContent" class="tab-content"> <!-- style="overflow-y:auto;height:550px;" -->
       <div id="message_settings"></div>
       <div role="tabpanel" class="tab-pane fade in" id="basic" aria-labelledby="basic-tab">
-        <div class="row">
+        <div class="row" style="margin: 0 5px;">
 
 		  <div class="col-md-4">
 		  	<h4>Interface Group</h4>
@@ -546,7 +546,7 @@
 		</div>
       </div>
       <div role="tabpanel" class="tab-pane fade" id="server" aria-labelledby="server-tab">
-        
+
       </div>
       <div role="tabpanel" class="tab-pane fade active" id="theapic" aria-labelledby="theapic-tab">
         
@@ -559,6 +559,61 @@
       </div>
     </div>
  </div>
+</script>
+
+<script type="text/html" id="setting_server_tmpl">
+
+<div class="row" style="margin: 0 5px;">
+
+<div class="col-md-6">
+
+	<select class="form-control input-lg">
+    	<option value="">.input-lg</option>
+    </select>
+
+<label class="radio-inline">
+  <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"> 1
+</label>
+<label class="radio-inline">
+  <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> 2
+</label>
+<label class="radio-inline">
+  <input type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3"> 3
+</label>
+
+	<textarea id="p_server" style="border:0px solid #ffffff;width:580px;height:221px;"></textarea>
+</div>
+
+<div class="col-md-6" style="overflow-y:auto;height:550px;">
+<%
+lemon.each(api.preference.service(), function(envGroup, k) { 
+	var isProduct = 'PRODUCT' === envGroup.env;
+	var clazz = isProduct ? 'danger' : 'info';
+	lemon.each(api.env.servSortEsc(envGroup.serv), function(serv, k) {
+		var servGroup = api.getInterfGroup(serv.type.id);
+		var servName = lemon.repeat('&nbsp;', 1) + servGroup.name;
+		var showServ = lemon.clone(serv); delete showServ.type;
+		if (showServ.asDefault) {
+			delete showServ.asDefault;
+		}
+%>
+			<div class="thumbnail" tenv="<%=envGroup.env%>" tgroup="<%= serv.type.id %>" tid="<%= serv.id %>">
+      			<div class="caption">
+        			<p>
+						<span class="badge"><%= serv.id %></span>
+						<code><font class="text-<%= clazz %>""> <%= envGroup.desc %><%= servName %> </font></code>
+						<% if (serv.asDefault && 1 === serv.asDefault) { %>
+							<span class="label label-info pull-right">Default Server</span>
+						<% } %>
+					<p>
+					<pre style="border:0px solid #ffffff;background-color:#ffffff;"><%= lemon.json.highlight(showServ) %></pre>
+      			</div>
+    		</div>
+	<% }); %>
+<% }); %>
+
+</div>
+</div>
 </script>
 
 <script type="text/javascript">
@@ -876,11 +931,21 @@
 								current: curTab,
 								previous: prevTab
 							};
-							
-							if ('#basic' == $(curTab).attr('href')) {
+
+							var curHref = $(curTab).attr('href');
+							if ('#basic' == curHref) {
 								api.mirrorVal('#p_interf', api.preference.interf());
 								api.mirrorVal('#p_env', api.preference.env());
 								api.mirrorVal('#p_config', api.preference.basic());
+							} else if ('#server' == curHref) {
+								var settingServerHtml = lemon.tmpl($('#setting_server_tmpl').html(), {});
+								$('#server').empty().append(settingServerHtml);
+
+								$('#server .thumbnail').hover(function(){  
+									$(this).css({'background-color': '#fafafa'});   
+								},function(){  
+									$(this).css({'background-color': ''});   
+								});
 							}
 						}).on('hide.bs.tab', function (e) {
 							if (!api.preference.saveBasic()) {
@@ -1930,7 +1995,7 @@
 				value = lemon.json(value);
 				if (after.styled) {
 					lemon.mirror[theK] = lemon.mirror[theK] || after.mirror(selector, lemon.extend({
-						width: 368,
+						width: 358,
 						height: 360
 					}, options || {}));
 					
@@ -3069,7 +3134,7 @@
 				 desc:"人品系统或新浪或银行维护公告",
 				 note:"",
 				 type: interf.manager,
-				 request: {"cmd":"M000930","userId":"","token":"","version":"1.0.0","data": {"start":"开始时间yyyy-MM-dd HH:mm:ss","end":"结束时间yyyy-MM-dd HH:mm:ss","notice":"维护公告","cmds":"维护的接口 多个则逗号分隔","banks":"银行编码 多个则逗号分隔"}}
+				 request: {"cmd":"M000930","userId":"","token":"","version":"1.0.0","data": {"start":"开始时间yyyy-MM-dd HH:mm:ss","end":"结束时间yyyy-MM-dd HH:mm:ss","notice":"维护公告","cmds":"维护的接口 多个则逗号分隔","banks":"银行编码 多个则逗号分隔","type":"0 人品和新浪, 1 银联商户"}}
 			 },
 			 {
 				 api:"M000931",
