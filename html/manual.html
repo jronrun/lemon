@@ -511,7 +511,7 @@
         </ul>
       </li>
     </ul>
-    <div id="myTabContent" class="tab-content"> <!-- style="overflow-y:auto;height:550px;" -->
+    <div id="myTabContent" class="tab-content" style="overflow-y:auto;height:550px;">
       <div id="message_settings"></div>
       <div role="tabpanel" class="tab-pane fade in" id="basic" aria-labelledby="basic-tab">
         <div class="row" style="margin: 0 5px;">
@@ -565,32 +565,41 @@
 
 <div class="row" style="margin: 0 5px;">
 
-<div class="col-md-6">
-	<h5> </h5>
-	<div class="form-group">
-    	<label for="ss_env"></label>
-		<select class="form-control" id="ss_env">
-			<%
-				lemon.each(api.preference.env().environment, function(env, idx)	{
-			%>
-    			<option value="<%= env.env %>"><%= env.desc %></option>
-			<%	}); %>
-    	</select>
-    </div>
+<div class="col-md-6" id="p_server_left">
+	<h4></h4>
+    <label for="ss_env"></label>
+	<select class="form-control" id="ss_env" name="env">
+		<%
+			lemon.each(api.preference.env().environment, function(env, idx)	{
+		%>
+    		<option value="<%= env.env %>"><%= env.desc %></option>
+		<%	}); %>
+    </select>
 
-	<%= lemon.repeat('&nbsp;', 10) %>
-	<label class="radio-inline">
-  		<input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1"> 1
-	</label>
-	<label class="radio-inline">
-  		<input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> 2
-	</label>
+	<%= lemon.repeat('&nbsp;', 1) %>
+    <select class="form-control" id="ss_interf" name="typeId">
+		<%
+			lemon.each(api.preference.interf(), function(group, idx)	{
+		%>
+    		<option value="<%= group.id %>"><%= group.name %></option>
+		<%	}); %>
+    </select>
+
+	<%= lemon.repeat('&nbsp;', 1) %>
+	<button type="button" class="btn btn-info" id="ss_default">
+		<span class="glyphicon glyphicon-unchecked" aria-hidden="true"></span>  Default Server
+	</button>
+	<%= lemon.repeat('&nbsp;', 1) %>
+	<button type="button" class="btn btn-default" onclick="api.preference.help(this);">
+		<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+	</button>
 
 	<h5> </h5>
-	<textarea id="p_server" style="border:0px solid #ffffff;width:580px;height:221px;"></textarea>
+	<textarea id="ss_server" style="border:0px solid #ffffff;width:580px;height:221px;"></textarea>
+	<h5> </h5>
 </div>
 
-<div class="col-md-6" style="overflow-y:auto;height:550px;">
+<div class="col-md-6" style="overflow-y:auto;height:550px;" id="p_server_right">
 <%
 lemon.each(api.preference.service(), function(envGroup, k) { 
 	var isProduct = 'PRODUCT' === envGroup.env;
@@ -952,6 +961,36 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								},function(){  
 									$(this).css({'background-color': ''});   
 								});
+
+								api.mirrorVal('#ss_server', {
+									id: "",
+									interf: "",
+									note: ""
+								}, {
+									width: 580,
+									height: 172
+								});
+
+								$('#ss_default').click(function() {
+									api.nav.check('#ss_default', 1);
+								});
+								$('#p_server_right .thumbnail').click(function() {
+									var servId = parseInt($(this).attr('tid'));
+									var aServ = api.getServer(servId);
+									var showServ = lemon.clone(aServ);
+									delete showServ.type; delete showServ.asDefault; 
+									delete showServ.env; delete showServ.desc;
+									lemon.fillParam('#p_server_left', {
+										env: aServ.env,
+										typeId: aServ.type.id
+									});
+									if (aServ.asDefault && 1 == aServ.asDefault) {
+										api.nav.check('#ss_default', 2);
+									} else {
+										api.nav.check('#ss_default', 3);
+									}
+									api.mirrorVal('#ss_server', showServ);
+								});
 							}
 						}).on('hide.bs.tab', function (e) {
 							if (!api.preference.saveBasic()) {
@@ -1021,6 +1060,29 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					interf: aHis.interf,
 					name: desc
 				};
+			},
+			check: function(selector, opt) {
+				//opt undefined get value 1 checked 0 unchecked, 1 toggle, 2 check, 3 uncheck
+				switch (opt = (opt || 4)) {
+				case 1:
+					$(selector).button('toggle');
+					break;
+				case 2:
+					$(selector).addClass('active');
+					break;
+				case 3:
+					$(selector).removeClass('active');
+					break;
+				}
+				var isActive = $(selector).hasClass('active');
+				if (4 == opt) {
+					return isActive ? 1 : 0;
+				}
+				if (isActive) {
+					$(selector + ' .glyphicon').removeClass('glyphicon-unchecked').addClass('glyphicon-check');
+				} else {
+					$(selector + ' .glyphicon').removeClass('glyphicon-check').addClass('glyphicon-unchecked');
+				}
 			},
 			dblclick: function(selector) {
 				//forbiden right click context menu
@@ -1918,6 +1980,22 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			});
 			return r;
 		},
+		getServer: function(servId) {
+			var result = {};
+			lemon.each(api.preference.service(), function(envGroup, k) {
+				lemon.each(envGroup.serv, function(serv, k) {
+					if (serv.id === servId) {
+						result = serv;
+						result.env = envGroup.env;
+						result.desc = envGroup.desc;
+						result.type = api.getInterfGroup(serv.type.id);
+						return false;
+					}
+				});
+			});
+
+			return result;
+		},
 		getAPI: function(theAPI) {
 			var result = {};
 			lemon.each(api.preference.defines().items, function(v, k) {
@@ -2200,6 +2278,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			return msg;
 		},
 		preference: {
+			help: function(el) {
+				$(el).button('toggle');
+                var isActive = $(el).hasClass('active');
+				var servHelpId = 'serv_help_tip_id';
+				$('#' + servHelpId).remove();
+				if (isActive) {
+					this.tip(this.getWarn(this.valid.serv, null, 1), null, '#p_server_left', servHelpId);
+				}
+			},
 			tab: {
 				current: '',
 				previous: ''
@@ -2223,16 +2310,26 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					id: "",
 					interf: "[string, request url]",
 					note: "[string|string array|JSON]",
-					params: "[JSON optional, add to request parameters] ",
+					//asDefault: "[number optional, 1 set default]",
+					params: "[JSON optional, add to request parameters]",
 					request: {
-						type: "[number, 1 wrap request data into a parameter ('paramName' value), 2 using lemon.getUrl eg: ?a=1&b=2]",
+						type: "[number, 1 wrap as a param eg: {{paramName}}={a:1,b:2}, 2 using lemon.getUrl eg: ?a=1&b=2]",
 						paramName: "[string, if type is 1 then must provide]"
-					},
-					asDefault: "[number optional, 1 set default]"
+					}
 				}
 			},
 			saveBasic: function() {
-				if ($(api.preference.tab.current).attr('href') == '#basic') {
+				var curHref = $(api.preference.tab.current).attr('href');
+
+				if (curHref == '#server') {
+					var aServ = api.mirrorVal('#ss_server');
+					var aChoose = lemon.getParam('#p_server_left');
+					var asDefault = api.nav.check('#ss_default');
+					lemon.mirror['ss_server'] = undefined;
+					
+				} 
+
+				else if (curHref == '#basic') {
 					var step = 'Interface Group';
 					try {
 						var theErr = '', theInterf = {};
@@ -2307,38 +2404,49 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				
 				return true;
 			},
-			getWarn: function(valid, wrong) {
-				var msg = [
-					'<div class="row">'
-				];
+			getWarn: function(valid, wrong, column) {
+				var msg = []; column = column || 2;
+				msg.push('<div class="row">');
 
+				var clazz = 1 == column ? 'col-md-12' : 'col-md-6';
 				if (valid) {
-					msg.push('<div class="col-md-6"><pre style="background-color:#ffffff;border:0px;">');
+					msg.push('<div class="' + clazz + '"><pre style="background-color:#ffffff;border:0px;">');
 					msg.push('<p class="text-success">the legal structure</p>' + lemon.json.highlight(valid) + '</pre></div>');
 				}
 
 				if (wrong) {
-					msg.push('<div class="col-md-6"><pre style="background-color:#ffffff;border:0px;">');
+					msg.push('<div class="' + clazz + '"><pre style="background-color:#ffffff;border:0px;">');
 					msg.push('<p class="text-danger">below is illegal structure</p>' + lemon.json.highlight(wrong) + '</pre></div>');
 				}
 
-				msg.push('</div>');
+				msg.push('</div>');	
 				return msg.join('');
 			},
-			tip: function(title, msg) {
+			tip: function(title, msg, selector, tipId) {
 				/* api.tip(msg, lemon.extend({
 					close:'manual',
 					where:2
 				}, options || {})); */
 				
+				var tipId = tipId || ('p_tip_' + lemon.uniqueId());
 				var html = [
-					'<div class="alert alert-warning alert-dismissible fade in" role="alert">',
-				    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>',
-				    '<h5>' + (title || 'Oh snap! You got an error!') + '</h5>',
-				    '<p>' + (msg || '') + '</p>',
-				    '</div>'
-				].join('');
-				$('#message_settings').append(html);
+					'<div class="alert alert-default alert-dismissible fade in" style="border:1px solid;border-color:#a94442;" role="alert" id="' + tipId + '">',
+				    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>'
+				];
+
+				if (title) {
+					html.push(title);
+				} else {
+					html.push('<h5>Oh snap! You got an error!</h5>');
+				}
+
+				if (msg) {
+					html.push('<p>' + msg + '</p>');
+				}
+				html.push('</div>');
+
+				$(selector || '#message_settings').append(html.join(''));
+				return tipId;
 			},
 			basic: function(preference) {
 				return api.preference.val('basic', preference);
