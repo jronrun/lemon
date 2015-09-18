@@ -37,8 +37,7 @@
 	<nav class="navbar navbar-default">
 		<div class="container-fluid">
 			<div class="navbar-header">
-				<a class="navbar-brand" href="javascript:void(0);">51RP Manual
-					API</a>
+				<a class="navbar-brand" href="javascript:void(0);">51RP Manual API</a>
 			</div>
 
 			<div class="collapse navbar-collapse">
@@ -72,11 +71,11 @@
 					          <li><a href="javascript:void(0);" onclick="api.typeSearch(1)">Defined APIs</a></li>
 					          <li><a href="javascript:void(0);" onclick="api.typeSearch(4)">Tag</a></li>
 					          <li><a href="javascript:void(0);" onclick="api.typeSearch(5)">Favourite</a></li>
-					          <li><a href="javascript:void(0);" onclick="api.typeSearch(6)">The Histories</a></li>
 					          <li role="separator" class="divider"></li>
 					        </ul>
 					      </div>
-					      <input type="text" class="form-control" id="input_search" placeholder="API & Histories..">
+					      <!-- <input type="text" class="form-control" id="input_search" style="width: 230px;" placeholder="API & Histories.."> -->
+					      <textarea type="text" class="form-control" id="input_search" style="width: 230px;height:34px;" placeholder="API & Histories.."></textarea>
 					    </div>
 					</div>
 					<button type="submit" class="btn btn-default" id="btn_search">
@@ -120,6 +119,8 @@
 						<span class="glyphicon glyphicon-camera" title="Set Request Default Value"></span></button>
 						<button type="button" class="btn btn-success" id="copy_url">
 						<span class="glyphicon glyphicon-copy" title="Show Request URL"></span></button>
+						<button type="button" class="btn btn-success" id="define_api">
+						<span class="glyphicon glyphicon-pencil" title="Define API"></span></button>
 						<button type="button" class="btn btn-success" data-element="#request" data-toggle="modal" data-target="#modal_tpl">
 						<span class="glyphicon glyphicon-tree-deciduous" title="Show Request In Fullscreen (Esc Quit)"></span></button>
 						<button type="button" class="btn btn-success" data-element="both" data-toggle="modal" data-target="#modal_tpl">
@@ -287,6 +288,9 @@
 				<button type="button" class="btn btn-default btn-xs" onclick="api.hisTglRequResp('<%= k %>', 3)" id="his_api_requ_<%= v.k %>">
 					<span class="glyphicon glyphicon-tree-deciduous" title="Toggle Request"></span>
 				</button>
+				<button type="button" class="btn btn-default btn-xs" onclick="api.redefineAPI('<%= k %>')">
+					<span class="glyphicon glyphicon-pencil" title="Define API"></span>
+				</button>
 			</td>
           </tr>
 		<% }}); %>
@@ -392,7 +396,17 @@
 	   var batch = 0;
 	   lemon.each(api.historySortDesc(histories), function(v, k) {
 		   var env = api.env.which(v.interf);
-		   if (lemon.isBlank(env)) { return; }
+		   if (lemon.isBlank(env)) {
+		   		env = {
+					id: -1,
+					env: 'UNKNOWN',
+					desc: '',
+					type: {
+						id: -2,
+						name: ''
+					}
+				};
+		   }
 		   no++, tmp = lemon.when.interval(v.when);
 	       if (tmp != api.previousInterval.when) {
 				batch = lemon.uniqueId();
@@ -449,7 +463,7 @@
 				</div>
 				<footer><span class="badge"><%= no %></span> <font class="text-<%= theStyle %>"><%= envDesc %></font></footer>
 				<footer>
-					<%= (v.name || '') + '  ' + v.api %> 
+					<%= (v.name || '') + '  ' + (v.api || '') %> 
 					<cite><code><font class="text-<%= theStyle %>"><%= v.interf %></font></code><%= ' ' + v.when %></cite>
 				</footer>
 			</blockquote>
@@ -498,7 +512,7 @@
       <li role="presentation" class="">
       	<a href="#server" role="tab" id="server-tab" data-toggle="tab" aria-controls="server" aria-expanded="false">Define Server</a>
       </li>
-      <li role="presentation" class="active">
+      <li role="presentation" class="">
       	<a href="#theapic" role="tab" id="theapic-tab" data-toggle="tab" aria-controls="theapic" aria-expanded="false">Define API</a>
       </li>
       <li role="presentation" class="dropdown">
@@ -549,7 +563,7 @@
 
       </div>
       <div role="tabpanel" class="tab-pane fade active" id="theapic" aria-labelledby="theapic-tab">
-        
+
       </div>
       <div role="tabpanel" class="tab-pane fade" id="import_tab" aria-labelledby="import_tab-tab">
         
@@ -567,6 +581,7 @@
 
 <div class="col-md-6" id="p_server_left">
 	<h4></h4>
+<form>
     <label for="ss_env"></label>
 	<select class="form-control" id="ss_env" name="env">
 		<%
@@ -590,10 +605,13 @@
 		<span class="glyphicon glyphicon-unchecked" aria-hidden="true"></span>  Default Server
 	</button>
 	<%= lemon.repeat('&nbsp;', 1) %>
-	<button type="button" class="btn btn-default" onclick="api.preference.help(this);">
+	<button type="button" class="btn btn-default" onclick="api.preference.help(this);" title="Show Server Define Help">
 		<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
 	</button>
-
+	<button type="button" class="btn btn-default" onclick="api.preference.newServId();" title="New Server ID">
+		<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+	</button>
+</form>
 	<h5> </h5>
 	<textarea id="ss_server" style="border:0px solid #ffffff;width:580px;height:221px;"></textarea>
 	<h5> </h5>
@@ -631,6 +649,28 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 </div>
 </script>
 
+<script type="text/html" id="setting_apic_tmpl">
+<div class="row" style="margin: 0 5px;">
+	<div class="col-md-8" id="p_apic_left">
+		<h4></h4>
+		<blockquote>
+			<form>
+			<select class="form-control" id="sa_interf" name="apiTypeId"> 
+			<% lemon.each(api.preference.interf(), function(group, idx) { %>
+				<option value="<%= group.id %>"><%= group.name %></option> 
+			<% }); %>
+			</select>
+			</form>
+			<h4></h4>
+			<textarea id="sa_apic" style="border: 0px solid #ffffff; width: 790px; height: 380px;"></textarea>
+			<footer> The property "note": [ <cite>string | string array | JSON</cite> ] </footer>
+		</blockquote>
+	</div>
+	<div class="col-md-4" id="p_apic_right">
+	</div>
+</div>
+</script>
+
 <script type="text/javascript">
 	root = window;
 	location.hash = 'api';
@@ -647,22 +687,27 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			when: '',
 			batch: 0
 		},
+		analyze: [
+		  	//a:3,b:4
+			{ id: 1, sep: ',', subsep: ':' },
+			//a=3,b=4
+			{ id: 2, sep: ',', subsep: '=' },
+			//a=3&b=4
+			{ id: 3, sep: '&', subsep: '=' }
+		],
 		initialize: function() {
-			this.intialized = true;
 			this.env.render();
 			this.cmd.render();
 			this.nav.render();
 			this.mod.render();
+			this.intialized = true;
+			root.onbeforeunload = function() {
+				return 'Leaving ...';
+			}
 		},
 		nav: {
 			render: function() {
 				$('.dropdown-toggle').dropdown();
-				$('[data-toggle="popover"]').popover({
-					trigger:'hover',
-					html:true
-				}).on('show.bs.popover', function() { 
-					$(this).data("bs.popover").tip().css({maxWidth: "600px"}); 
-				});
 				
 				var $req = $('#btn_request');
 				$req.click(function() {
@@ -696,9 +741,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 				$('#as_default').click(function() {
 					var data = api.getCleanRequestData();
-					var cmd = data.cmd;
-					if (cmd) {
-						api.defaultValue(cmd, data);
+					var capi = api.getCurrentAPI(data);
+					if (!lemon.isBlank(capi)) {
+						api.defaultValue(capi, data);
 						api.inlineTip('#as_default');
 					}
 				});
@@ -707,20 +752,54 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					var data = api.requ();
 					data = decodeURI(data);
 					data = decodeURIComponent(data);
+					api.requ(data);
+
+					var qidx = data.indexOf('?');
+					if (qidx != -1) {
+						var theServ = data.substr(0, qidx);
+						lemon.setEnv(theServ);
+						api.env.change(theServ);
+						data = data.substring(qidx + 1);
+					}
+
 					var lidx = data.indexOf('{');
 					var ridx = data.lastIndexOf('}');
-					api.requ(data);
 					if (lidx >= 0 && ridx >= 0) {
-						try {
-							api.requ(lemon.json(data.substring(lidx, ridx + 1)));
-							var theServ = data.substr(0, data.indexOf('?'));
-							lemon.setEnv(theServ);
-							api.env.change(theServ);
-						} catch(e) {
-							var eMsg = 'Invalid request JSON';
-							lemon.warn(e, eMsg);
-							api.tip(eMsg + ': ' + lemon.asStr(e.message));
+						data = data.substring(lidx, ridx + 1);
+					} 
+
+					lemon.each(api.analyze, function(v, i) {
+						if (data.indexOf(v.sep) != -1 && data.indexOf(v.subsep) != -1) {
+							if (1 == v.id) {
+								try {
+									api.requ(lemon.json('{' + data + '}'));
+									return false;
+								} catch(e1) { }
+							}
+
+							try {
+								var analyze = {};
+								lemon.each(data.split(v.sep), function(v, i) {
+									var kv = v.split(v.subsep);
+									analyze[kv[0]] = kv[1];
+								});
+								if (!lemon.isBlank(analyze)) {
+									api.requ(lemon.json(analyze));
+								}
+							} catch(e) {
+								var eMsg = 'Invalid request data';
+								lemon.warn(e, eMsg);
+								api.tip(eMsg + ': ' + lemon.asStr(e.message));
+							}
+							return false;
 						}
+					});
+				});
+
+				$('#define_api').click(function() {
+					var capi = api.getCurrentAPI();
+					if (!lemon.isBlank(capi)) {
+						api.redefineAPI(capi);
 					}
 				});
 
@@ -740,7 +819,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					title: [
 						'Request URL', 
 						'<div class="pull-right">',
-						'<span class="glyphicon glyphicon-pencil" title="encodeURIComponent" onclick="api.nav.copyEncodeUrl();"></span>',
+						'<span class="glyphicon glyphicon-pencil" title="encodeURIComponent" onclick="api.nav.copyEncodeUrl(this);"></span>',
 					 	'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
 				 		'<button type="button" class="close" aria-label="Close" onclick="javascript:$(\'#copy_url\').click();">',
 				 		'<span aria-hidden="true">&times;</span></button>',
@@ -768,9 +847,19 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					api.typeSearch(7);
 				});
 
-				$('#input_search').focus(function() {
+				$('#input_search').click(function() {
 					if ($('#btn_search').hasClass('active')) {
 						$('#btn_search').click();
+					}
+				});
+				$("#input_search").keypress(function(event) { 
+					if(event.ctrlKey && event.which == 13 || event.which == 10) { 
+						
+					} else if (event.shiftKey && event.which == 13 || event.which == 10) { 
+						
+					} else if (event.keyCode == "13") {
+						event.preventDefault();
+						$('#btn_search').click();         
 					}
 				});
 
@@ -784,12 +873,17 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				   		batch: 0
 				    };
 					var key = $('#input_search').val();
-					//1 Just All API, 2 Normal Search, 3 Advance, 4 Tag, 5 Fav, 6 ALL History, 7 Settings
+					//1 Just All API, 2 Normal Search, 3 Advance, 4 Tag, 5 Fav, 6 ALL History, 7 Settings, 
+					//8 complex or requ.{propA}:{valueA}|resp.{propB}:{valueB}, 9 complex and requ.{propA}:{valueA}&resp.{propB}:{valueB}
 					var searchType = 1;
 					var searchProp = '';
 					if (!lemon.isBlank(key)) {
 						searchType = 2;
-						if (key.indexOf(':') > 0) {
+						if (key.indexOf('|') > 0) {
+							searchType = 8;
+						} else if (key.indexOf('&') > 0) {
+							searchType = 9;
+						} else if (key.indexOf(':') > 0) {
 							searchType = 3;
 							var tmp = key.split(':');
 							searchProp = tmp[0];
@@ -857,7 +951,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 											histories[k] = r;
 										}
 									} else {
-										if (regEx.test(v.request.cmd) 
+										if (regEx.test(api.getRequestAPI(v.request) || '') 
 												|| regEx.test(r.desc) 
 												|| regEx.test(api.customHis(k, 'note'))) {
 											histories[k] = r;
@@ -868,6 +962,80 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						}
 						break;
 
+					case 8: //Complex
+					case 9:
+						var keys = [];
+						lemon.each(key.split(8 == searchType ? '|' : '&'), function(v, idx) {
+							var tmp = v.split(':'), cond = {}, condK = null;
+							if (lemon.startWith(tmp[0], '/l.')) {
+								cond = {
+									type: 'requ',
+									prop: tmp[0].replace('/l.', ''),
+									match: new RegExp(tmp[1])
+								};
+							} else if (lemon.startWith(tmp[0], '/r.')) {
+								cond = {
+									type: 'resp',
+									prop: tmp[0].replace('/r.', ''),
+									match: new RegExp(tmp[1])
+								};
+							} else {
+								cond = {
+									type: 'both',
+									prop: tmp[0],
+									match: new RegExp(tmp[1])
+								};
+							}
+							
+							keys.push(cond);
+						});
+						
+						lemon.store.forEach(function(k, v) {
+							if (v && !lemon.isBlank(v.request)) {
+								var condRArr = [];
+								lemon.each(keys, function(cond, idx) {
+									var condR = false;
+									switch (cond.type) {
+									case 'requ':
+										condR = cond.match.test(lemon.json.get(v.request, cond.prop));
+										break;
+									case 'resp':
+										condR = cond.match.test(lemon.json.get(v.response, cond.prop));
+										break;
+									case 'both':
+										condR = cond.match.test(lemon.json.get(v.request, cond.prop))
+											|| cond.match.test(lemon.json.get(v.response, cond.prop));
+										break;
+									}
+
+									condRArr.push(condR ? true : false);
+								});
+
+								var isSatisfy = condRArr[0];
+								for (var i = 1; i < condRArr.length; i++) {
+									//OR
+									if (8 == searchType) {
+										isSatisfy = isSatisfy || condRArr[i];
+										if (isSatisfy) {
+											break;
+										}
+									} 
+									//AND
+									else if (9 == searchType) {
+										isSatisfy = isSatisfy && condRArr[i];
+										if (!isSatisfy) {
+											break;
+										}
+									}
+								}
+
+								if (isSatisfy) {
+									histories[k] = api.nav.makeHis(v);
+								}
+							}
+						});
+						break;
+
 					case 4:	//Tag
 						lemon.each(api.tag(), function(v, k) {
 							if (lemon.isBlank(key)) {
@@ -875,7 +1043,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 									var hisTags = v1.tag || [];
 									if (hisTags.length > 0) {
 										var aHis = lemon.store(k1);
-										if (aHis && aHis.request && aHis.request.cmd) {
+										if (aHis && aHis.request) {
 											histories[k1] = api.nav.makeHis(aHis);
 										}
 									}
@@ -887,7 +1055,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 										var hisTags = v1.tag || [];
 										if (hisTags.indexOf(tagId) != -1) {
 											var aHis = lemon.store(k1);
-											if (aHis && aHis.request && aHis.request.cmd) {
+											if (aHis && aHis.request) {
 												histories[k1] = api.nav.makeHis(aHis);
 											}
 										}
@@ -904,12 +1072,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						});
 						break;
 					case 6:	//All
-						/* lemon.store.forEach(function(k, v) {
+						lemon.store.forEach(function(k, v) {
 							if (v && !lemon.isBlank(v.request)) {
 								histories[k] = api.nav.makeHis(v);
 							}
-						}); */
-						histories = api.getTrHis(1);
+						});
 						break;
 
 					case 7: //Settings
@@ -962,13 +1129,42 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 									$(this).css({'background-color': ''});   
 								});
 
+								lemon.prevDefineServId = null;
 								api.mirrorVal('#ss_server', {
 									id: "",
 									interf: "",
 									note: ""
 								}, {
 									width: 580,
-									height: 172
+									height: 172,
+									valchange: function(cm) {
+										try {
+											var servc = $.parseJSON(cm.getValue()), isStr = lemon.isString(servc.id), aservId = parseInt(servc.id);
+											if (aservId && aservId > 0) {
+												var cursor = cm.getCursor();
+												if (aservId != lemon.prevDefineServId) {
+													lemon.prevDefineServId = aservId;
+													servc = api.getServer(aservId);
+													if (isStr) {
+														cursor.ch = cursor.ch - 1;
+													}
+													
+													if (!lemon.isBlank(servc)) {
+														api.preference.showServer(servc);
+													} else {
+														servc = {
+															id: aservId,
+															interf: "",
+															note: ""
+														};
+														cm.setValue(lemon.json(servc));
+													}
+												}
+												cm.setCursor(cursor);
+											}
+										} catch(e) {
+										}
+									}
 								});
 
 								$('#ss_default').click(function() {
@@ -977,26 +1173,72 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								$('#p_server_right .thumbnail').click(function() {
 									var servId = parseInt($(this).attr('tid'));
 									var aServ = api.getServer(servId);
-									var showServ = lemon.clone(aServ);
-									delete showServ.type; delete showServ.asDefault; 
-									delete showServ.env; delete showServ.desc;
-									lemon.fillParam('#p_server_left', {
-										env: aServ.env,
-										typeId: aServ.type.id
-									});
-									if (aServ.asDefault && 1 == aServ.asDefault) {
-										api.nav.check('#ss_default', 2);
-									} else {
-										api.nav.check('#ss_default', 3);
-									}
-									api.mirrorVal('#ss_server', showServ);
+									api.preference.showServer(aServ);
 								});
+							} else if ('#theapic' == curHref) {
+								var settingAPIcHtml = lemon.tmpl($('#setting_apic_tmpl').html(), {});
+								$('#theapic').empty().append(settingAPIcHtml).show();
+								var apic = null;
+								if (lemon.apicedit) {
+									apic = lemon.clone(api.getAPI(lemon.apicedit));
+									lemon.fillParam('#p_apic_left', {
+										apiTypeId: apic.type.id
+									});
+									delete apic.type;
+								}
+
+								lemon.prevDefineId = lemon.apicedit;
+								api.mirrorVal('#sa_apic', apic || {
+									api: "",
+									desc: "",
+									note: "",
+									request: ""
+								}, {
+									lineNumbers: true,
+									height: 436,
+									width: 796,
+									valchange: function(cm) {
+										try {
+											var apic = $.parseJSON(cm.getValue()), apicId = apic.api;
+											if (apicId && apicId.length > 0) {
+												if (apicId != lemon.prevDefineId) {
+													lemon.prevDefineId = apicId;
+													apic = lemon.clone(api.getAPI(apicId));
+													
+													if (!lemon.isBlank(apic)) {
+														lemon.fillParam('#p_apic_left', {
+															apiTypeId: apic.type.id
+														});
+														delete apic.type;
+													} else {
+														apic = {
+															api: apicId,
+															desc: "",
+															note: "",
+															request: ""
+														};
+													}
+												}
+												var cursor = cm.getCursor();
+												cm.setValue(lemon.json(apic));
+												cm.setCursor(cursor);
+												after.rich.chgFontSize(cm, 15);
+											}
+										} catch(e) {
+										}
+									}
+								});
+								after.rich.chgFontSize(lemon.mirror["sa_apic"], 15);
 							}
 						}).on('hide.bs.tab', function (e) {
 							if (!api.preference.saveBasic()) {
 								return false;
 							}
 						});
+
+						if ('' == api.preference.tab.current) {
+							$('#theapic-tab').click();
+						}
 						break;
 					};
 				}, function(el) {
@@ -1046,14 +1288,17 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					$('#request_url').text(api.nav.humanreadRequest());
 				});
 			},
-			copyEncodeUrl: function() {
+			copyEncodeUrl: function(el) {
 				if ($('#request_url').length) {
-					$('#request_url').text(api.nav.humanreadRequest(true));
+					$(el).button('toggle');
+					$('#request_url').text(api.nav.humanreadRequest($(el).hasClass('active')));
 				}
 			},
 			makeHis: function(aHis) {
-				var desc = (api.getAPI(aHis.request.cmd) || {desc: ''}).desc;
+				var capi = api.getRequestAPI(aHis.request);
+				var desc = (api.getAPI(capi) || {desc: ''}).desc;
 				return {
+					api: capi,
 					when: aHis.when,
 					request: aHis.request,
 					response: aHis.response,
@@ -1123,7 +1368,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					return lemon.format('{0}?{1}={2}', lemon.getEnv(), requCfg.paramName, param);
 					
 				case 2:
-					return lemon.getUrl(lemon.getEnv(), $.parseJSON(param));
+					param = $.parseJSON(param);
+					if (encode) {
+						return lemon.getUrl(lemon.getEnv(), param);
+					}
+					var pair = [];
+					
+					lemon.each(param, function(v, k) {
+						pair.push(k + '=' + v);
+					});
+					return lemon.format('{0}?{1}', lemon.getEnv(), pair.join('&'));
 				}
 			},
 			textarea: function(selector, options) {
@@ -1230,7 +1484,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		},
 		description: function(selector, cmd, onShown, onHidden, options) {
 			api.popover(selector, function() {
-				var cloneAPI = lemon.clone(api.getAPI(cmd || (api.getCleanRequestData() || {cmd : ''}).cmd));
+				var capi = cmd || api.getRequestAPI(api.getCleanRequestData()) || '';
+				var cloneAPI = lemon.clone(api.getAPI(capi));
 				var note = cloneAPI.note;
 				delete cloneAPI.note;
 				var apiDefined = lemon.json.highlight(cloneAPI);
@@ -1280,7 +1535,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			lemon.each(histories, function(v, k) {
 				if (v && !lemon.isBlank(v.request)) {
 					v.k = k;
-					v.api = v.request.cmd;
+					v.api = v.api || api.getRequestAPI(v.request);
 					items.push(v)
 				}
 			});
@@ -1294,15 +1549,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
         	var intlNo = (pn - 1) * api.preference.basic().history.pageSize + 1;
 			return lemon.tmpl($('#his_tr_tmpl').html(), {histories: histories, intlNo: intlNo});
 		},
-		getHistories: function(pn) {
+		getHistories: function(pn, ps) {
 			var lastId = parseInt(lemon.store('last') || '0');
-			var items = {}, ps = api.preference.basic().history.pageSize, pn = pn || 1, offset = (pn - 1) * ps;
+			var items = {}, ps = ps || api.preference.basic().history.pageSize, pn = pn || 1, offset = (pn - 1) * ps;
 			var startId = lastId - offset;
 			
 			for (var idx = 0; idx < ps; idx++) {
 				var key = startId - idx, item = lemon.store(key);
-				if (item && item.request && item.request.cmd) {
-					var desc = (api.getAPI(item.request.cmd) || {desc: ''}).desc;
+				if (item && item.request) {
+					var desc = api.getAPI(item.api || api.getRequestAPI(item.request)).desc || '';
 					items[key] = {
 						when: item.when,
 						request: item.request,
@@ -1494,11 +1749,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						after[theAPI] = null;
 					}
 					if (!lemon.isBlank(data)) {
-						data = $.parseJSON(data || {});
-						var cmd = data.cmd;
-						if (cmd) {
-							api.defaultValue(cmd, data);
-						}
+						try {
+							data = $.parseJSON(data || {});
+							api.defaultValue(theAPI, data);
+						} catch(e) {}
 					}
 				});
 
@@ -1559,6 +1813,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		},
 		itemTagClose: function(hisId) {
 			$('#tags_' + hisId).popover('hide');
+		},
+		redefineAPI: function(target) {
+			lemon.apicedit = target.replace('api_', '');
+			if ($('#btn_search').hasClass('active')) {
+				$('#btn_search').click();
+			}
+			api.typeSearch(7);
 		},
 		hisTglRequResp: function(hisId, type) {
 			switch (type) {
@@ -2029,17 +2290,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			api.hisTglRequResp(key, 2);
 		},
 		onSelect: function(key) {
-			var item = api.getHoverOrSelectItem(key);
+			var item = api.getHoverOrSelectItem(key), capi = null;
 			if (!lemon.isBlank(item)) {
 				if (lemon.startWith(key, 'api_')) {
-					var requestV = item.request || {};
-					if (requestV.cmd) {
-						requestV = api.getAPIDefaultVal(requestV.cmd, requestV);
-					}
+					capi = key.replace('api_', '');
+					var requestV = api.getAPIDefaultVal(capi) || item.request || {};
 					api.requ(lemon.json(requestV));
 					api.resp(item.response);
 					$("#btn_search").click();
 				} else {
+					capi = item.api || api.getRequestAPI(item.request);
 					api.requ(lemon.json(item.request || {}));
 					api.resp(lemon.json(item.response || {}));
 					lemon.setEnv(item.interf);
@@ -2052,7 +2312,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					}
 				}
 				
-				lemon.setApi(item.request.cmd);
+				lemon.setApi(capi);
 
 				if (after.styled) {
 					
@@ -2144,6 +2404,17 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}, type || 'post');
 			});
 		},
+		getRequestAPI: function(data) {
+			var defineCfg = api.preference.basic();
+			if (lemon.isJson(data) && !lemon.isBlank(defineCfg.apiParamNameInRequest)) {
+				return data[defineCfg.apiParamNameInRequest];
+			}
+
+			return null;
+		},
+		getCurrentAPI: function(data) {
+			return lemon.getApi() ? lemon.getApi() : api.getRequestAPI(data || api.getCleanRequestData());
+		},
 		request: function(success, failure, type) {
 			var cleanData = api.getCleanRequestData();
 			var request = api.getRequestData(cleanData);
@@ -2152,12 +2423,14 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			var done = function(data, textStatus, jqXHR) {
 	           	 lemon.info(textStatus, 'request status');
 	        	 lemon.info(data, 'response');
+	        	 var rapi = api.getCurrentAPI(cleanData);
 	        	 lemon.store.set(api.uniqueId(), {
+		        	api: rapi,
 	 				when: lemon.when(),
 	 				request: cleanData, 
 	 				response: data,
 	 				interf: lemon.getEnv(),
-	 				name: api.getAPI(cleanData.cmd).desc
+	 				name: api.getAPI(rapi).desc
 	 			 });
 		         success && success(data);
 		         if (!after.styled) {
@@ -2287,6 +2560,36 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					this.tip(this.getWarn(this.valid.serv, null, 1), null, '#p_server_left', servHelpId);
 				}
 			},
+			showServer: function(aServ) {
+				var showServ = lemon.clone(aServ);
+				delete showServ.type; delete showServ.asDefault; 
+				delete showServ.env; delete showServ.desc;
+				lemon.fillParam('#p_server_left', {
+					env: aServ.env,
+					typeId: aServ.type.id
+				});
+				if (aServ.asDefault && 1 == aServ.asDefault) {
+					api.nav.check('#ss_default', 2);
+				} else {
+					api.nav.check('#ss_default', 3);
+				}
+				api.mirrorVal('#ss_server', showServ);
+			},
+			newServId: function() {
+				var theMaxId = 0;
+				lemon.each(api.preference.service(), function(env, k) {
+					lemon.each(env.serv, function(serv, k1) {
+						theMaxId = Math.max(theMaxId, serv.id);
+					});
+				});
+				try {
+					var aServ = $.parseJSON(api.mirrorVal('#ss_server'));
+					aServ.id = theMaxId + 1;
+					api.mirrorVal('#ss_server', aServ);
+				} catch(e) {
+					api.preference.tip('New Server ID', ' invalid JSON value, ' + e.message);
+				}
+			},
 			tab: {
 				current: '',
 				previous: ''
@@ -2294,51 +2597,212 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			valid: {
 				basic: { 
 					"{{Group name}}" : {
-						id: "", 
-						name: "" 
+						id: "[number, unique id]",
+						name: "[string]"
 					}
 				},
 				env: { 
 					environment: [ 
 						{ 
-							env: "", 
-							desc: "" 
+							env: "[string, unique string]", 
+							desc: "[string]"
 						} 
 					]
 				},
 				serv: {
-					id: "",
+					id: "[number, unique id]",
 					interf: "[string, request url]",
-					note: "[string|string array|JSON]",
+					note: "[string]",
 					//asDefault: "[number optional, 1 set default]",
 					params: "[JSON optional, add to request parameters]",
 					request: {
 						type: "[number, 1 wrap as a param eg: {{paramName}}={a:1,b:2}, 2 using lemon.getUrl eg: ?a=1&b=2]",
 						paramName: "[string, if type is 1 then must provide]"
 					}
+				},
+				interf: {
+					api: "[string, unique string]",
+					desc: "[string, interface description]",
+					note: "[string|string array|JSON]",
+					request: "[JSON, request data structure]"
 				}
 			},
 			saveBasic: function() {
-				var curHref = $(api.preference.tab.current).attr('href');
+				var step = '', curHref = $(api.preference.tab.current).attr('href');
 
 				if (curHref == '#server') {
-					var aServ = api.mirrorVal('#ss_server');
-					var aChoose = lemon.getParam('#p_server_left');
-					var asDefault = api.nav.check('#ss_default');
+					try {
+						step = 'Define Server';
+						var aServ = $.parseJSON(api.mirrorVal('#ss_server'));
+						var aChoose = lemon.getParam('#p_server_left');
+						var asDefault = api.nav.check('#ss_default');
+	
+						var theErr = '';
+						if ('' == aServ.id && '' == aServ.interf && '' == aServ.note) {
+							lemon.mirror['ss_server'] = undefined;
+							return true;
+						}
+						
+						if (aServ.id && aServ.interf) {
+							if (lemon.has(aServ, 'params') && !lemon.isJson(aServ.params)) {
+								theErr = 'the "params" must be a valid JSON. ';
+							} else if (lemon.has(aServ, 'request')) {
+								if (!lemon.isJson(aServ.request)) {
+									theErr = 'the "request" must define a valid JSON. {"type":"","paramName":""}';
+								} else if (lemon.has(aServ.request, 'type')) {
+									if (1 == aServ.request.type && !aServ.request.paramName) {
+										theErr = 'the "request" must define paramName when type is 1. ';
+									} else if (2 != aServ.request.type && 1 != aServ.request.type) {
+										theErr = 'the "request" must define a valid type 1 or 2.';
+									}
+								} else {
+									theErr = 'the "request" must define a valid type.';
+								}
+							}
+						} else {
+							theErr = api.preference.getWarn(api.preference.valid.serv, aServ);
+						}
+
+						if (!lemon.isBlank(theErr)) {
+							api.preference.tip(step, theErr);
+							return false;
+						}
+						
+
+						var theDefinedService = api.preference.service();
+						if (lemon.has(aServ, 'delete') && 1 == aServ['delete']) {
+							var keepServs = [], serverId = parseInt(aServ.id);
+							lemon.each(theDefinedService[aChoose.env].serv, function(serv, idx) {
+								if (serverId != serv.id) {
+									keepServs.push(serv);
+								}
+							});
+
+							theDefinedService[aChoose.env].serv = keepServs;
+							api.preference.service(theDefinedService);
+							lemon.mirror['ss_server'] = undefined;
+							api.env.render();
+							return true;
+						}
+
+						var theServs = theDefinedService[aChoose.env].serv;
+						var aDefineServ = lemon.extend({
+							asDefault: asDefault,
+							type: api.getInterfGroup(aChoose.typeId)
+						}, aServ);
+						aDefineServ.id = parseInt(aDefineServ.id);
+						aDefineServ.note = aDefineServ.note || '';
+						
+						var isModify = false;
+						lemon.each(theServs, function(serv, idx) {
+							if (serv.id == aDefineServ.id) {
+								theServs[idx] = lemon.extend(serv, aDefineServ);
+								isModify = true;
+								return false;
+							}
+						});
+
+						if (!isModify) {
+							theServs.push(aDefineServ);
+						}
+
+						api.preference.service(theDefinedService);
+					} catch(e) {
+						api.preference.tip(step, ' invalid JSON value, ' + e.message);
+						return false;
+					}
+
+					api.env.render();
 					lemon.mirror['ss_server'] = undefined;
-					
 				} 
 
-				else if (curHref == '#basic') {
-					var step = 'Interface Group';
+				else if (curHref == '#theapic') {
+					step = 'Define API', override = false;
 					try {
-						var theErr = '', theInterf = {};
+						var theAPIc = $.parseJSON(api.mirrorVal('#sa_apic'));
+
+						var theErr = '';
+						if ('' == theAPIc.api && '' == theAPIc.desc && '' == theAPIc.note && '' == theAPIc.request) {
+							lemon.mirror['sa_apic'] = undefined;
+							return true;
+						}
+
+						if (!lemon.has(theAPIc, 'api') || !lemon.has(theAPIc, 'desc') 
+								|| !lemon.has(theAPIc, 'request') || !lemon.has(theAPIc, 'note')) {
+							theErr = api.preference.getWarn(api.preference.valid.interf, theAPIc);
+						} else {
+							if (!lemon.isJson(theAPIc.request)) {
+								theErr = 'The property "request" must be a JSON.';
+							} else if (!(lemon.isString(theAPIc.note) || lemon.isArray(theAPIc.note) || lemon.isJson(theAPIc.note))) {
+								theErr = 'The property "note" must be a [string | string array | JSON].';
+							} else if (lemon.isArray(theAPIc.note)) {
+								var hasNoneStrEl = false;
+								lemon.each(theAPIc.note, function(v, idx) {
+									if (!lemon.isString(v)) {
+										hasNoneStrEl = true;
+										return false;
+									}
+								});
+								if (hasNoneStrEl) {
+									theErr = 'The property "note" must be a string array when define as array.';
+								}
+							} else if (lemon.isBlank(theAPIc.desc)) {
+								theErr = 'The property "desc" cannot be empty.';
+							} else if (lemon.isBlank(theAPIc.request)) {
+								theErr = 'The property "request" cannot be a empty JSON.';
+							}
+						}
+
+						if (!lemon.isBlank(theErr)) {
+							api.preference.tip(step, theErr);
+							return false;
+						}
+
+						theAPIc.type = api.getInterfGroup(lemon.getParam('#p_apic_left').apiTypeId);
+						var theDefinedInterf = api.preference.defines(),
+							isDel = lemon.has(theAPIc, 'delete') && 1 == theAPIc['delete'], aDefines = [], isNewDefine = true;
+						
+						lemon.each(theDefinedInterf.items, function(v, idx) {
+							if (theAPIc.api == v.api) {
+								if (!isDel) {
+									isNewDefine = false;
+									aDefines.push(lemon.extend(v, theAPIc));
+								}
+							} else {
+								aDefines.push(v);
+							}
+						});
+
+						if (!isDel && isNewDefine) {
+							aDefines.push(theAPIc);
+						}
+
+						theDefinedInterf.items = aDefines;
+						api.preference.defines(theDefinedInterf);
+						
+					} catch(e) {
+						api.preference.tip(step, ' invalid JSON value, ' + e.message);
+						return false;
+					}
+
+					api.cmd.render();
+					lemon.mirror['sa_apic'] = undefined;
+					//lemon.apicedit = null;
+				}
+
+				else if (curHref == '#basic') {
+					step = 'Interface Group';
+					try {
+						var theErr = '', theInterf = {}, override = false;
 						var theInterfs = $.parseJSON(api.mirrorVal('#p_interf')), ids = [];
 						lemon.each(theInterfs, function(v, k) {
 							if (v && v.id && v.name) {
 								if (ids.indexOf(v.id) == -1) {
-									theInterf[k] = v;
-									ids.push(v.id);
+									if (override = (lemon.has(v, 'delete') && 1 == v['delete'])) {
+									} else {
+										theInterf[k] = v;
+										ids.push(v.id);
+									}
 								} else {
 									theErr = 'the id ' + v.id + ' is duplicated';
 									return false;
@@ -2354,9 +2818,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							api.preference.tip(step, theErr);
 							return false;
 						}
-						api.preference.interf(theInterf);
+						api.preference.interf(theInterf, override);
 						
-						step = 'Environment';
+						step = 'Environment', override = false;
 						var theEnvs = $.parseJSON(api.mirrorVal('#p_env')).environment;
 						var theEnv = {}; theErr = '', valid = api.preference.valid.env, envs = [];
 						if (!theEnvs) {
@@ -2376,8 +2840,12 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 									} else {
 										r.serv = [];
 									}
-									theEnv[v.env] = r;
-									envs.push(v.env);
+
+									if (override = (lemon.has(v, 'delete') && 1 == v['delete'])) {
+									} else {
+										theEnv[v.env] = r;
+										envs.push(v.env);
+									}
 								} else {
 									theErr = 'the env ' + v.env + ' is duplicated';
 									return false;
@@ -2391,17 +2859,32 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							api.preference.tip(step, theErr);
 							return false;
 						}
-						api.preference.service(theEnv);
+						api.preference.service(theEnv, override);
 
-						step = 'Configuration';
+						step = 'Configuration', override = false;
 						var theConfig = $.parseJSON(api.mirrorVal('#p_config'));
-						api.preference.basic(theConfig);
+						if (override = (lemon.has(theConfig, 'delete'))) {
+							var theD = theConfig['delete'];
+							if (theD && theD.indexOf('.') > 0) {
+								var lastD = theD.lastIndexOf('.');
+								var val = lemon.json.get(theConfig, theD.substring(0, lastD));
+								delete val[theD.substring(lastD + 1)];
+							} else {
+								delete theConfig[theD];
+							}
+							delete theConfig['delete'];
+						}
+						
+						api.preference.basic(theConfig, override);
 					} catch(e) {
 						api.preference.tip(step, ' invalid JSON value, ' + e.message);
 						return false;
 					}
+
+					api.env.render();
+					api.cmd.render();
 				}
-				
+
 				return true;
 			},
 			getWarn: function(valid, wrong, column) {
@@ -2448,11 +2931,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				$(selector || '#message_settings').append(html.join(''));
 				return tipId;
 			},
-			basic: function(preference) {
-				return api.preference.val('basic', preference);
+			basic: function(preference, override) {
+				return api.preference.val('basic', preference, override);
 			},
-			interf: function(preference) {
-				return api.preference.val('interf', preference);
+			interf: function(preference, override) {
+				return api.preference.val('interf', preference, override);
 			},
 			env: function(preference) {
 				var env = {
@@ -2466,13 +2949,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				});
 				return env;
 			},
-			service: function(preference) {
-				return api.preference.val('service', preference);
+			service: function(preference, override) {
+				return api.preference.val('service', preference, override);
 			},
-			defines: function(preference) {
-				return api.preference.val('defines', preference);
+			defines: function(preference, override) {
+				return api.preference.val('defines', preference, override);
 			},
-			val: function(key, val) {
+			val: function(key, val, override) {
 				var preference = 'preference';
 				var preferences = lemon.store(preference) || {};
 				if (lemon.isUndefined(key)) {
@@ -2484,7 +2967,12 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					return defined;
 				}
 
-				preferences[key] = lemon.extend(defined, val);
+				if (override) {
+					preferences[key] = val;
+				} else {
+					preferences[key] = lemon.extend(defined, val);
+				}
+				
 				lemon.store(preference, preferences);
 				return preferences[key];
 			},
@@ -2553,7 +3041,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}
 			},
 			render: function() {
-				api.env.load();
+				if (!api.intialized) {
+					api.env.load();
+				}
 				var $env = $('#which_env'); $env.empty();
 				
 				lemon.each(api.preference.service(), function(envGroup, k) {
@@ -2612,14 +3102,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				if (lemon.isBlank(env)) {
 					return;
 				}
+				
 				var desc = env.desc + '  ' + env.type.name + (lemon.isBlank(env.note) ? '' : (' - ' + env.note));
 				switch(env.env) {
-				case 'TEST': 
-					api.msg('success', desc , interf);
-					break;
 				case 'PRODUCT':
 					api.msg('danger', desc, interf)
 						.append('&nbsp;&nbsp;&nbsp;&nbsp;<strong>Danger !!!</strong>');
+					break;
+				default:
+					api.msg('success', desc , interf);
 					break;
 				}
 				if ($('#request_url').length) {
@@ -2657,6 +3148,21 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						}
 					});
 				});
+
+				if (lemon.isBlank(result)) {
+					result = {
+						env: "AUTOGENERATION",
+						desc: "Autogeneration Environment",
+						type: {
+							id: -20,
+							name: "Undefined API"
+					    },
+					    interf: interf,
+					    note: "Temporary",
+					    id: -10
+					};
+				}
+				
 				return result;
 			}
 		},
@@ -2704,6 +3210,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					});
 				});
 
+				$('[data-toggle="popover"]').popover({
+					trigger:'hover',
+					html:true
+				}).on('show.bs.popover', function() { 
+					$(this).data("bs.popover").tip().css({maxWidth: "600px"}); 
+				});
+				
 				$('#which_api blockquote').hover(function(){  
 					$(this). addClass('block-grey');   
 				},function(){  
@@ -2846,11 +3359,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				content: '',
 				gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
 				  	extraKeys: {
-				    	"F11": function(cm) {
-				    		after.rich.fullscreenTgl(cm);
-				   		},
 				    	"Esc": function(cm) { 
-					    	after.rich.fullscreenTgl(cm, false) 
+					    	after.rich.fullscreenTgl(cm) 
 					    },
 				    	"Ctrl-J": "autocomplete",
 				    	"Ctrl-Q": function(cm){ 
@@ -2862,14 +3372,31 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 			rich.setSize(options.width || null, options.height || 435);
 			rich.on('inputRead', function(cm, changeObj) {
-				after.rich.fmt(cm);
+				if (options.valchange && lemon.isFunc(options.valchange)) {
+					options.valchange(cm, changeObj);
+				} else {
+					after.rich.fmt(cm);
+				}
 			});
 			
 			return rich;
 		},
 		rich: {
 			fullscreenTgl: function(cm, full) {
+				if (!cm.getOption('fullScreen')) {
+					after.fullBefore = {
+						lineNumbers: cm.getOption('lineNumbers')
+					};
+				}
+				
 				cm.setOption("fullScreen", lemon.isUndefined(full) ? !cm.getOption("fullScreen") : full);
+				if (cm.getOption('fullScreen')) {
+					cm.setOption('lineNumbers', true);
+				} else {
+					lemon.each(after.fullBefore, function(v, k) {
+						cm.setOption(k, v);
+					});
+				}
 			},
 			fmt: function(cm) {
 				var cursor = cm.getCursor();
@@ -2879,6 +3406,17 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					lemon.warn(e, 'format error.');
 				}
 				cm.setCursor(cursor);
+			},
+			chgFontSize: function(cm, size){
+				after.rich.chgStyle(cm, {
+					'font-size': size + 'px'
+				});
+			},
+			chgStyle: function(cm, styles) {
+				lemon.each(styles || {}, function(v, k) {
+					cm.getWrapperElement().style[k] = v;
+				});
+				cm.refresh();
 			}
 		}
 	};
@@ -2893,7 +3431,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			//1 wrap request data into a parameter ('paramName' value), 2 using lemon.getUrl eg: ?a=1&b=2
 			type: 1,
 			paramName: 'data'
-		}
+		},
+		apiParamNameInRequest: 'cmd'
 	};
 
 	var interf = {
