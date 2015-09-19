@@ -524,7 +524,11 @@
           <li><a href="#export_tab" role="tab" id="export_tab-tab" data-toggle="tab" aria-controls="export_tab">@Export</a></li>
         </ul>
       </li>
+      <li role="presentation">
+      	<button type="button" class="btn btn-info btn-xs" onclick="api.preference.close();"> <span class="glyphicon glyphicon-log-out" title="Tags"></span> Discard Changes</button>
+      </li>
     </ul>
+
     <div id="myTabContent" class="tab-content" style="overflow-y:auto;height:550px;">
       <div id="message_settings"></div>
       <div role="tabpanel" class="tab-pane fade in" id="basic" aria-labelledby="basic-tab">
@@ -701,9 +705,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			this.nav.render();
 			this.mod.render();
 			this.intialized = true;
-			root.onbeforeunload = function() {
+			/*root.onbeforeunload = function() {
 				return 'Leaving ...';
-			}
+			}*/
 		},
 		nav: {
 			render: function() {
@@ -750,8 +754,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 				$('#from_url').click(function() {
 					var data = api.requ();
-					data = decodeURI(data);
-					data = decodeURIComponent(data);
+					try {
+						data = decodeURI(data);
+					} catch(e) {
+						lemon.warn(e, 'decodeURI');
+					}
+					try {
+						data = decodeURIComponent(data);
+					} catch(e) {
+						lemon.warn(e, 'decodeURIComponent');
+					}
 					api.requ(data);
 
 					var qidx = data.indexOf('?');
@@ -765,41 +777,63 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					var lidx = data.indexOf('{');
 					var ridx = data.lastIndexOf('}');
 					if (lidx >= 0 && ridx >= 0) {
-						data = data.substring(lidx, ridx + 1);
+						data = data.substring(lidx + 1, ridx);
 					} 
 
-					lemon.each(api.analyze, function(v, i) {
+					var isContinue = true;
+					for (var i = 0; i < api.analyze.length; i++) {
+						var v = api.analyze[i], analyze = {};;
 						if (data.indexOf(v.sep) != -1 && data.indexOf(v.subsep) != -1) {
 							if (1 == v.id) {
 								try {
-									api.requ(lemon.json('{' + data + '}'));
-									return false;
-								} catch(e1) { }
+									analyze = $.parseJSON('{' + data + '}');
+									api.requ(lemon.json(analyze));
+									isContinue = false;
+									break;
+								} catch(e1) {}
 							}
 
 							try {
-								var analyze = {};
-								lemon.each(data.split(v.sep), function(v, i) {
-									var kv = v.split(v.subsep);
+								lemon.each(data.split(v.sep), function(v1, i) {
+									var kv = v1.split(v.subsep);
 									analyze[kv[0]] = kv[1];
 								});
 								if (!lemon.isBlank(analyze)) {
 									api.requ(lemon.json(analyze));
+									isContinue = false;
+									break;
 								}
 							} catch(e) {
 								var eMsg = 'Invalid request data';
 								lemon.warn(e, eMsg);
 								api.tip(eMsg + ': ' + lemon.asStr(e.message));
 							}
-							return false;
 						}
-					});
+					};
+
+					if (isContinue) {
+						try {
+							analyze = {}; var onlyMainSep = null;
+							if (data.indexOf(onlyMainSep = '=') != -1 || data.indexOf(onlyMainSep = ':') != -1) {
+								var seps = data.split(onlyMainSep);
+								analyze[seps[0]] = seps[1];
+								api.requ(lemon.json(analyze));
+							}
+						} catch(e) {}
+					}
+
+					lemon.setApi(api.getRequestAPI(analyze) || null);
 				});
 
 				$('#define_api').click(function() {
 					var capi = api.getCurrentAPI();
 					if (!lemon.isBlank(capi)) {
 						api.redefineAPI(capi);
+					} else if (!lemon.isBlank(api.requ())) {
+						var cenv = api.env.which(lemon.getEnv());
+						if (cenv.id = -10) {
+							api.redefineAPI('new');
+						}
 					}
 				});
 
@@ -1180,11 +1214,20 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								$('#theapic').empty().append(settingAPIcHtml).show();
 								var apic = null;
 								if (lemon.apicedit) {
-									apic = lemon.clone(api.getAPI(lemon.apicedit));
-									lemon.fillParam('#p_apic_left', {
-										apiTypeId: apic.type.id
-									});
-									delete apic.type;
+									if ('new' == lemon.apicedit) {
+										apic = {
+											api: "",
+											desc: "",
+											note: "",
+											request: api.getCleanRequestData()
+										};
+									} else {
+										apic = lemon.clone(api.getAPI(lemon.apicedit));
+										lemon.fillParam('#p_apic_left', {
+											apiTypeId: apic.type.id
+										});
+										delete apic.type;
+									}
 								}
 
 								lemon.prevDefineId = lemon.apicedit;
@@ -1359,6 +1402,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			getRequestURLwithParams: function(param, encode) {
 				var curServ = api.env.which(lemon.getEnv());
 				var requCfg = curServ.request || api.preference.basic().request;
+				if (-10 == curServ.id) {
+					requCfg.type = 2;
+				}
 				//1 wrap request data into a parameter ('paramName' value), 2 using lemon.getUrl eg: ?a=1&b=2
 				switch(requCfg.type) {
 				case 1:
@@ -2627,9 +2673,17 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					request: "[JSON, request data structure]"
 				}
 			},
+			close: function() {
+				api.preference.closeanyway = true;
+				$('#btn_search').click();
+			},
 			saveBasic: function() {
-				var step = '', curHref = $(api.preference.tab.current).attr('href');
+				if (api.preference.closeanyway) {
+					api.preference.closeanyway = false;
+					return true;
+				}
 
+				var step = '', curHref = $(api.preference.tab.current).attr('href');
 				if (curHref == '#server') {
 					try {
 						step = 'Define Server';
@@ -2685,7 +2739,6 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							return true;
 						}
 
-						var theServs = theDefinedService[aChoose.env].serv;
 						var aDefineServ = lemon.extend({
 							asDefault: asDefault,
 							type: api.getInterfGroup(aChoose.typeId)
@@ -2694,6 +2747,17 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						aDefineServ.note = aDefineServ.note || '';
 						
 						var isModify = false;
+						if (1 == aDefineServ.asDefault) {
+							lemon.each(theDefinedService, function(env, k) {
+								lemon.each(env.serv, function(serv, idx) {
+									if (1 == serv.asDefault) {
+										serv.asDefault = 0;
+									}
+								});
+							});
+						}
+
+						var theServs = theDefinedService[aChoose.env].serv;
 						lemon.each(theServs, function(serv, idx) {
 							if (serv.id == aDefineServ.id) {
 								theServs[idx] = lemon.extend(serv, aDefineServ);
@@ -2746,6 +2810,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								if (hasNoneStrEl) {
 									theErr = 'The property "note" must be a string array when define as array.';
 								}
+							} else if (lemon.isBlank(theAPIc.api)) {
+								theErr = 'The property "api" cannot be empty.';
 							} else if (lemon.isBlank(theAPIc.desc)) {
 								theErr = 'The property "desc" cannot be empty.';
 							} else if (lemon.isBlank(theAPIc.request)) {
