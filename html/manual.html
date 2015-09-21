@@ -297,11 +297,13 @@
         </tbody>
      </table>
 	<% } %>
+
 	<% if (showHisBtn) { %>
         <button type="button" class="btn btn-info btn-lg btn-block" id="btn_show_match_his">Show Match Histories</button>
 	<% } %>
 
   	<% if (!lemon.isBlank(histories)) { %>
+	<div id="his_table">
 	<!-- Table -->
 	<table class="table table-hover">
 		<caption>History Request</caption>
@@ -380,6 +382,7 @@
 		<%= theHisTrs %>
         </tbody>
      </table>
+	</div>
 	<% } %>
   </div>
 </div>
@@ -908,6 +911,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					lemon.defaults = [];
 					lemon.tags = [];
 					lemon.descs = [];
+					lemon.nextHis = null;
 					api.previousInterval = {
 				   		when: '',
 				   		batch: 0
@@ -1004,7 +1008,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 									match: regEx
 								});
 							}
-							lemon.searchconds = conds;
+							
+							lemon.searchconds = { opt: 1, exp: conds };
+							if (lemon.isBlank(apis)) {
+								var r  = api.queryNextHis(lemon.searchconds);
+								if (r.realSize > 0) {
+									lemon.searchconds.now = true;
+									histories = r.items;
+								}
+								showHisBtn = false;
+							}
 
 							/*
 							lemon.store.forEach(function(k, v) {
@@ -1057,7 +1070,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							keys.push(cond);
 						});
 
-						api.showMatchedHistories(keys);
+						var opt = 8 == searchType ? 1 : 2;
+						api.showMatchedHistories({ opt: opt, exp: keys });
 						break;
 
 					case 4:	//Tag
@@ -1115,14 +1129,6 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						theHisTrs: api.getTrHis(1, histories)
 					});
 				}, { title: '', trigger: 'click' }, function(el) {
-					if ([1,2,3].indexOf(lemon.searchType) != -1) {
-						$(el).data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_search_body'});
-	                    api.scroll('#scroll_search_body', function() {
-	                        ++lemon.currentP;
-	    					alert(lemon.currentP);
-	                    });
-					}
-
 					switch(lemon.searchType) {
 					case 1:
 					case 2:
@@ -1142,6 +1148,18 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		                    	api.interfType(v.id);
 		                    });
 		                });
+
+		                if (lemon.searchconds.now) {
+		                	$('#btn_search').data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_search_body'});
+		    	            api.scroll('#scroll_search_body', function() {
+		    	            	var queryR = api.queryNextHis(lemon.searchconds);
+		    	            	$('#his_body').append(api.getQueryTrHis(queryR.items, lemon.nextHis.intlNo));
+		    	            });
+		    	            if (lemon.nextHis.mayHasNext) {
+			    	            lemon.scrollNext = true;
+			    	        }
+			            }
+
 						break;
 					case 7:
 						$(el).data("bs.popover").tip().css({left:0});
@@ -1309,7 +1327,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				   		when: '',
 				   		batch: 0
 				    };
-                    return lemon.tmpl($('#table_tmpl').html(), {histories: 1, apis: {}, theHisTrs: api.getTrHis()});
+                    return lemon.tmpl($('#table_tmpl').html(), {histories: 1, apis: {}, showHisBtn: false, theHisTrs: api.getTrHis()});
                 }, { title: '', trigger: 'click' }, function(el) {
                 	$(el).data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_body'});
                     api.scroll('#scroll_body', function() {
@@ -1599,21 +1617,78 @@ lemon.each(api.preference.service(), function(envGroup, k) {
         	var intlNo = (pn - 1) * api.preference.basic().history.pageSize + 1;
 			return lemon.tmpl($('#his_tr_tmpl').html(), {histories: histories, intlNo: intlNo});
 		},
-		showMatchedHistories: function(conds, ps, lastId) {
-console.log(conds)
+		getQueryTrHis: function(histories, intlNo) {
+			return lemon.tmpl($('#his_tr_tmpl').html(), {histories: histories, intlNo: intlNo});
 		},
-		queryHistories: function(conds, ps, lastId) {
-			//conds: [{type: '[requ|resp|both]', prop: '[string, support nest property]', match: '[RegExp]' }]
-			conds = lemon.isArray(conds) ? conds : [conds];
+		showMatchedHistories: function(conds, ps, lastId) {
+			if (!$('#scroll_search_body').length) {
+				$('#btn_search').data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_search_body'});
+
+				if (!$('#his_table').length) {
+		            var showHis = {show: 1};
+		            var hisHtml = lemon.tmpl($('#table_tmpl').html(), {
+						histories: showHis, 
+						apis: {}, 
+						showHisBtn: false,
+						theHisTrs: ''
+					});
+		            $('#scroll_search_body').append($(hisHtml).find('#his_table').html());
+		            $('#btn_search').data("bs.popover").tip().css({maxWidth: "100%"});
+				}
+
+				lemon.nextHis = null;
+	            api.scroll('#scroll_search_body', function() {
+	            	var queryR = api.queryNextHis(conds);
+	            	$('#his_body').append(api.getQueryTrHis(queryR.items, lemon.nextHis.intlNo));
+	            });
+			}
+
+			var queryR = api.queryNextHis(conds);
+        	$('#his_body').append(api.getQueryTrHis(queryR.items, lemon.nextHis.intlNo));
+			
+		},
+		queryNextHis: function(conds) {
+			if (lemon.isBlank(lemon.nextHis)) {
+				lemon.nextHis = {
+					lastId: null,
+					intlNo: 1,
+					ps: null,
+					rs: null,
+					mayHasNext: true
+				};
+			} else {
+				lemon.nextHis.intlNo = lemon.nextHis.rs + lemon.nextHis.intlNo;
+			}
+
+			if (lemon.nextHis.mayHasNext) {
+				var queryR = api.queryHistories(conds, lemon.nextHis.ps, lemon.nextHis.lastId);
+				lemon.nextHis = {
+					lastId: queryR.lastId,
+					ps: queryR.pageSize,
+					rs: queryR.realSize,
+					intlNo: lemon.nextHis.intlNo,
+					mayHasNext: queryR.mayHasNext
+				};
+				
+				return queryR;
+			}
+
+			return {};
+		},
+		queryHistories: function(condition, ps, lastId) {
+			/*condition: {
+				opt: 'number, 1 or(||) 2 and(&&)', 
+				exp: [{type: '[requ|resp|both]', prop: '[string, support nest property]', match: '[RegExp]' }]
+			} */
 			lastId = lastId || parseInt(lemon.store('last') || '0');
-			var items = {}, ps = ps || api.preference.basic().history.pageSize, matched = 0;
+			var items = {}, ps = ps || api.preference.basic().searchPageSize, matched = 0;
 
 			for (var idx = lastId; idx >= 0; idx--) {
-				lemon.info(idx);
+				lemon.info(idx + ', ' + api.customHis(idx, 'note'));
 				var item = lemon.store(idx);
 				if (item && item.request) {
 					var condRArr = [];
-					lemon.each(conds, function(cond, i) {
+					lemon.each(condition.exp, function(cond, i) {
 						var condR = false;
 						switch (cond.type) {
 						case 'requ':
@@ -1627,13 +1702,20 @@ console.log(conds)
 								|| cond.match.test(lemon.json.get(item.response, cond.prop));
 							break;
 						case 'self':
-							condR = cond.match.test(lemon.json.get(item, cond.prop));
-
-							var capi = aHis.api || api.getRequestAPI(aHis.request);
-				var desc = aHis['name'] || (api.getAPI(capi) || {desc: ''}).desc;
+							if ('api' == cond.prop || 'name' == cond.prop) {
+								var capi = item.api || api.getRequestAPI(item.request);
+								if ('name' == cond.prop) {
+									var desc = item['name'] || (api.getAPI(capi) || {desc: ''}).desc;
+									condR = cond.match.test(desc);
+								} else {
+									condR = cond.match.test(capi);
+								}
+							} else {
+								condR = cond.match.test(lemon.json.get(item, cond.prop));
+							}
 							break;
 						case 'cust':
-							condR = cond.match.test(api.customHis(idx, cond.prop);
+							condR = cond.match.test(api.customHis(idx, cond.prop));
 							break;
 						}
 
@@ -1643,14 +1725,14 @@ console.log(conds)
 					var isSatisfy = condRArr[0];
 					for (var i = 1; i < condRArr.length; i++) {
 						//OR
-						if (8 == searchType) {
+						if (1 == condition.opt) {
 							isSatisfy = isSatisfy || condRArr[i];
 							if (isSatisfy) {
 								break;
 							}
 						} 
 						//AND
-						else if (9 == searchType) {
+						else if (2 == condition.opt) {
 							isSatisfy = isSatisfy && condRArr[i];
 							if (!isSatisfy) {
 								break;
@@ -1673,6 +1755,8 @@ console.log(conds)
 			return {
 				lastId: hasNext ? (lastId - 1) : null,
 				mayHasNext: hasNext,
+				pageSize: ps,
+				realSize: matched,
 				items: items
 			}
 		},
@@ -2275,7 +2359,17 @@ console.log(conds)
                 template: popoverTemplate,
                 placement: "bottom",
                 html: true
-            }, options || {}))
+            }, options || {}, {
+            	//Prevent popover content function is executed twice
+                title: '<div id="prevent_twice">&nbsp;</div>'
+            })).on('shown.bs.popover', function() {
+            	if (lemon.isBlank(options.title)) {
+                	$('#prevent_twice').parent().hide();
+                } else {
+                	$('#prevent_twice').parent().html(options.title);
+                	$('#prevent_twice').hide();
+                }
+            });
             
 			return thePopover;
 		},
@@ -3572,7 +3666,8 @@ console.log(conds)
 			type: 1,
 			paramName: 'data'
 		},
-		apiParamNameInRequest: 'cmd'
+		apiParamNameInRequest: 'cmd',
+		searchPageSize: 1
 	};
 
 	var interf = {
