@@ -297,6 +297,9 @@
         </tbody>
      </table>
 	<% } %>
+	<% if (showHisBtn) { %>
+        <button type="button" class="btn btn-info btn-lg btn-block" id="btn_show_match_his">Show Match Histories</button>
+	<% } %>
 
   	<% if (!lemon.isBlank(histories)) { %>
 	<!-- Table -->
@@ -733,12 +736,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					if (!api.chkRequest()) { return; }
 					var cleanData = api.getCleanRequestData();
 					var param = api.getRequestData(cleanData);
-					lemon.store.set(api.uniqueId(), {
-						when: lemon.when(),
-						request: cleanData, 
-						response: null,
-						interf: lemon.getEnv()
-					});
+					var rapi = api.getCurrentAPI(cleanData);
+		        	lemon.store.set(api.uniqueId(), {
+			        	api: rapi,
+		 				when: lemon.when(),
+		 				request: cleanData, 
+		 				response: null,
+		 				interf: lemon.getEnv(),
+		 				name: api.getAPI(rapi).desc
+		 			});
 					
 					window.open(api.nav.getRequestURLwithParams(lemon.json.reverse(param), true));
 				});
@@ -935,11 +941,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							}
 						}
 					}
-					lemon.searchType = searchType;
 
-					var regEx = new RegExp(key);
-					var apis = {};
-					var histories = {};
+					lemon.searchType = searchType;
+					var regEx = new RegExp(key), apis = {}, histories = {}, showHisBtn = false;
 
 					switch (searchType) {
 					case 1:
@@ -975,6 +979,34 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						});
 
 						if (!justAllAPI) {
+							showHisBtn = true;
+							var conds = [];
+							if (isAdvance) {
+								conds.push({
+									type: 'both',
+									prop: searchProp,
+									match: regEx
+								});
+							} else {
+								conds.push({
+									type: 'self',
+									prop: 'api',
+									match: regEx
+								});
+								conds.push({
+									type: 'self',
+									prop: 'name',
+									match: regEx
+								});
+								conds.push({
+									type: 'cust',
+									prop: 'note',
+									match: regEx
+								});
+							}
+							lemon.searchconds = conds;
+
+							/*
 							lemon.store.forEach(function(k, v) {
 								if (v && !lemon.isBlank(v.request)) {
 									
@@ -993,6 +1025,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 									}
 								}
 							});
+							*/
 						}
 						break;
 
@@ -1023,51 +1056,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							
 							keys.push(cond);
 						});
-						
-						lemon.store.forEach(function(k, v) {
-							if (v && !lemon.isBlank(v.request)) {
-								var condRArr = [];
-								lemon.each(keys, function(cond, idx) {
-									var condR = false;
-									switch (cond.type) {
-									case 'requ':
-										condR = cond.match.test(lemon.json.get(v.request, cond.prop));
-										break;
-									case 'resp':
-										condR = cond.match.test(lemon.json.get(v.response, cond.prop));
-										break;
-									case 'both':
-										condR = cond.match.test(lemon.json.get(v.request, cond.prop))
-											|| cond.match.test(lemon.json.get(v.response, cond.prop));
-										break;
-									}
 
-									condRArr.push(condR ? true : false);
-								});
-
-								var isSatisfy = condRArr[0];
-								for (var i = 1; i < condRArr.length; i++) {
-									//OR
-									if (8 == searchType) {
-										isSatisfy = isSatisfy || condRArr[i];
-										if (isSatisfy) {
-											break;
-										}
-									} 
-									//AND
-									else if (9 == searchType) {
-										isSatisfy = isSatisfy && condRArr[i];
-										if (!isSatisfy) {
-											break;
-										}
-									}
-								}
-
-								if (isSatisfy) {
-									histories[k] = api.nav.makeHis(v);
-								}
-							}
-						});
+						api.showMatchedHistories(keys);
 						break;
 
 					case 4:	//Tag
@@ -1121,13 +1111,27 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					return lemon.tmpl($('#table_tmpl').html(), {
 						histories: histories, 
 						apis: apis, 
+						showHisBtn: showHisBtn,
 						theHisTrs: api.getTrHis(1, histories)
 					});
 				}, { title: '', trigger: 'click' }, function(el) {
+					if ([1,2,3].indexOf(lemon.searchType) != -1) {
+						$(el).data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_search_body'});
+	                    api.scroll('#scroll_search_body', function() {
+	                        ++lemon.currentP;
+	    					alert(lemon.currentP);
+	                    });
+					}
+
 					switch(lemon.searchType) {
 					case 1:
 					case 2:
 					case 3:
+						$('#btn_show_match_his').click(function() {
+							$(this).button('loading');
+							api.showMatchedHistories(lemon.searchconds);
+							$(this).slideToggle();
+						});
 						$('#btn_tgl_api').click(function() {
 							$(el).button('toggle');
 							$('pre[tgl-api="tgl"]').fadeToggle("slow", "linear");
@@ -1338,8 +1342,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}
 			},
 			makeHis: function(aHis) {
-				var capi = api.getRequestAPI(aHis.request);
-				var desc = (api.getAPI(capi) || {desc: ''}).desc;
+				var capi = aHis.api || api.getRequestAPI(aHis.request);
+				var desc = aHis['name'] || (api.getAPI(capi) || {desc: ''}).desc;
 				return {
 					api: capi,
 					when: aHis.when,
@@ -1595,6 +1599,83 @@ lemon.each(api.preference.service(), function(envGroup, k) {
         	var intlNo = (pn - 1) * api.preference.basic().history.pageSize + 1;
 			return lemon.tmpl($('#his_tr_tmpl').html(), {histories: histories, intlNo: intlNo});
 		},
+		showMatchedHistories: function(conds, ps, lastId) {
+console.log(conds)
+		},
+		queryHistories: function(conds, ps, lastId) {
+			//conds: [{type: '[requ|resp|both]', prop: '[string, support nest property]', match: '[RegExp]' }]
+			conds = lemon.isArray(conds) ? conds : [conds];
+			lastId = lastId || parseInt(lemon.store('last') || '0');
+			var items = {}, ps = ps || api.preference.basic().history.pageSize, matched = 0;
+
+			for (var idx = lastId; idx >= 0; idx--) {
+				lemon.info(idx);
+				var item = lemon.store(idx);
+				if (item && item.request) {
+					var condRArr = [];
+					lemon.each(conds, function(cond, i) {
+						var condR = false;
+						switch (cond.type) {
+						case 'requ':
+							condR = cond.match.test(lemon.json.get(item.request, cond.prop));
+							break;
+						case 'resp':
+							condR = cond.match.test(lemon.json.get(item.response, cond.prop));
+							break;
+						case 'both':
+							condR = cond.match.test(lemon.json.get(item.request, cond.prop))
+								|| cond.match.test(lemon.json.get(item.response, cond.prop));
+							break;
+						case 'self':
+							condR = cond.match.test(lemon.json.get(item, cond.prop));
+
+							var capi = aHis.api || api.getRequestAPI(aHis.request);
+				var desc = aHis['name'] || (api.getAPI(capi) || {desc: ''}).desc;
+							break;
+						case 'cust':
+							condR = cond.match.test(api.customHis(idx, cond.prop);
+							break;
+						}
+
+						condRArr.push(condR ? true : false);
+					});
+
+					var isSatisfy = condRArr[0];
+					for (var i = 1; i < condRArr.length; i++) {
+						//OR
+						if (8 == searchType) {
+							isSatisfy = isSatisfy || condRArr[i];
+							if (isSatisfy) {
+								break;
+							}
+						} 
+						//AND
+						else if (9 == searchType) {
+							isSatisfy = isSatisfy && condRArr[i];
+							if (!isSatisfy) {
+								break;
+							}
+						}
+					}
+
+					if (isSatisfy) {
+						items[idx] = api.nav.makeHis(item);
+						lastId = idx;
+						++matched;
+						if (matched >= ps) {
+							break;
+						}
+					}
+				}
+			}
+
+			var hasNext = lemon.isBlank(items) ? false : (matched < ps ? false : true);
+			return {
+				lastId: hasNext ? (lastId - 1) : null,
+				mayHasNext: hasNext,
+				items: items
+			}
+		},
 		getHistories: function(pn, ps) {
 			var lastId = parseInt(lemon.store('last') || '0');
 			var items = {}, ps = ps || api.preference.basic().history.pageSize, pn = pn || 1, offset = (pn - 1) * ps;
@@ -1603,14 +1684,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			for (var idx = 0; idx < ps; idx++) {
 				var key = startId - idx, item = lemon.store(key);
 				if (item && item.request) {
-					var desc = api.getAPI(item.api || api.getRequestAPI(item.request)).desc || '';
-					items[key] = {
-						when: item.when,
-						request: item.request,
-						response: item.response,
-						interf: item.interf,
-						name: desc
-					};
+					items[key] = api.nav.makeHis(item);
 				}
 			}
 
