@@ -912,6 +912,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					lemon.tags = [];
 					lemon.descs = [];
 					lemon.nextHis = null;
+					lemon.searchconds = null;
 					api.previousInterval = {
 				   		when: '',
 				   		batch: 0
@@ -1071,7 +1072,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						});
 
 						var opt = 8 == searchType ? 1 : 2;
-						api.showMatchedHistories({ opt: opt, exp: keys });
+						lemon.searchconds = { opt: opt, exp: keys };
+						var r  = api.queryNextHis(lemon.searchconds);
+						if (r.realSize > 0) {
+							lemon.searchconds.now = true;
+							histories = r.items;
+						}
+						showHisBtn = false;
 						break;
 
 					case 4:	//Tag
@@ -1129,6 +1136,14 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						theHisTrs: api.getTrHis(1, histories)
 					});
 				}, { title: '', trigger: 'click' }, function(el) {
+					if (lemon.searchconds && lemon.searchconds.now) {
+	                	$('#btn_search').data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_search_body'});
+	    	            api.scroll('#scroll_search_body', function() {
+	    	            	var queryR = api.queryNextHis(lemon.searchconds);
+	    	            	$('#his_body').append(api.getQueryTrHis(queryR.items, lemon.nextHis.intlNo));
+	    	            });
+		            }
+		            
 					switch(lemon.searchType) {
 					case 1:
 					case 2:
@@ -1148,17 +1163,6 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		                    	api.interfType(v.id);
 		                    });
 		                });
-
-		                if (lemon.searchconds.now) {
-		                	$('#btn_search').data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_search_body'});
-		    	            api.scroll('#scroll_search_body', function() {
-		    	            	var queryR = api.queryNextHis(lemon.searchconds);
-		    	            	$('#his_body').append(api.getQueryTrHis(queryR.items, lemon.nextHis.intlNo));
-		    	            });
-		    	            if (lemon.nextHis.mayHasNext) {
-			    	            lemon.scrollNext = true;
-			    	        }
-			            }
 
 						break;
 					case 7:
@@ -1684,7 +1688,6 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			var items = {}, ps = ps || api.preference.basic().searchPageSize, matched = 0;
 
 			for (var idx = lastId; idx >= 0; idx--) {
-				lemon.info(idx + ', ' + api.customHis(idx, 'note'));
 				var item = lemon.store(idx);
 				if (item && item.request) {
 					var condRArr = [];
