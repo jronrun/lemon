@@ -386,6 +386,7 @@
 	<% } %>
   </div>
 </div>
+
 </script>
 
 <script type="text/html" id="his_tr_tmpl">
@@ -592,16 +593,24 @@
 <div class="col-md-6" id="p_server_left">
 	<h4></h4>
 <form>
-    <label for="ss_env"></label>
-	<select class="form-control" id="ss_env" name="env">
+
+<div class="btn-group" role="group" aria-label="...">
+  <div class="btn-group" role="group">
+    <select class="form-control" id="ss_env" name="env">
 		<%
 			lemon.each(api.preference.env().environment, function(env, idx)	{
 		%>
     		<option value="<%= env.env %>"><%= env.desc %></option>
 		<%	}); %>
     </select>
+  </div>&nbsp;
+  <span class="glyphicon glyphicon-pencil" aria-hidden="true" title="Define Environment" onclick="api.redefineEnvInterfG(1);"></span>
+</div>
 
 	<%= lemon.repeat('&nbsp;', 1) %>
+    
+<div class="btn-group" role="group" aria-label="...">
+  <div class="btn-group" role="group">
     <select class="form-control" id="ss_interf" name="typeId">
 		<%
 			lemon.each(api.preference.interf(), function(group, idx)	{
@@ -609,10 +618,13 @@
     		<option value="<%= group.id %>"><%= group.name %></option>
 		<%	}); %>
     </select>
+  </div>&nbsp;
+  <span class="glyphicon glyphicon-pencil" aria-hidden="true" title="Define Interface Group" onclick="api.redefineEnvInterfG(2);"></span>
+</div>
 
 	<%= lemon.repeat('&nbsp;', 1) %>
 	<button type="button" class="btn btn-info" id="ss_default">
-		<span class="glyphicon glyphicon-unchecked" aria-hidden="true"></span>  Default Server
+		<span class="glyphicon glyphicon-unchecked" aria-hidden="true"></span>  Default
 	</button>
 	<%= lemon.repeat('&nbsp;', 1) %>
 	<button type="button" class="btn btn-default" onclick="api.preference.help(this);" title="Show Server Define Help">
@@ -665,11 +677,18 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		<h4></h4>
 		<blockquote>
 			<form>
-			<select class="form-control" id="sa_interf" name="apiTypeId"> 
-			<% lemon.each(api.preference.interf(), function(group, idx) { %>
-				<option value="<%= group.id %>"><%= group.name %></option> 
-			<% }); %>
-			</select>
+<%= lemon.repeat('&nbsp;', 2) %>
+<div class="btn-group" role="group" aria-label="...">
+  <div class="btn-group" role="group">
+    <select class="form-control" id="sa_interf" name="apiTypeId"> 
+		<% lemon.each(api.preference.interf(), function(group, idx) { %>
+			<option value="<%= group.id %>"><%= group.name %></option> 
+		<% }); %>
+	</select>
+  </div>&nbsp;
+  <span class="glyphicon glyphicon-pencil" aria-hidden="true" title="Define Interface Group" onclick="api.redefineEnvInterfG(2);"></span>
+</div>
+
 			</form>
 			<h4></h4>
 			<textarea id="sa_apic" style="border: 0px solid #ffffff; width: 790px; height: 380px;"></textarea>
@@ -835,9 +854,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				});
 
 				$('#define_api').click(function() {
-					var capi = api.getCurrentAPI();
+					var capi = api.getRequestAPI(api.getCleanRequestData() || {});
 					if (!lemon.isBlank(capi)) {
-						api.redefineAPI(capi);
+						if (lemon.isBlank(api.getAPI(capi))) {
+							api.redefineAPI('new');
+						} else {
+							api.redefineAPI(capi);
+						}
 					} else if (!lemon.isBlank(api.requ())) {
 						var cenv = api.env.which(lemon.getEnv());
 						if (cenv.id = -10) {
@@ -1249,10 +1272,12 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 										};
 									} else {
 										apic = lemon.clone(api.getAPI(lemon.apicedit));
-										lemon.fillParam('#p_apic_left', {
-											apiTypeId: apic.type.id
-										});
-										delete apic.type;
+										if (apic.type) {
+											lemon.fillParam('#p_apic_left', {
+												apiTypeId: apic.type.id
+											});
+											delete apic.type;
+										}
 									}
 								}
 
@@ -2020,6 +2045,18 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		},
 		itemTagClose: function(hisId) {
 			$('#tags_' + hisId).popover('hide');
+		},
+		redefineEnvInterfG: function(type) {
+			//type 1 env, 2 interf group
+			$('#basic-tab').click(); var selector = null;
+			switch (type) {
+			case 1: selector = '#basic .panel:eq(1)'; break;
+			case 2: selector = '#basic .panel:eq(0)'; break;
+			}
+
+			lemon.delay(function() {
+				api.attention(selector);
+			}, 1000);
 		},
 		redefineAPI: function(target) {
 			lemon.apicedit = target.replace('api_', '');
@@ -3401,6 +3438,23 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}
 				
 				return result;
+			}
+		},
+		loading: {
+			element: function() {
+				var html = [
+					'<nav class="navbar-fixed-bottom">',
+					'<div class="container">', 
+					'<div class="progress">',
+					'<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 45%">',      
+					'<span class="sr-only">45% Complete</span>',
+					'</div>',	  
+					'</div>',
+					'</div>',
+					'</nav>'
+				].join('');
+				
+				return html;
 			}
 		},
 		cmd: {
