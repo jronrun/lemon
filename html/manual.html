@@ -1709,9 +1709,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				opt: 'number, 1 or(||) 2 and(&&)', 
 				exp: [{type: '[requ|resp|both]', prop: '[string, support nest property]', match: '[RegExp]' }]
 			} */
-			lastId = lastId || parseInt(lemon.store('last') || '0');
-			var items = {}, ps = ps || api.preference.basic().searchPageSize, matched = 0;
-
+			var recordsLen = parseInt(lemon.store('last') || '0');
+			lastId = lastId || recordsLen;
+			var items = {}, ps = ps || api.preference.basic().searchPageSize, matched = 0, looped = 0;
+			
 			for (var idx = lastId; idx >= 0; idx--) {
 				var item = lemon.store(idx);
 				if (item && item.request) {
@@ -1768,6 +1769,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						}
 					}
 
+					++looped;
 					if (isSatisfy) {
 						items[idx] = api.nav.makeHis(item);
 						lastId = idx;
@@ -1776,6 +1778,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							break;
 						}
 					}
+
+					/* if (api.loading.exists) {
+						api.loading.qryProgress(matched, ps, looped, recordsLen);
+					} */
 				}
 			}
 
@@ -3441,20 +3447,35 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}
 		},
 		loading: {
-			element: function() {
+			exists: false,
+			start: function(selector) {
+				selector = selector || 'body';
 				var html = [
-					'<nav class="navbar-fixed-bottom">',
+					'<nav class="navbar-fixed-bottom" id="loading">',
 					'<div class="container">', 
 					'<div class="progress">',
-					'<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 45%">',      
-					'<span class="sr-only">45% Complete</span>',
+					'<div class="progress-bar progress-bar-striped active" id="loading_bar" role="progressbar" ',
+					'aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 0.1%">',      
+					'<span class="sr-only" id="loading_desc">0.1% Complete</span>',
 					'</div>',	  
 					'</div>',
 					'</div>',
 					'</nav>'
 				].join('');
 				
-				return html;
+				$(selector).append(html);
+				api.loading.exists = true;
+			},
+			qryProgress: function(matched, match, looped, loop) {
+				api.loading.progress(Math.max(matched / match, looped / loop) * 100);
+			},
+			progress: function(percent) {
+				$('#loading_bar').css({ width: percent + '%' });
+				$('#loading_desc').empty().html(percent + '% Complete');
+			},
+			end: function() {
+				$('#loading').remove();
+				api.loading.exists = false;
 			}
 		},
 		cmd: {
@@ -3724,7 +3745,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			paramName: 'data'
 		},
 		apiParamNameInRequest: 'cmd',
-		searchPageSize: 1
+		searchPageSize: 30
 	};
 
 	var interf = {
