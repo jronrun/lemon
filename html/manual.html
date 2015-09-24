@@ -2407,13 +2407,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
                 html: true
             }, options || {}, {
             	//Prevent popover content function is executed twice
-                title: '<div id="prevent_twice">&nbsp;</div>'
+                title: options.title || '<div id="prevent_twice">&nbsp;</div>'
             })).on('shown.bs.popover', function() {
             	if (lemon.isBlank(options.title)) {
                 	$('#prevent_twice').parent().hide();
-                } else {
-                	$('#prevent_twice').parent().html(options.title);
-                	$('#prevent_twice').hide();
                 }
             });
             
