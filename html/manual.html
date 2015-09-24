@@ -1177,11 +1177,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							$(this).slideToggle();
 						});
 						$('#btn_tgl_api').click(function() {
-							$(el).button('toggle');
+							$(this).button('toggle');
 							$('pre[tgl-api="tgl"]').fadeToggle("slow", "linear");
 						});
 						$('#btn_tgl_interf').click(function() {
-		                	$(el).button('toggle');
+		                	$(this).button('toggle');
 		                	lemon.each(api.preference.interf(), function(v, k) {
 		                    	api.interfType(v.id);
 		                    });
