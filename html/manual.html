@@ -3639,6 +3639,14 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			after.styled = true;
 		},
 
+		saveAs: function(content, filename, options) {
+			if (isFileSaverSupported) {
+				saveAs(new Blob([content || ''], lemon.extend({
+					type: "text/plain;charset=" + document.characterSet
+				}, options || {})), filename);
+			}
+		},
+
 		behavious: function() {
 			var leftId = '#view_left', rightId = '#view_right';
 			var leftHtml = $(leftId).html(), rightHtml = $(rightId).html();
