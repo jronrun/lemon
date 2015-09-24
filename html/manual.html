@@ -186,7 +186,7 @@
 	.script(lemon.getUrl('/bootstrap/3.3.5/js/bootstrap.min.js'))
 	.wait(function() { api.initialize(); });
 
-	var cmprfix = 'codemirror/5.6.0/';
+	var cmprfix = 'codemirror/5.7.0/';
 	var queue = $LAB
 		.queueScript(lemon.getUrl(cmprfix + 'codemirror.min.js'))
 		.queueWait()
@@ -230,6 +230,13 @@
 		    cmprfix + 'addon/fold/foldgutter.min.css'
 		]);
 		queue.runQueue();
+
+		try {
+    		root.isFileSaverSupported = !!new Blob;
+    		if (isFileSaverSupported) {
+    			$LAB.script(lemon.getUrl('/FileSaver.js/2014-11-29/FileSaver.min.js'));
+        	}
+		} catch (e) {}
 	}, 500);
 </script>
 
@@ -3668,6 +3675,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				content: '',
 				gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
 				  	extraKeys: {
+					  	//http://codemirror.net/doc/manual.html#commands
 				    	"Esc": function(cm) { 
 					    	after.rich.fullscreenTgl(cm) 
 					    },
