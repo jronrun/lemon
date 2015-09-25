@@ -37,7 +37,7 @@
 	<nav class="navbar navbar-default">
 		<div class="container-fluid">
 			<div class="navbar-header">
-				<a class="navbar-brand" href="javascript:void(0);">51RP Manual API</a>
+				<a class="navbar-brand" href="javascript:void(0);"></a>
 			</div>
 
 			<div class="collapse navbar-collapse">
@@ -539,7 +539,7 @@
         </ul>
       </li>
       <li role="presentation">
-      	<button type="button" class="btn btn-info btn-xs" onclick="api.preference.close();"> <span class="glyphicon glyphicon-log-out" title="Tags"></span> Discard Changes</button>
+      	&nbsp; <button type="button" class="btn btn-info btn-xs" onclick="api.preference.close();"> <span class="glyphicon glyphicon-log-out" title="Tags"></span> Discard Changes</button>
       </li>
     </ul>
 
@@ -587,7 +587,26 @@
         
       </div>
       <div role="tabpanel" class="tab-pane fade" id="export_tab" aria-labelledby="export_tab-tab">
-        
+
+		<h4></h4>
+        <h1><button type="button" class="btn btn-info btn-lg pull-right" onclick="api.impexp.doexport();"> <%= lemon.repeat('&nbsp;', 3) %>
+			<span class="glyphicon glyphicon-export" title="Export"></span> Export <%= lemon.repeat('&nbsp;', 3) %></button></h1>
+
+		<p>&nbsp;</p>
+		<div id="export_option" class="list-group" style="width:50%">
+			<button type="button" class="list-group-item btn btn-default active" id="exp_basic"> 
+			<span class="glyphicon glyphicon-check" title="Basic Setting"></span> Basic Setting </button>
+			<p></p>
+			<button type="button" class="list-group-item btn btn-default active" id="exp_server"> 
+			<span class="glyphicon glyphicon-check" title="Define Server"></span> Define Server </button>
+			<p></p>
+			<button type="button" class="list-group-item btn btn-default active" id="exp_api"> 
+			<span class="glyphicon glyphicon-check" title="Define API"></span> Define API </button>
+			<p></p>
+			<button type="button" class="list-group-item btn btn-default" id="exp_history"> 
+			<span class="glyphicon glyphicon-unchecked" title="Request History"></span> Request Histories </button>
+		</div>
+
       </div>
     </div>
  </div>
@@ -743,6 +762,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		},
 		nav: {
 			render: function() {
+				api.nav.pageTitle();
 				$('.dropdown-toggle').dropdown();
 				
 				var $req = $('#btn_request');
@@ -1197,6 +1217,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						break;
 					case 7:
 						$(el).data("bs.popover").tip().css({left:0});
+						$('#export_option button[id^=exp_]').click(function() {
+							api.nav.check('#' + $(this).attr('id'), 1);
+						});
+						
 						$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 							var curTab = e.target, prevTab = e.relatedTarget;
 							api.preference.tab = {
@@ -1209,6 +1233,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								api.mirrorVal('#p_interf', api.preference.interf());
 								api.mirrorVal('#p_env', api.preference.env());
 								api.mirrorVal('#p_config', api.preference.basic());
+							} else if ('#export_tab' == curHref) {
+								
+							} else if ('#import_tab' == curHref) {
+								
 							} else if ('#server' == curHref) {
 								var settingServerHtml = lemon.tmpl($('#setting_server_tmpl').html(), {});
 								$('#server').empty().append(settingServerHtml);
@@ -1388,6 +1416,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					catch (e) { lemon.warn(e, 'Can not parse JSON string.'); }
 					$('#request_url').text(api.nav.humanreadRequest());
 				});
+			},
+			pageTitle: function() {
+				$('.navbar-brand').text(api.preference.basic().pageTitle || 'Manual API');
 			},
 			copyEncodeUrl: function(el) {
 				if ($('#request_url').length) {
@@ -2902,7 +2933,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}
 
 				var step = '', curHref = $(api.preference.tab.current).attr('href');
-				if (curHref == '#server') {
+				if ('#export_tab' == curHref) {
+					
+				} else if ('#import_tab' == curHref) {
+					
+				} else if (curHref == '#server') {
 					try {
 						step = 'Define Server';
 						var aServ = $.parseJSON(api.mirrorVal('#ss_server'));
@@ -3160,6 +3195,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						}
 						
 						api.preference.basic(theConfig, override);
+						api.nav.pageTitle();
 					} catch(e) {
 						api.preference.tip(step, ' invalid JSON value, ' + e.message);
 						return false;
@@ -3448,6 +3484,53 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}
 				
 				return result;
+			}
+		},
+		impexp: {
+			doexport: function() {
+				api.loading.start('#myTabContent');
+				var expcfg = {
+					basic: api.nav.check('#exp_basic'),
+					server: api.nav.check('#exp_server'),
+					apis: api.nav.check('#exp_api'),
+					histories: api.nav.check('#exp_history')
+				};
+
+				var exp = {};
+				if (1 == expcfg.basic) {
+					exp.basic = {
+						config: api.preference.basic(),
+						group: api.preference.interf(),
+					};
+				}
+				
+				if (1 == expcfg.server) {
+					exp.server = api.preference.service()
+				}
+				
+				if (1 == expcfg.apis) {
+					exp.apis = api.preference.defines()
+				}
+
+				if (1 == expcfg.histories) {
+					exp.histories = {};
+					var lastId = parseInt(lemon.store('last') || '0'), looped = 0;
+					for (var idx = lastId; idx >= 0; idx--) {
+						exp.histories[idx] = lemon.store(idx);
+						++looped;
+						api.loading.progress(looped / lastId * 100 - 10);	
+					}
+				}
+
+				
+				if (lemon.isBlank(exp)) {
+					api.preference.tip('<h3>Export</h3>', 'There is nothing to export!');
+				} else {
+					after.saveAs(lemon.json.reverse(exp), 'api.json');
+					api.loading.progress(98);
+				}
+
+				api.loading.end();
 			}
 		},
 		loading: {
@@ -3747,6 +3830,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 	};
 
 	var config = {
+		pageTitle: '51RP Manual API',
 		history: {
 			//keep history size less than 0 unlimit
 			max: -1,
