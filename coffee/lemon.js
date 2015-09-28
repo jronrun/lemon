@@ -1058,8 +1058,13 @@
 
   datetimeFmt = datetimeFmt();
 
-  _.addDateMask = function(mask) {
-    return _.extend(properties.dateMask, mask || {});
+  _.addDateMask = function(mask, host) {
+    _.extend(properties.dateMask, (mask = mask || {}));
+    _.each(mask, function(v, k) {
+      _.methodRegister(host || _['when'], k, function(date, utc) {
+        return _.dateFmt(date, v, utc);
+      });
+    });
   };
 
   _.dateFmt = function(date, mask, utc) {
@@ -1153,11 +1158,7 @@
     proto = function(mask, date, utc) {
       return kiwi.dateFmt(date, mask, utc);
     };
-    kiwi.each(kiwi.getDateMask(), function(v, k) {
-      kiwi.methodRegister(proto, k, function(date, utc) {
-        return kiwi.dateFmt(date, v, utc);
-      });
-    });
+    kiwi.addDateMask(kiwi.getDateMask(), proto);
     proto.idesc = {
       year: ' years ago',
       month: ' months ago',

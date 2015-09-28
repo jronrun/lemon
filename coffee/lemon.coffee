@@ -670,8 +670,13 @@ datetimeFmt = ->
 	)
 datetimeFmt = datetimeFmt()
 	
-_.addDateMask = (mask) -> 
-	_.extend(properties.dateMask, mask || {});
+_.addDateMask = (mask, host) -> 
+	_.extend(properties.dateMask, (mask = mask || {}))
+	_.each mask, (v, k) -> (
+		_.methodRegister host || _['when'], k, (date, utc) -> _.dateFmt(date, v, utc)
+		return
+	)
+	return;
 	
 _.dateFmt = (date, mask, utc) ->
 	datetimeFmt(date, mask, utc)
@@ -726,10 +731,7 @@ _::value = ->
 
 	proto = (mask, date, utc) -> kiwi.dateFmt date, mask, utc
 	
-	kiwi.each kiwi.getDateMask(), (v, k) -> (
-		kiwi.methodRegister proto, k, (date, utc) -> kiwi.dateFmt(date, v, utc)
-		return
-	)
+	kiwi.addDateMask kiwi.getDateMask(), proto
 	
 	proto.idesc =
 		year: ' years ago'
