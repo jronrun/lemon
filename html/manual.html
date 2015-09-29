@@ -588,10 +588,11 @@
 		<h4></h4>
         <h1>
 		<div class="btn-group pull-right">
-			<button type="button" class="btn btn-info btn-lg" onclick="api.impexp.doimport();"> 
+			<button type="button" class="btn btn-info btn-lg" onclick="api.impexp.load();" id="btn_imp"> 
 				<%= lemon.repeat('&nbsp;', 3) %> <span class="glyphicon glyphicon-import" title="Import"></span> Import <%= lemon.repeat('&nbsp;', 3) %>
 			</button>
 		</h1>        
+		<input type="file" id="imp_file" class="hidden"/>
 
       </div>
       <div role="tabpanel" class="tab-pane fade" id="export_tab" aria-labelledby="export_tab-tab">
@@ -599,7 +600,7 @@
 		<h4></h4>
         <h1>
 		<div class="btn-group pull-right">
-			<button type="button" class="btn btn-info btn-lg" onclick="api.impexp.doexport();"> 
+			<button type="button" class="btn btn-info btn-lg" onclick="api.impexp.doexport(this);"> 
 				<%= lemon.repeat('&nbsp;', 3) %> <span class="glyphicon glyphicon-export" title="Export"></span> Export <%= lemon.repeat('&nbsp;', 3) %>
 			</button>
 			<button type="button" class="btn btn-info btn-lg dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -608,7 +609,7 @@
 			</button>
 			<ul class="dropdown-menu">
 				<li role="separator" class="divider"></li>
-				<li><a href="javascript:void(0);"  onclick="api.impexp.doexport(true);">
+				<li><a href="javascript:void(0);"  onclick="api.impexp.doexport(this, true);">
 					<span class="glyphicon glyphicon-export" title="Export"></span> Export as Human Readable
 				</a></li>
 				<li role="separator" class="divider"></li>
@@ -793,7 +794,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		},
 		nav: {
 			render: function() {
-				api.nav.pageTitle();
+				api.nav.title();
 				$('.dropdown-toggle').dropdown();
 				
 				var $req = $('#btn_request');
@@ -1251,6 +1252,24 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						$('#export_option button[id^=exp_]').click(function() {
 							api.nav.check('#' + $(this).attr('id'), 1);
 						});
+						$('#imp_file').change(function(event) {
+							api.file.handle(this, event, {
+								onLoadStart: function(e, target) {
+									$('#btn_imp').button('loading');
+									api.loading.start('#import_tab');
+								},
+								onLoadEnd: function(e, target) {
+									api.loading.progress(80);
+									api.loading.progress(98);
+									api.impexp.doimport(target.reader.result);
+									lemon.delay(function() {
+										api.loading.end();
+										$('#btn_imp').button('reset');
+										$('#imp_file').val('');
+									}, 800);
+								}
+							});
+						});
 						
 						$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 							var curTab = e.target, prevTab = e.relatedTarget;
@@ -1448,8 +1467,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					$('#request_url').text(api.nav.humanreadRequest());
 				});
 			},
-			pageTitle: function() {
-				$('.navbar-brand').text(api.preference.basic().pageTitle || 'Manual API');
+			title: function() {
+				$('.navbar-brand').text(api.preference.basic().navTitle || 'Manual API');
+				$('title').text(api.preference.basic().title || 'API');
 			},
 			copyEncodeUrl: function(el) {
 				if ($('#request_url').length) {
@@ -3226,7 +3246,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						}
 						
 						api.preference.basic(theConfig, override);
-						api.nav.pageTitle();
+						api.nav.title();
 					} catch(e) {
 						api.preference.tip(step, ' invalid JSON value, ' + e.message);
 						return false;
@@ -3517,12 +3537,82 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				return result;
 			}
 		},
-		impexp: {
-			doimport: function() {
+		file: {
+			cur: {},
+			handle: function(fileInput, event, options) {
+				api.file.cur = api.file.newinst();
 				
+				var file = api.file.cur.file = fileInput.files[0];
+				var reader = api.file.cur.reader = new FileReader();
+				api.file.cur.total = file.size; 
+				api.file.cur.options = options || {};
+
+				reader.onloadstart = api.file.onLoadStart;
+		        reader.onprogress = api.file.onProgress;
+		        reader.onabort = api.file.onAbort;
+		        reader.onerror = api.file.onerror;
+		        reader.onload = api.file.onLoad;
+		        reader.onloadend = api.file.onLoadEnd;
+
+		        reader.readAsText(file);
 			},
-			doexport: function(readable) {
+			abortHandle: function(e) {
+				if(api.file.cur.reader) {
+					api.file.cur.reader.abort();
+		        }
+			},
+			onLoadStart: function(e) {
+				lemon.info('start reading file ' + api.file.cur.file.name);
+				lemon.isFunc(api.file.cur.options.onLoadStart) && api.file.cur.options.onLoadStart(e, api.file.cur);
+			},
+			onProgress: function(e) {
+				api.file.cur.loaded += e.loaded;
+				var progress = (api.file.cur.loaded / api.file.cur.total) * 100;
+			    lemon.info('reading progress: ' + progress);
+			    lemon.isFunc(api.file.cur.options.onProgress) && api.file.cur.options.onProgress(e, api.file.cur, progress);
+			},
+			onAbort: function(e) {
+				lemon.isFunc(api.file.cur.options.onAbort) && api.file.cur.options.onAbort(e, api.file.cur);
+			},
+			onError: function(e) {
+				lemon.isFunc(api.file.cur.options.onError) && api.file.cur.options.onError(e, api.file.cur);
+			},
+			onLoad: function(e) {
+		        if(api.file.cur.loaded < api.file.cur.total) {
+		        	api.file.cur.readBlob(api.file.cur.loaded);
+		        } else {
+		        	api.file.cur.loaded = api.file.cur.total;
+		        }
+		        lemon.isFunc(api.file.cur.options.onLoad) && api.file.cur.options.onLoad(e, api.file.cur);
+			},
+			onLoadEnd: function(e) {
+				lemon.info('end reading file ' + api.file.cur.file.name + ', size: ' + api.file.cur.total); 
+				lemon.isFunc(api.file.cur.options.onLoadEnd) && api.file.cur.options.onLoadEnd(e, api.file.cur);
+			},
+			newinst: function() {
+				return {
+					total: 0,
+					file: null,
+					reader: null,
+					loaded: 0,
+		        	step: 1024 * 1024,	//1M
+		        	times: 0,
+		        	options: {}
+				};
+			}
+		},
+		impexp: {
+			load: function() {
+				$('#imp_file').click();
+			},
+			doimport: function(data) {
+				lemon.info(data);
+			},
+			doexport: function(el, readable) {
+				$(el).button('loading');
+				
 				api.loading.start('#myTabContent');
+				api.loading.progress(10);
 				var expcfg = {
 					basic: api.nav.check('#exp_basic'),
 					server: api.nav.check('#exp_server'),
@@ -3554,7 +3644,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					for (var idx = lastId; idx >= 0; idx--) {
 						exp.histories[idx] = lemon.store(idx);
 						++looped;
-						api.loading.progress(looped / lastId * 100 - 10);	
+						//api.loading.progress(looped / lastId * 100 - 10);	
 					}
 
 					exp.lastId = lastId;
@@ -3580,10 +3670,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						version: lemon.when.tiny()
 					};
 					after.saveAs(readable ? lemon.json(exp) : lemon.json.reverse(exp), 'api.cfg');
-					api.loading.progress(98);
 				}
 
-				api.loading.end();
+				lemon.delay(function() {
+					api.loading.progress(98);
+				}, 1000);
+				lemon.delay(function() {
+					api.loading.end();
+					$(el).button('reset');
+				}, 2000);
 			}
 		},
 		loading: {
@@ -3883,7 +3978,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 	};
 
 	var config = {
-		pageTitle: '51RP Manual API',
+		title: '',
+		navTitle: '51RP Manual API',
 		history: {
 			//keep history size less than 0 unlimit
 			max: -1,
