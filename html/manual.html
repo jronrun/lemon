@@ -280,8 +280,11 @@
 			<!-- <span class="badge"><%= v.name %></span> -->
 			<blockquote style="width:<%=clientW - 60%>px;">
   				<p>
-					<pre style="background-color:#ffffff;" tgl-api="tgl"><%= lemon.json.highlight(v.request) %></pre>
+					<pre style="background-color:#ffffff;" tgl-apirequ="tgl"><p class="pull-right text-muted">Request</p><%= lemon.json.highlight(v.request) %></pre>
 				</p>
+				<% if (!lemon.isBlank(v.response)) { %>
+					<%= api.showResponse(v.response) %>					
+				<% } %>
 				<%= api.showNote(v.note) %>
 				<footer>
 					<%= v.name %> <cite><%= v.desc %></cite>
@@ -292,9 +295,19 @@
 				<button type="button" class="btn btn-default btn-xs" onclick="api.setAPIDefaultVal('<%= v.name %>')" id="set_default_<%= v.name %>">
 					<span class="glyphicon glyphicon-camera" title="Set API Default Value"></span>
 				</button>
-				<button type="button" class="btn btn-default btn-xs" onclick="api.hisTglRequResp('<%= k %>', 3)" id="his_api_requ_<%= v.k %>">
+				<% if (!lemon.isBlank(v.response)) { %>
+				<button type="button" class="btn btn-default btn-xs" onclick="api.onSelectSinleClick(this, 3, 4)" clkey="<%= k %>">
+					<span class="glyphicon glyphicon-eye-open" title="Toggle Request Response"></span>
+				</button>
+				<% } %>
+				<button type="button" class="btn btn-default btn-xs" onclick="api.hisTglRequResp('<%= k %>', 3)" id="his_tgl_apirequ_<%= k %>">
 					<span class="glyphicon glyphicon-tree-deciduous" title="Toggle Request"></span>
 				</button>
+				<% if (!lemon.isBlank(v.response)) { %>
+					<button type="button" class="btn btn-default btn-xs" onclick="api.hisTglRequResp('<%= k %>', 4)" id="his_tgl_apiresp_<%= k %>">
+					<span class="glyphicon glyphicon-leaf" title="Toggle Response"></span>
+					</button>				
+				<% } %>
 				<button type="button" class="btn btn-default btn-xs" onclick="api.redefineAPI('<%= k %>')">
 					<span class="glyphicon glyphicon-pencil" title="Define API"></span>
 				</button>
@@ -459,9 +472,9 @@
 	          <td onDblClick="api.onSelect('<%= v.k %>')">
 			<blockquote style="width:<%=clientW - 25%>px;">
 				<div id="tag_area_<%= v.k %>"><%= hisShowTags.join(' ') %></div>
-						<p>
-					<pre style="background-color:#ffffff;height:100%;" tgl-requ="tgl"><%= lemon.json.highlight(v.request) %></pre>
-					<pre style="background-color:#ffffff;height:100%;" tgl-resp="tgl"><%= lemon.json.highlight(v.response) %></pre>
+				<p>
+					<pre style="background-color:#ffffff;height:100%;" tgl-requ="tgl"><p class="pull-right text-muted">Request</p><%= lemon.json.highlight(v.request) %></pre>
+					<pre style="background-color:#ffffff;height:100%;" tgl-resp="tgl"><p class="pull-right text-muted">Response</p><%= lemon.json.highlight(v.response) %></pre>
 				</p>
 				<%
 					var envDesc = env.desc + '  ' + env.type.name + (lemon.isBlank(env.note) ? '' : (' - ' + env.note));
@@ -1050,7 +1063,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								type: api.getInterfGroup(v.type.id),
 								when: '',
 								request: v.request,
-								response: '',
+								response: v.response || '',
 								interf: ''
 							};
 
@@ -1261,7 +1274,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								onLoadEnd: function(e, target) {
 									api.loading.progress(80);
 									api.loading.progress(98);
-									api.impexp.doimport(target.reader.result);
+									api.impexp.doimport(target.reader.result, true);
 									lemon.delay(function() {
 										api.loading.end();
 										$('#btn_imp').button('reset');
@@ -1675,9 +1688,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				var note = cloneAPI.note;
 				delete cloneAPI.note;
 				var apiDefined = lemon.json.highlight(cloneAPI);
+				var preH = document.body.clientHeight - 50;
+				var preW = document.body.clientWidth / 2;
 				return [
+					'<div style="max-height:' + preH + 'px;overflow-y: scroll;">',
 					api.showNote(note),
-					'<pre style="width:500px;background-color:#ffffff;">' + apiDefined + '</pre>'
+					'<pre style="width:620px;max-width:' + preW + 'px;max-height:' + (preH - 5) + 'px;border:0;background-color:#ffffff;">' + apiDefined + '</pre>',
+					'</div>'
 				].join('');
 			}, lemon.extend({ 
 				placement: 'right',
@@ -1692,7 +1709,18 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				lemon.isFunc(onHidden) && onHidden();
 			});
 		},
-		showNote: function(note) {
+		showResponse: function(response, options) {
+			if (lemon.isBlank(response)) {
+				return '';
+			}
+			return [
+				'<pre title="Property Description" style="background-color:#ffffff;" tgl-apiresp="tgl">',
+				'<p class="pull-right text-muted">Response</p>',
+				lemon.json.highlight(response),
+				'</pre>'
+			].join('');
+		},
+		showNote: function(note, style4JSON) {
 			if (lemon.isBlank(note)) {
 				return '';
 			}
@@ -1709,7 +1737,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					html.push('</ul>');
 					return html.join('');
 				} else if (lemon.isJson(note)) {
-					return '<pre title="Property Description">' + lemon.json.highlight(note) + '</pre>';
+					return '<pre title="Property Description" style="' + (style4JSON || '') + '">' + lemon.json.highlight(note) + '</pre>';
 				} 
 				else {
 					return '<div class="panel panel-default"><div class="panel-body"><h6 class="text-muted">' + note + '</h6></div></div>';
@@ -2164,12 +2192,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			switch (type) {
 			case 1: type = 'requ'; break;
 			case 2: type = 'resp'; break;
-			case 3: type = 'api'; break;
+			case 3: type = 'apirequ'; break;
+			case 4: type = 'apiresp'; break;
 			}
 			var id = lemon.format('#his_tgl_{0}_{1}', type, hisId);
-			if (3 == type) {
-				id = hisId;
-			}
 			$(id).button('toggle');
 			$(lemon.format('#{0} pre[tgl-{1}="tgl"]', hisId, type)).fadeToggle("slow", "linear");
 		},
@@ -2630,10 +2656,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		interfType: function(type) {
 			$('[type="' + type + '"]').fadeToggle("slow", "linear");
 		},
-		onSelectSinleClick: function(el) {
+		onSelectSinleClick: function(el, requType, respType) {
 			var key = $(el).button('toggle').attr('clkey');
-			api.hisTglRequResp(key, 1);
-			api.hisTglRequResp(key, 2);
+			api.hisTglRequResp(key, requType || 1);
+			api.hisTglRequResp(key, respType || 2);
 		},
 		onSelect: function(key) {
 			var item = api.getHoverOrSelectItem(key), capi = null;
@@ -2642,7 +2668,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					capi = key.replace('api_', '');
 					var requestV = api.getAPIDefaultVal(capi) || item.request || {};
 					api.requ(lemon.json(requestV));
-					api.resp(item.response);
+					if (lemon.isBlank(item.response)) {
+					} else {
+						api.resp(lemon.json(item.response));
+					}
+					
 					$("#btn_search").click();
 				} else {
 					capi = item.api || api.getRequestAPI(item.request);
@@ -3339,7 +3369,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}
 
 				if (override) {
-					preferences[key] = val;
+					if (lemon.isNull(val)) {
+						delete preferences[key];
+					} else {
+						preferences[key] = val;
+					}
 				} else {
 					preferences[key] = lemon.extend(defined, val);
 				}
@@ -3605,8 +3639,124 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			load: function() {
 				$('#imp_file').click();
 			},
-			doimport: function(data) {
+			doimport: function(data, showTip) {
 				lemon.info(data);
+				var tipTitle = '<h3>Export</h3>', msg = '';
+				try {
+					if (!lemon.isJson(data)) {
+						data = $.parseJSON(data);
+					}
+				} catch (e) {
+					msg = 'Cannot import: Unknown configuration. ' + e.message;
+					if (showTip) { api.preference.tip(tipTitle, msg); }
+					lemon.info(msg);
+					return;
+				}
+
+				if (!lemon.has(data, 'profile')) {
+					msg = 'Cannot import: Unknown profile.';
+					if (showTip) { api.preference.tip(tipTitle, msg); }
+					lemon.info(msg);
+					return;
+				}
+
+				var lprofile = lemon.store('api.profile') || {};
+				var rprofile = data.profile;
+				if (lemon.isBlank(rprofile) || !lemon.has(rprofile, 'version')) {
+					msg = 'Cannot import: Unknown profile version.';
+					if (showTip) { api.preference.tip(tipTitle, msg); }
+					lemon.info(msg);
+					return;
+				}
+				
+				// 1 clean history, 2 clean default api value, 3 clean tag, 
+				// 4 clean custom history, 5 clean preference
+				// 6 clean base setting configuration, 7 clean base setting interface group
+				// 8 clean define server, 9 clean define api, 10 clean all
+				// 11 clean all and stop
+				if (lemon.has(rprofile, 'lemon')) {
+					switch (rprofile.lemon) {
+					case 1: api.impexp.lemon.his(); break;
+					case 2: api.impexp.lemon.dftapival(); break;
+					case 3: api.impexp.lemon.tag(); break;
+					case 4: api.impexp.lemon.custhis(); break;
+					
+					case 5: api.impexp.lemon.prefer(); break;
+					case 6: api.impexp.lemon.pbasic(); break;
+					case 7: api.impexp.lemon.pinterf(); break;
+					case 8: api.impexp.lemon.pservice(); break;
+					case 9: api.impexp.lemon.pdefines(); break;
+					
+					case 10:
+					case 11:
+						api.impexp.lemon.his();
+						api.impexp.lemon.dftapival();
+						api.impexp.lemon.tag();
+						api.impexp.lemon.custhis();
+						api.impexp.lemon.prefer();
+						break;
+					}
+
+					if (11 == rprofile.lemon) {
+						alert('Manual API disabled');
+						return;
+					}
+				}
+
+				if (lemon.isBlank(lprofile) || lemon.isBlank(lprofile.version)) {
+					api.impexp.lemon.prefer();
+				} else {
+					if (parseInt(lprofile.version) >= parseInt(rprofile.version)) {
+						lemon.warn('Skip import when local version greater or equal the import version. local version: ' 
+							+ lprofile.version + ', import version: ' + rprofile.version);
+						return;
+					}
+				}
+				
+
+				lemon.store('api.profile', lemon.extend(lprofile, rprofile));
+			},
+			lemon: {
+				his: function() {
+					lemon.info('Clean local histories');
+					var lastId = parseInt(lemon.store('last') || '0');
+					for (var idx = lastId; idx >= 0; idx--) { 
+						lemon.store(idx, null); 
+					}
+					lemon.store('last', null);
+				},
+				dftapival: function() {
+					lemon.info('Clean local default api value');
+					lemon.store('defaultApiVal', null);
+				},
+				tag: function() {
+					lemon.info('Clean local define tag');
+					lemon.store('definedTag', null);
+				},
+				custhis: function() {
+					lemon.info('Clean local custom history');
+					lemon.store('definehis', null);
+				},
+				prefer: function() {
+					lemon.info('Clean local preference');
+					lemon.store('preference', null);
+				},
+				pbasic: function() {
+					lemon.info('Clean local base setting configuration');
+					api.preference.basic(null, true);
+				},
+				pinterf: function() {
+					lemon.info('Clean local base setting interface group');
+					api.preference.interf(null, true);
+				},
+				pservice: function() {
+					lemon.info('Clean local define server');
+					api.preference.service(null, true);
+				},
+				pdefines: function() {
+					lemon.info('Clean local define api');
+					api.preference.defines(null, true);
+				}
 			},
 			doexport: function(el, readable) {
 				$(el).button('loading');
@@ -3741,14 +3891,24 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								'data-container': 'body',
 								'data-toggle': 'popover',
 								'data-placement': 'right',
-								'data-content': api.showNote(item.note || '') 
-									+ '<pre style="width:500px;background-color:#ffffff;">' + lemon.json.highlight(item.request) + '</pre>',
+								'data-content': [
+										api.showNote(item.note || ''),
+										'<pre style="width:500px;background-color:#ffffff;">', 
+										'<p class="pull-right text-muted">Request</p>',
+										lemon.json.highlight(item.request),
+										'</pre>',
+										//api.showResponse(item.response)
+									].join(''), 
 								title: item.api + ' ' + item.desc
 							}).append(dropItem);
 
 							href.click(function() {
 								lemon.setApi(item.api);
 								api.requ(lemon.json(api.getAPIDefaultVal(item.api, item.request)));
+								if (lemon.isBlank(item.response)) {
+								} else {
+									api.resp(lemon.json(item.response));
+								}
 							});
 
 							var anApi = $(document.createElement('li')).append(href);
@@ -3758,8 +3918,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				});
 
 				$('[data-toggle="popover"]').popover({
-					trigger:'hover',
-					html:true
+					trigger: 'hover',
+					html: true
 				}).on('show.bs.popover', function() { 
 					$(this).data("bs.popover").tip().css({maxWidth: "600px"}); 
 				});
