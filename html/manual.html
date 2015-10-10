@@ -280,7 +280,7 @@
 			<!-- <span class="badge"><%= v.name %></span> -->
 			<blockquote style="width:<%=clientW - 60%>px;">
   				<p>
-					<pre style="background-color:#ffffff;" tgl-apirequ="tgl"><p class="pull-right text-muted">Request</p><%= lemon.json.highlight(v.request) %></pre>
+					<pre style="background-color:#ffffff;border:0px;" tgl-apirequ="tgl"><p class="pull-right text-muted">Request</p><%= lemon.json.highlight(v.request) %></pre>
 				</p>
 				<% if (!lemon.isBlank(v.response)) { %>
 					<%= api.showResponse(v.response) %>					
@@ -473,8 +473,8 @@
 			<blockquote style="width:<%=clientW - 25%>px;">
 				<div id="tag_area_<%= v.k %>"><%= hisShowTags.join(' ') %></div>
 				<p>
-					<pre style="background-color:#ffffff;height:100%;" tgl-requ="tgl"><p class="pull-right text-muted">Request</p><%= lemon.json.highlight(v.request) %></pre>
-					<pre style="background-color:#ffffff;height:100%;" tgl-resp="tgl"><p class="pull-right text-muted">Response</p><%= lemon.json.highlight(v.response) %></pre>
+					<pre style="background-color:#ffffff;height:100%;border:0px;" tgl-requ="tgl"><p class="pull-right text-muted">Request</p><%= lemon.json.highlight(v.request) %></pre>
+					<pre style="background-color:#ffffff;height:100%;border:0px;" tgl-resp="tgl"><p class="pull-right text-muted">Response</p><%= lemon.json.highlight(v.response) %></pre>
 				</p>
 				<%
 					var envDesc = env.desc + '  ' + env.type.name + (lemon.isBlank(env.note) ? '' : (' - ' + env.note));
@@ -1048,7 +1048,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				   		when: '',
 				   		batch: 0
 				    };
-					var key = $('#input_search').val();
+					var key = lemon.trim($('#input_search').val());
 					//1 Just All API, 2 Normal Search, 3 Advance, 4 Tag, 5 Fav, 6 ALL History, 7 Settings, 
 					//8 complex or requ.{propA}:{valueA}|resp.{propB}:{valueB}, 9 complex and requ.{propA}:{valueA}&resp.{propB}:{valueB}
 					var searchType = 1;
@@ -1753,13 +1753,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				return '';
 			}
 			return [
-				'<pre title="Property Description" style="background-color:#ffffff;" tgl-apiresp="tgl">',
+				'<pre title="Property Description" style="background-color:#ffffff;border:0px;" tgl-apiresp="tgl">',
 				'<p class="pull-right text-muted">Response</p>',
 				lemon.json.highlight(response),
 				'</pre>'
 			].join('');
 		},
-		showNote: function(note, style4JSON) {
+		showNote: function(note) {
 			if (lemon.isBlank(note)) {
 				return '';
 			}
@@ -1776,7 +1776,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					html.push('</ul>');
 					return html.join('');
 				} else if (lemon.isJson(note)) {
-					return '<pre title="Property Description" style="' + (style4JSON || '') + '">' + lemon.json.highlight(note) + '</pre>';
+					return '<pre title="Property Description" style="border:0px;">' + lemon.json.highlight(note) + '</pre>';
 				} 
 				else {
 					return '<div class="panel panel-default"><div class="panel-body"><h6 class="text-muted">' + note + '</h6></div></div>';
@@ -4031,7 +4031,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								'data-placement': 'right',
 								'data-content': [
 										api.showNote(item.note || ''),
-										'<pre style="width:500px;background-color:#ffffff;">', 
+										'<pre style="width:500px;background-color:#ffffff;border:0;">', 
 										'<p class="pull-right text-muted">Request</p>',
 										lemon.json.highlight(item.request),
 										'</pre>',
