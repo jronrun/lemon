@@ -35,7 +35,7 @@
 </style>
 </head>
 <body>
-	<nav class="navbar navbar-default">
+	<nav class="navbar navbar-default" style="border:0px;">
 		<div class="container-fluid">
 			<div class="navbar-header">
 				<a class="navbar-brand" href="javascript:void(0);"></a>
@@ -109,7 +109,7 @@
 
 	<div class="row" style="margin: 0 5px;">
 		<div class="col-md-6">
-			<div class="panel panel-default" style="margin-bottom:2px;">
+			<div class="panel panel-default" style="margin-bottom:2px;border:0px;">
 				<div class="panel-body" id="view_left">
 					<form>
 						<div class="form-group">
@@ -132,7 +132,7 @@
 								<button type="button" class="btn btn-success" id="api_define">
 								<span class="glyphicon glyphicon-question-sign" title="Show the Define API"></span></button>
 							</div>
-							<textarea class="form-control" rows="21" id="request"></textarea>
+							<textarea class="form-control" style="border:0px;" rows="21" id="request"></textarea>
 						</div>
 					</form>
 
@@ -141,7 +141,7 @@
 			</div>
 		</div>
 		<div class="col-md-6">
-			<div class="panel panel-default"  style="margin-bottom:2px;">
+			<div class="panel panel-default"  style="margin-bottom:2px;border:0px;">
 				<div class="panel-body" id="view_right">
 					<form>
 						<div class="form-group">
@@ -154,7 +154,7 @@
 								<button type="button" class="btn btn-success" data-element="both" data-toggle="modal" data-target="#modal_tpl">
 								<span class="glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
 							</div>
-							<textarea class="form-control" rows="21" id="response"></textarea>
+							<textarea class="form-control" rows="21" style="border:0px;" id="response"></textarea>
 						</div>
 					</form>
 				</div>
@@ -4183,7 +4183,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			$(leftId).html(leftHtml);
 			$(rightId).html(rightHtml);
 			
-			var theH = $(root).height() - 235;
+			var theH = $(root).height() - 230;
 			if (lemon.isBlank($('#message').html())) {
 				theH += 70;
 			}
