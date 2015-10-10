@@ -3566,8 +3566,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			lemon: function() {
 				var dcs = api.preference.basic().dcs;
 				try {
-					lemon.cross(lemon.format('{0}/rapicfg.html', lemon.rtrim(dcs, '/')), function(data) {
-						api.impexp.doimport(data);
+					lemon.cross(lemon.format('{0}/rapicfg.html', lemon.rtrim(dcs, '/')), function(r) {
+						api.impexp.doimport(r);
 					});
 				} catch(e) {
 					lemon.warn('Connection and do dcs(' + dcs + ') fail ' + e.message);
@@ -3691,7 +3691,6 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				$('#imp_file').click();
 			},
 			doimport: function(data, showTip) {
-				lemon.info(data);
 				var tipTitle = '<h3>Export</h3>', msg = '';
 				try {
 					if (!lemon.isJson(data)) {
@@ -3765,6 +3764,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					}
 				}
 
+				lemon.info(data);
 				if (lemon.has(data, 'basic')) {
 					if (lemon.has(data.basic, 'config')) {
 						api.preference.basic(data.basic.config);
@@ -3819,6 +3819,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 				api.env.render();
 				api.cmd.render();
+				lemon.info('import success');
 			},
 			doexport: function(el, opt) {
 				//opt undefined or 1: mini export, 2 readable export, 3 as cross domain configuration export
