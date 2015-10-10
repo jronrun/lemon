@@ -42,6 +42,31 @@ module.exports = function(grunt) {
 			    ext: '.js'
 			}
 
+		},
+		
+		htmlmin : {
+			dist : {
+				options : {
+					removeComments : true,
+					collapseWhitespace : true,
+					conservativeCollapse: true,
+					preserveLineBreaks: true,
+					removeEmptyAttributes: true,
+					removeAttributeQuotes: true,
+					minifyJS: true,
+					minifyCSS: true,
+					useShortDoctype: true,
+					removeCommentsFromCDATA: true,
+					removeCDATASectionsFromCDATA: true,
+					removeRedundantAttributes: true,
+					removeScriptTypeAttributes: true,
+					//processScripts: ['text/html'],
+					removeStyleLinkTypeAttributes: true
+				},
+				files : {
+					'html/manual.min.html' : 'html/manual.html'
+				}
+			}
 		}
 	
 	});
@@ -53,8 +78,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-manifest-generator');
     grunt.loadNpmTasks('grunt-text-replace');
     grunt.loadNpmTasks('grunt-contrib-coffee');
+    grunt.loadNpmTasks('grunt-contrib-htmlmin');
   
-    grunt.registerTask('default', ['coffee', 'uglify:coffee', 'clean', 'uglify:styles']);
+    grunt.registerTask('default', ['coffee', 'uglify:coffee', 'clean', 'uglify:styles', 'htmlmin']);
     grunt.registerTask('coffeemini', ['uglify:coffee']);
     
 };
