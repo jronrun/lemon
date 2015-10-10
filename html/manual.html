@@ -13,6 +13,7 @@
 	(function(){"use strict";var a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F=[].slice,G={}.hasOwnProperty,H=[].indexOf||function(a){for(var b=0,c=this.length;c>b;b++)if(b in this&&this[b]===a)return b;return-1};for(y=this,a=function(b){return b instanceof a?b:this instanceof a?void(this._wrapped=b):new a(b)},a.now=function(){return(Date.now||function(){return(new Date).getTime()})()},a.script_time=a.now(),C=0,a.CRLF="\r\n",B=a,r={log:1,info:2,warn:3,error:4,none:5},f={c:!1},t={ctxPath:"",basePath:"",logger:r.log,toStringEvent:!1,toStringShowType:!0,logPrefix:function(b){return">> "+b+" ["+a.when.log()+"]"},dateMask:{"default":"yyyy-mm-dd HH:MM:ss",log:"yyyy-mm-dd HH:MM:ss l",day:"yyyy-mm-dd",time:"HH:MM:ss",week:"dddd"},dateI18n:{day:["Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],month:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","January","February","March","April","May","June","July","August","September","October","November","December"]}},c=Array.prototype.forEach,b=Array.prototype.filter,e=!1,m=encodeURIComponent,a.each=function(b,d,f){var g,h,i,j,k,l;if(null===b)return b;if(c&&b.forEach===c)b.forEach(d,f);else if(b.length===+b.length)for(g=0,k=b.length;;){if(k>g||d.call(f,b[g],g,b)===e)break;g++}else for(j=a.keys(b),h=0,l=j.length;l>h;h++)if(i=j[h],d.call(f,b[i],i,b)===e)return;return b},a.filter=function(c,d,e){var f;return f=[],null===c?f:b&&c.filter===b?c.filter(d,e):(a.each(c,function(a,b,c){d.call(e,a,b,c)&&f.push({index:a})}),f)},a.extend=function(b){return a.each(a.slice(arguments,1),function(a){var c;if(a)for(c in a)b[c]=a[c]}),b},a.capitalize=function(a){return a.charAt(0).toUpperCase()+a.slice(1)},l=function(b,c,d,e){return function(c){return b[e?e+a.capitalize(c):c]=d}(c)},a.type=function(a,b){var c;return null==b&&(b=!1),c=Object.prototype.toString.call(a),b?c:c.slice(8,-1)},i=["Arguments","Array","Boolean","Date","Error","Function","Null","Number","Object","RegExp","String","Undefined","global"],d=function(b){return l(B,b,function(c){return b===a.type(c)},"is")},o=0,q=i.length;q>o;o++)D=i[o],d(D);a.isFunc=a.isFunction,a.isWin=a.isGlobal,a.isJson=function(b){return"object"==typeof b&&a.isObject(b)&&!b.length},a.isEvent=function(b){return!(a.isNull(b)||a.isUndefined(b)||a.isUndefined(b.altKey)&&a.isUndefined(b.preventDefault))},a.isBlank=function(){var b,c,d,e,f;if(c=arguments[0],f=2<=arguments.length?F.call(arguments,1):[],c=a.isString(c)?a.trim(c):c,null!=f)for(d=0,b=f.length;b>d;d++)if(e=f[d],e===c)return!0;return a.isNull(c)||a.isUndefined(c)||a.isString(c)&&c.length<1||a.isJson(c)&&a.keys(c).length<1?!0:!1},a.isPlainObject=function(b){return a.isObject(b)&&!a.isWin(b)&&Object.getPrototypeOf(b)===Object.prototype},n=function(b,c,d){var e;e=d||B,l(e,b,function(){return a.isFunc(t[b])?t[b].apply(this,arguments):t[b]},"get"),l(e,b,function(a){return t[b]=a},"set"),t[b]=c},a.getset=function(b,c){var d,e,f,g,h,i;if(g={},a.isString(b))g[b]=null;else if(a.isArray(b))for(d=h=0,f=b.length;f>h;d=++h)i=b[d],g[i]=null;else{if(!a.isJson(b))throw new Error(a.type(arguments)+" is unsupported, must string|string array|JSON");g=b}for(e in g)i=g[e],n(e,i,c)},a.getset(t),a.getset(f,f),a.settings=function(){return t},a.clone=function(b){return a.isObject(b)?a.isArray(b)?b.slice():a.extend({},b):b},z=function(b,c,d,e){var f,g;f=a.isArray(c),g=a.isPlainObject(c),a.each(c,function(c,h){var j;j=a.type(c),e&&(h=d?e:e+"["+(g||j===i[8]||j===i[1]?h:"")+"]"),!e&&f?b.add(c.name,c.value):j===i[1]||!d&&j===i[8]?z(b,c,d,h):b.add(h,c)})},a.param=function(a,b){var c;return c=[],c.add=function(a,b){return this.push(m(a)+"="+m(b))},z(c,a,b),c.join("&").replace(/%20/g,"+")},a.getUrl=function(b,c){var d;return d=a.isBlank(c)?"":"?"+(a.isJson(c)?a.param(c):String(c)),/^http/.test(b)?b+d:a.getBasePath()+a.aroundIf(a.getCtxPath(),"/")+b+d},a.getUrlVars=function(){var a,b,c,d,e,f,g,h;if(h={},b=y.location.href,c=b.indexOf("?"),-1===c)return h;for(f=b.slice(c+1).split("&"),e=0,d=f.length;d>e;e++)g=f[e],a=g.split("="),h[a[0]]=a[1];return h},a.href=function(b,c){y.location.href=a.getUrl(b,c)},a.slice=function(b,c){return a.isArguments(b)?Array.prototype.slice.call(b,c):(b||[]).slice(c||0)},a.startWith=function(b,c){return new RegExp("^"+(a.isArray(c)?"["+c.join("|")+"]":c)).test(b)},a.endWith=function(b,c){return new RegExp((a.isArray(c)?"["+c.join("|")+"]":c)+"$").test(b)},a.startIf=function(b,c){return a.startWith(b,c)?b:c+b},a.endIf=function(b,c){return a.endWith(b,c)?b:b+c},a.aroundWith=function(b,c){return a.startWith(b,c)&&a.endWith(b,c)},a.aroundIf=function(b,c){return a.endIf(a.startIf(b,c),c)},a.prefix=function(a,b,c){return(Array(b).join(c||"0")+a).slice(-b)},a.suffix=function(a,b,c){return a+Array(b+1).join(c||"0").slice(a.length)},a.trim=function(b,c){return a.isString(b)?a.isUndefined(c)?b.replace(/(^\s*)|(\s*$)/g,""):b.replace(new RegExp("(^("+c+")*)|(("+c+")*$)","gi"),""):b},a.repeat=function(a,b){return new Array(1+b).join(a)},a.ltrim=function(b,c){return a.isString(b)?b.replace(new RegExp("(^"+(a.isBlank(c)?"\\s":c)+"*)"),""):b},a.rtrim=function(b,c){return a.isString(b)?b.replace(new RegExp("("+(a.isBlank(c)?"\\s":c)+"*$)"),""):b},a.randomStr=function(a){var b;for(b="";;)if(b+=Math.random().toString(36).substr(2),b.length>=a)break;return b.substr(0,a)},a.uniqueId=function(a){var b;return b=++C+"",a?a+b:b},a.times=function(a,b,c){var d,e;for(d=Array(Math.max(0,a)),e=0;;)if(d[e]=b.call(c,e),++e,e>=a)break;return d},a.delay=function(b,c){var d;return d=a.slice(arguments,2),setTimeout(function(){return b.apply(null,d)},c)},a.once=function(a){var b,c;return c=!1,b=null,function(){return c?b:(c=!0,b=a.apply(this,arguments),a=null,b)}},a.wrap=function(a,b){return function(){var c;return c=[a],Array.prototype.push.apply(c,arguments),b.apply(this,c)}},a.prop=function(a){return function(b){return b[a]}},a.format=function(b,c){return a.isArray(c)||(c=a.slice(arguments,1)),b.replace(/\{(\d+)\}/gm,function(b,d){var e;return e=c[d]||b,a.isObject(e)?g(e):e})},v=function(b,c){var d,e,f;if(a.isArray(b))d=b.indexOf(c),d>-1&&b.splice(d,1);else if(a.isJson(b))for(e in b)f=b[e],f===c&&delete b[e]},a.rmByVal=function(){var a,b,c,d,e;for(d=arguments[0],a=2<=arguments.length?F.call(arguments,1):[],c=0,b=a.length;b>c;c++)e=a[c],v(d,e);return d},a.getKey=function(a,b){var c,d;for(c in a)if(G.call(a,c)&&(d=a[c],d===b))return c;return null},a.has=function(b,c){return a.isBlank(b)?!1:a.isArray(b)?H.call(b,c)>=0:a.isObject(b)?c in b:Object.prototype.hasOwnProperty.call(b,c)},a.sleep=function(b){var c,d;for(d=a.now(),c=-1;;)if(c++,a.now()-d>=b)break},a.betn=function(b,c,d,e){var f,g,h,i,j,k,l,m,n,o;if(a.isBlank(c)||a.isBlank(d))return b;if(m=new Array,j=new RegExp("(?:\\"+c+")([\\s\\S]*?)(?:"+d+")","gim"),g=b.match(j),e){for(o=h=0,k=g.length-1;k>=0?k>=h:h>=k;o=k>=0?++h:--h)m.push(g[o]);return m}if(n=null,a.isNull(g))return m;for(f=i=0,l=g.length-1;l>=0?l>=i:i>=l;f=l>=0?++i:--i)n=j.exec(b),a.isNull(n)||m.push(n[1]);return m},a.betns=function(b,c,d,e){return a.isBlank(c)||a.isBlank(d)||!a.isFunc(e)?b:b.replace(new RegExp("(?:\\"+c+")([\\s\\S]*?)(?:"+d+")","gim"),e)},a.querySelector=function(a,b,c){return null==b&&(b=!1),null==c&&(c=document),b?c.querySelectorAll(a):c.querySelector(a)},a.query=function(){var b,c,d,e,f,g;switch(e=1<=arguments.length?F.call(arguments,0):[],d=e.length,g="",c=!1,d){case 1:case 2:case 3:g=e[0],2===d&&(a.isBoolean(e[1])?c=e[1]:b=e[1]),3===d&&(b=e[1],c=e[2])}if(b=b||document,/^[A-Za-z0-9]+$/.test(g)){if(f=a.querySelector(g,c,b),null!==f)return f;g="[name="+g+"]"}return a.querySelector(g,c,b)},a.removeEl=function(){var b,c;c=1<=arguments.length?F.call(arguments,0):[],b=a.query(c),b&&b.parentNode.removeChild(b)},a.chkParam=function(){var b,c,d,e;if(e=1<=arguments.length?F.call(arguments,0):[],d=e[0],c=e[1]||"",b=a.slice(e,2),!d)throw new Error(a.format(c,b));return!0},a.fillParam=function(){var b,c,d,e,f,g,h,i,j,k;switch(g=1<=arguments.length?F.call(arguments,0):[],c="",b=null,j=["div","span"],f=g.length){case 1:b=g[0];break;case 3:case 2:3===f&&(j=j.concat(a.isArray(g[2])?g[2]:[g[2]])),c=g[0],b=g[1]}c=a.startIf(c,"#");for(e in b)k=b[e],i=null,i=a.startWith(e,["#","\\."])?c+" "+e:c+" [name="+e+"]",d=a.query(i),a.isBlank(d)||(h=(d.tagName||"").toLowerCase(),H.call(j,h)>=0?d.innerHTML=k:d.value=k)},a.getParam=function(){var b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q;for(h=arguments[0],i=2<=arguments.length?F.call(arguments,1):[],h=a.startIf(h,"#"),e=["hidden","text","checkbox","password","tel","email","url","number","date","time","datetime","month"],j=["li"],d=["select"].concat(i),m=0,k=e.length;k>m;m++)q=e[m],d.push("input[type="+q+"]");if(c={},b=a.query(h),a.isBlank(b))return c;for(o=a.query(d.join(","),b,!0),n=0,l=o.length;l>n;n++)f=o[n],g=f.getAttribute("name"),(g||"").length>0&&(c[g]=a.has(f,"value")?(p=(f.tagName||"").toLowerCase(),H.call(j,p)>=0?f.innerText:a.trim(f.value)):f.innerHTML);return c},w=function(a){var b,c,d,e;c=[];for(b in a)e=a[b],c.push(b);return d=new RegExp(c.join("|"),"ig"),function(b){return b.replace(d,function(b,c,d,e,f){var g;return g=a[b]||g})}},a.replacer=function(a){return new w(a)},u=function(b,c,d,e){var f,g;if(f=d||B,a.has(f,b)&&!e)throw new Error("module exists: "+b);f[b]=c,a.isFunc(c)&&f.mixin&&(g={},g[b]=c,f.mixin(g))},a.register=function(){var b,c,d,e;if(c=1<=arguments.length?F.call(arguments,0):[],a.isJson(c[0])){d=c[0];for(b in d)e=d[b],u(b,e,c[1],c[2])}else u.apply(this,arguments)},a.unregister=function(a,b){delete(b||B)[a]},a.methodRegister=function(a,b,c,d){l(a,b,c,d)},A=function(b,c){return(a.isUndefined(c)?a.getToStringShowType():c)?b:""},a.asStr=function(a,b,c){return g(a,b||"",c||!1)},a.rmEvtProp=function(b,c){var d,e,g,h;if(g={},a.isObject(b)&&a.isJson(b))for(e in b)h=b[e],a.isEvent(h)?(d=A("[object event]: ")+h.type,c&&(g[e]=d),a.isInfoEnabled()&&(f.getC().info("The "+d+" from '"+e+"' below is event detail:"),f.getC().info(h))):g[e]=h;return g},g=function(b,c,d){var e,f,h,j,k,l,m,n,o,p,q,r,s,t,u;switch(j=[],r=c||a.CRLF,q=a.type(b),m=a.type(b,!0)+": ",t=g,q){case i[11]:case i[7]:case i[10]:case i[2]:case i[5]:case i[6]:j.push(A(m,d)+b);break;case i[3]:case i[9]:j.push(A(m,d)+String(b));break;case i[4]:j.push(A(m,d)+(b.stack||b));break;case i[0]:case i[1]:for(q===i[0]&&(b=a.slice(b)),f=[],s=0,p=b.length;p>s;s++)u=b[s],f.push("object"==typeof u?t(u,r,!1):u);j.push(A(m,d)+"["+r+f.join(","+r)+r+"]");break;case i[8]:if(a.getToStringEvent()||(b=a.rmEvtProp(b,!0)),y.JSON&&a.isJson(b))try{e=[],j.push(JSON.stringify(b,function(a,b){if("object"==typeof b&&null!==b){if(-1!==e.indexOf(b))return;e.push(b)}return b}))}catch(v){l=v,a.warn(l.message,"JSON.stringify error (ignorable)")}break;default:h=[];for(o in b)G.call(b,o)&&(u=b[o],/^HTML/.test(q)?(n="innerHTML",k="documentElement",a.has(u,n)?u=u+" "+u[n]:a.has(u,k)&&(u=u+" "+u[k])):u=a.isJson(u)?t(u):u,h.push(o+": "+u));j.push(A(m,d)+"{"+r+h.join(","+r)+r+"}")}return j.join(r)},s=function(b,c){return l(B,b,function(a,d,e,f){return k({name:b,level:c},a,d,e,f)}),l(B,b+"Enabled",function(){return f.getC()&&parseInt(c)>=parseInt(a.getLogger())},"is"),l(B,b+"Enabled",function(){return a.setLogger(r[b])},"set")};for(p in r)E=r[p],E!==r.none&&s(p,E);k=function(b,c,d,e,h){var i,j;i=f.getC(),i&&parseInt(b.level)>=parseInt(a.getLogger())&&i[b.name]&&(j=a.getLogPrefix(b.name)+(d?d+a.CRLF:"")+g(c,e,h),i[b.name].call(i,j))},a.console=function(b,c){return a.isNull(b)?(f.setC(!1),b):((!f.getC()||c)&&(a.isFunc(b)?f.setC({log:b,info:b,warn:b,error:b}):a.isObject(b)?f.setC(b):a.isUndefined(y.console)||f.setC(y.console)),f.getC())},a.getLoggerName=function(b){return b=b||a.getLogger(),a.getKey(r,parseInt(b)>r.none?r.none:b)},h=function(){var b,c,d,e;return e=/d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g,c=/\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g,d=/[^-+\dA-Z]/g,b=function(b,c){return a.prefix(b,c||2)},function(f,g,h){var i,j,k,l,m,n,o,p,q,r,s,t,u;if(a.isUndefined(g)&&a.isString(f)&&!/\d/.test(f)&&(g=f,f=void 0),q=a.getDateI18n(),o=a.getDateMask(),f=a.isBlank(f)?new Date:new Date(f),isNaN(f))throw SyntaxError("invalid date: "+f);return g=String(o[g]||g||o["default"]),"UTC:"===g.slice(0,4)&&(g=g.slice(4),h=!0),m=a.isBlank(h)?"get":"getUTC",n=f[m+"Date"](),i=f[m+"Day"](),r=f[m+"Month"](),u=f[m+"FullYear"](),j=f[m+"Hours"](),l=f[m+"Minutes"](),t=f[m+"Seconds"](),k=f[m+"Milliseconds"](),s=a.isBlank(h)?f.getTimezoneOffset():0,p={d:n,dd:b(n),ddd:q.day[i],dddd:q.day[i+7],m:r+1,mm:b(r+1),mmm:q.month[r],mmmm:q.month[r+12],yy:String(u).slice(2),yyyy:u,h:j%12||12,hh:b(j%12||12),H:j,HH:b(j),M:l,MM:b(l),s:t,ss:b(t),l:b(k,3),L:b(k>99?Math.round(k/10):k),t:12>j?"a":"p",tt:12>j?"am":"pm",T:12>j?"A":"P",TT:12>j?"AM":"PM",Z:h?"UTC":(String(f).match(c)||[""]).pop().replace(d,""),o:(s>0?"-":"+")+b(100*Math.floor(Math.abs(s)/60)+Math.abs(s)%60,4),S:["th","st","nd","rd"][n%10>3?0:(n%100-n%10!==10)*n%10]},g.replace(e,function(a){return a in p?p[a]:a.slice(1,a.length-1)})}},h=h(),a.addDateMask=function(b,c){a.extend(t.dateMask,b=b||{}),a.each(b,function(b,d){a.methodRegister(c||a.when,d,function(c,d){return a.dateFmt(c,b,d)})})},a.dateFmt=function(a,b,c){return h(a,b,c)},a.keys=function(b,c){var d;if(null==c&&(c=function(){return!0}),a.isObject(b)&&Object.keys)return Object.keys(b);d=[];for(p in b)G.call(b,p)&&(E=b[p],c(E,p)&&d.push(p));return d},a.vals=function(b){var c,d,e,f,g,h;for(c=a.keys(b),d=c.length,h=new Array(d),g=[],f=0,e=c.length;e>f;f++)p=c[f],g.push(b[p]);return g},a.funcs=function(b){return a.keys(b,function(b){return a.isFunc(b)})},j=function(b,c){return a.prototype[b]=function(){var b;return b=[this._wrapped],Array.prototype.push.apply(b,arguments),x.call(this,c.apply(a,b))}},a.mixin=function(b){var c,d,e,f,g;for(g=a.funcs(b),f=0,d=g.length;d>f;f++)e=g[f],c=a[e]=b[e],j(e,c)},x=function(b){return this._chain?a(b).chain():b},a.mixin(a),a.chain=function(b){return a(b).chain()},a.prototype.chain=function(){return this._chain=!0,this},a.prototype.value=function(){return this._wrapped},function(a,b){var c;c=function(b,c,d){return a.dateFmt(c,b,d)},a.addDateMask(a.getDateMask(),c),c.idesc={year:" years ago",month:" months ago",week:" weeks ago",day:" days ago",hour:" hours ago",minute:" minutes ago",just:"just now"},c.time=function(b){var c;return b=b||new Date,a.isDate(b)||(c=new Date(b),b=isNaN(c)?new Date(b.replace(/-/g,"/")):c),b.getTime()},c.interval=function(a){var b,d,e,f,g;return g=1e3,b=86400,d=3600,f=60,a=c.time(a),e=(c.time()-a)/g,e>=0?e/15768e4>1?c["default"](a):e/31536e3>1?parseInt(e/31536e3)+c.idesc.year:e/2592e3>1?parseInt(e/2592e3)+c.idesc.month:e/604800>=1?7+c.idesc.day:1>e/604800&&e/b>=1?parseInt(e/b)+c.idesc.day:1>e/b&&e/d>=1?parseInt(e/d)+c.idesc.hour:d>e&&e>=f?parseInt(e/f)+c.idesc.minute:c.idesc.just:c["default"](a)},a.register(b,c)}(B,"when"),function(a,b){var c,d;d=function(a,b){return e(a,b)},c={};var e=function f(a,b){var d=/\W/.test(a)?new Function("obj","var p=[],print=function(){p.push.apply(p,arguments);};with(obj){p.push('"+a.replace(/[\r\t\n]/g," ").split("<%").join("	").replace(/((^|%>)[^\t]*)'/g,"$1\r").replace(/\t=(.*?)%>/g,"',$1,'").split("	").join("');").split("%>").join("p.push('").split("\r").join("\\'")+"');}return p.join('');"):c[a]=c[a]||f(document.getElementById(a).innerHTML);return b?d(b):d};a.register(b,d)}(B,"tmpl"),function(a,b){"object"==typeof module&&module&&"object"==typeof module.exports?module.exports=a:(y.kiwi=y[b]=a,"function"==typeof define&&define.amd&&define(b,[],function(){return a}),"function"==typeof define&&define.cmd&&define(function(c,d,e){d[b]=a}))}(B,"lemon")}).call(this);
 	!function(a,b){var c,d,e,f,g,h,i;f=function(a){return d(a)},f.reverse=function(a){return i(a)},f.highlight=function(a){return j(a)},f.get=function(a,b){return value(a,b)},e=function(a,b){return p[b-1]},g=function(a){return new Array(a+1).join("	")},value=function(b,c){c=c||"";var d=c.indexOf(".")>0?c.split("."):[c],e=b;return a.each(d,function(b,c){var d=b;if(b.indexOf("[")>0&&b.indexOf("]")>0){var f=a.betn(b,"[","]",!0);b=b.replace(f.join(""),"")}if(e=e&&e[b],a.isArray(e)){var g=a.betn(d,"[","]");if(g.length>0){var h=e;a.each(g,function(a,b){h=h&&h[parseInt(a)]}),e=h}}}),e},h=function(b,c,d){var e,f,g,h;return g="",e=a.trim(b),f=e.split(c),f.length>0?(h=[],a.each(f,function(b,c){h.push(a.trim(b))}),g=h.join(d?"":c)):g=e,g},c=function(b){if(a.isBlank(b))return"{}";if(a.isString(b))return b;if(JSON&&a.isJson(b))return JSON.stringify(b);throw new Error("This browser JSON.stringify is unsupported.")},i=function(a){var b;return b=h(c(a),"\n"),b=h(b,"["),b=h(b,"]"),b=h(b,"{"),b=h(b,"}"),b=h(b,","),b=h(b,":")},f.style={".string":{color:"green"},".number":{color:"blue"},".boolean":{color:"darkorange"},".null":{color:"magenta"},".key":{color:"gray"}},f.toCSS=function(a){var b="";for(var c in a){b+=c+" {\n";for(var d in a[c])if("CSS-INHERIT-SELECTOR"==d)for(var e in a[a[c][d]])b+="	"+e+":"+a[a[c][d]][e]+";\n";else b+="	"+d+":"+a[c][d]+";\n";b+="}\n"}return b},f.addStyle=function(b,c){var d;c=c||"json_syntax",a.removeEl("#"+c),d=document,b=d.createElement("style"),b.type="text/css",b.id=c,b.innerHTML=a.isString(b)?b:f.toCSS(f.style),a.query("head").appendChild(b)};var j=function(a){return f.addStyle(),a=d(a).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"),a.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,function(a){var b="number";return/^"/.test(a)?b=/:$/.test(a)?"key":"string":/true|false/.test(a)?b="boolean":/null/.test(a)&&(b="null"),'<span class="'+b+'">'+a+"</span>"})};d=function(a){var b,d,f,h,j,k;if(JSON)return JSON.stringify(JSON.parse(c(a)),void 0,4);for(h="",f=0,a=i(c(a)),d=j=0,k=a.length;k>=0?k>j:j>k;d=k>=0?++j:--j)switch(b=a.charAt(d)){case"{":case"[":h+=b+"\n"+g(++f);break;case"}":case"]":h+="\n"+g(--f)+b;break;case",":h+=",\n"+g(f);break;case":":h+=": ";break;default:h+=b}return h=h.replace(/\[[\d,\s]+?\]/g,function(a){return a.replace(/\s/g,"")}).replace(/\\(\d+)\\/g,e).replace(/\\(\d+)\\/g,e)},a.register(b,f)}(this.kiwi,"json");
 	!function(a,b,c){function d(a){return function(){var b=_a.slice.call(arguments,0);b.unshift(g),k.appendChild(g),g.addBehavior("#default#userData"),g.load(i);var c=a.apply(store,b);return k.removeChild(g),c}}function e(a){return a.replace(/^d/,"___$&").replace(n,"___")}var f={};f=function(a,c,d){if(b.isUndefined(c))return f.get(a);if(b.isNull(c)){var e=f.get(a);return f.remove(a),e}return f.set(a,c),c};var g,h=a.document,i="localStorage",j="script";if(f.isSupport=function(){try{return i in a&&a[i]}catch(b){return!1}},f.serialize=function(c){return a.JSON&&b.isJson(c)?JSON.stringify(c):c},f.deserialize=function(a){if("string"!=typeof a)return a||void 0;try{return JSON.parse(a)}catch(b){return a||void 0}},f.transact=function(a,b,c){var d=f.get(a);null==c&&(c=b,b=null),typeof d==_undef&&(d=b||{}),c(d),f.set(a,d)},f.exists=function(a){return null!=f.get(a)},f.keys=function(){var a=[];return $.each(f.getAll(),function(b,c){a.push(b)}),a},f.size=function(a,b){return f.keys().length},f.isSupport())g=a[i],f.set=function(a,b){return void 0===b?f.remove(a):(g.setItem(a,f.serialize(b)),b)},f.get=function(a){return f.deserialize(g.getItem(a))},f.remove=function(a){g.removeItem(a)},f.clear=function(){g.clear()},f.getAll=function(){var a={};return f.forEach(function(b,c){a[b]=c}),a},f.forEach=function(a){for(var b=0;b<g.length;b++){var c=g.key(b);a(c,f.get(c))}};else if(h.documentElement.addBehavior){var k,l;try{l=new ActiveXObject("htmlfile"),l.open(),l.write("<"+j+">document.w=window</"+j+'><iframe src="/favicon.ico"></iframe>'),l.close(),k=l.w.frames[0].document,g=k.createElement("div")}catch(m){g=h.createElement("div"),k=h.body}var n=new RegExp("[!\"#$%&'()*+,/\\\\:;<=>?@[\\]^`{|}~]","g");f.set=d(function(a,b,c){return b=e(b),void 0===c?f.remove(b):(a.setAttribute(b,f.serialize(c)),a.save(i),c)}),f.get=d(function(a,b){return b=e(b),f.deserialize(a.getAttribute(b))}),f.remove=d(function(a,b){b=e(b),a.removeAttribute(b),a.save(i)}),f.clear=d(function(a){var b=a.XMLDocument.documentElement.attributes;a.load(i);for(var c,d=0;c=b[d];d++)a.removeAttribute(c.name);a.save(i)}),f.getAll=function(a){var b={};return f.forEach(function(a,c){b[a]=c}),b},f.forEach=d(function(a,b){for(var c,d=a.XMLDocument.documentElement.attributes,e=0;c=d[e];++e)b(c.name,f.deserialize(a.getAttribute(c.name)))})}b.register(c,f)}(this,this.kiwi,"store"),function(a,b,c){var d={};d.pushState=window.history&&window.history.pushState&&window.history.replaceState&&!navigator.userAgent.match(/((iPod|iPhone|iPad).+\bOS\s+[1-4]|WebApps\/.+CFNetwork)/),d.store=b.store.isSupport()?!0:!1,b.register(c,d)}(this,this.kiwi,"support");
+	!function(a,b,c){var d={};d=function(a,b){return f(a,b)},d.mozilla=/firefox/.test(navigator.userAgent.toLowerCase()),d.webkit=/webkit/.test(navigator.userAgent.toLowerCase()),d.opera=/opera/.test(navigator.userAgent.toLowerCase()),d.msie=/msie/.test(navigator.userAgent.toLowerCase()),d.form=function(a,b,c,d){e(a,b,c,d)};var e=function(b,c,e,f){var g,h,i,j=!1;i=$(lemon.startIf(c,"#")),i.submit(function(){function c(){try{var a=h.get(0).contentWindow.name||null;null!=a&&(h.remove(),i.remove(),b(a))}catch(c){}}h=$('<iframe name="_rmfrm_form" id="_rmfrm_form" style="display:none;" scrolling="no" frameborder="0"></iframe>'),$(document.body).append(h),i.attr("target","_rmfrm_form"),i.attr("action",e),i.attr("method",f),a.postMessage?b&&(g=null,g=function(c){$(a).unbind("message",g),h.remove(),i.remove(),b(c.originalEvent.data)},$(a).bind("message",g)):(h.load(function(){j?d.msie||c():(j=!0,h.get(0).contentWindow.location="about:blank")}),d.msie&&(h.get(0).onreadystatechange=function(){j&&c()}))})},f=function(b,c){function e(){try{var a=g.get(0).contentWindow.name||null;null!=a&&(g.remove(),c(a))}catch(b){}}var f,g,h=!1;g=$('<iframe name="_rmfrm" id="_rmfrm" style="display:none;" scrolling="no" frameborder="0"></iframe>'),$(document.body).append(g),g.attr("src",b),a.postMessage?c&&(f=null,f=function(b){$(a).unbind("message",f),g.remove(),c(b.originalEvent.data)},$(a).bind("message",f)):(g.load(function(){h?d.msie||e():(h=!0,g.get(0).contentWindow.location="about:blank")}),d.msie&&(g.get(0).onreadystatechange=function(){h&&e()}))};b.register(c,d)}(this,this.kiwi,"cross");
 </script>
 <style type="text/css">
     .fixed-panel { min-height: 430px; max-height: 430px; overflow-y: scroll; }
@@ -109,29 +110,28 @@
 	<div class="row" style="margin: 0 5px;">
 		<div class="col-md-6">
 			<div class="panel panel-default" style="margin-bottom:2px;">
-				<div class="panel-heading" title="Right Click Toggle Edit and View Mode">
-					<!-- <h3 class="panel-title">Request </h3> -->
-					Request
-					<div class="btn-group btn-group-xs pull-right">
-						<button type="button" class="btn btn-success" id="from_url">
-						<span class="glyphicon glyphicon-subscript" title="Set Request Data From URL"></span></button>
-						<button type="button" class="btn btn-success" id="as_default">
-						<span class="glyphicon glyphicon-camera" title="Set Request Default Value"></span></button>
-						<button type="button" class="btn btn-success" id="copy_url">
-						<span class="glyphicon glyphicon-copy" title="Show Request URL"></span></button>
-						<button type="button" class="btn btn-success" id="define_api">
-						<span class="glyphicon glyphicon-pencil" title="Define API"></span></button>
-						<button type="button" class="btn btn-success" data-element="#request" data-toggle="modal" data-target="#modal_tpl">
-						<span class="glyphicon glyphicon-tree-deciduous" title="Show Request In Fullscreen (Esc Quit)"></span></button>
-						<button type="button" class="btn btn-success" data-element="both" data-toggle="modal" data-target="#modal_tpl">
-						<span class="glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
-						<button type="button" class="btn btn-success" id="api_define">
-						<span class="glyphicon glyphicon-question-sign" title="Show the Define API"></span></button>
-					</div>
-				</div>
 				<div class="panel-body" id="view_left">
 					<form>
 						<div class="form-group">
+							<div class="pull-left">
+								<p class="text-muted">&nbsp;&nbsp;Request</p>
+							</div>
+							<div class="btn-group btn-group-xs pull-right">
+								<button type="button" class="btn btn-success" id="from_url">
+								<span class="glyphicon glyphicon-subscript" title="Set Request Data From URL"></span></button>
+								<button type="button" class="btn btn-success" id="as_default">
+								<span class="glyphicon glyphicon-camera" title="Set Request Default Value"></span></button>
+								<button type="button" class="btn btn-success" id="copy_url">
+								<span class="glyphicon glyphicon-copy" title="Show Request URL"></span></button>
+								<button type="button" class="btn btn-success" id="define_api">
+								<span class="glyphicon glyphicon-pencil" title="Define API"></span></button>
+								<button type="button" class="btn btn-success" data-element="#request" data-toggle="modal" data-target="#modal_tpl">
+								<span class="glyphicon glyphicon-tree-deciduous" title="Show Request In Fullscreen (Esc Quit)"></span></button>
+								<button type="button" class="btn btn-success" data-element="both" data-toggle="modal" data-target="#modal_tpl">
+								<span class="glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
+								<button type="button" class="btn btn-success" id="api_define">
+								<span class="glyphicon glyphicon-question-sign" title="Show the Define API"></span></button>
+							</div>
 							<textarea class="form-control" rows="21" id="request"></textarea>
 						</div>
 					</form>
@@ -142,18 +142,18 @@
 		</div>
 		<div class="col-md-6">
 			<div class="panel panel-default"  style="margin-bottom:2px;">
-				<div class="panel-heading" title="Right Click Toggle Edit and View Mode">
-					Response
-					<div class="btn-group btn-group-xs pull-right">
-						<button type="button" class="btn btn-success" data-element="#response" data-toggle="modal" data-target="#modal_tpl">
-						<span class="glyphicon glyphicon-leaf" title="Show Response In Fullscreen (Esc Quit)"></span></button>
-						<button type="button" class="btn btn-success" data-element="both" data-toggle="modal" data-target="#modal_tpl">
-						<span class="glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
-					</div>
-				</div>
 				<div class="panel-body" id="view_right">
 					<form>
 						<div class="form-group">
+							<div class="pull-left">
+								<p class="text-muted">&nbsp;&nbsp;Response</p>
+							</div>
+							<div class="btn-group btn-group-xs pull-right">
+								<button type="button" class="btn btn-success" data-element="#response" data-toggle="modal" data-target="#modal_tpl">
+								<span class="glyphicon glyphicon-leaf" title="Show Response In Fullscreen (Esc Quit)"></span></button>
+								<button type="button" class="btn btn-success" data-element="both" data-toggle="modal" data-target="#modal_tpl">
+								<span class="glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
+							</div>
 							<textarea class="form-control" rows="21" id="response"></textarea>
 						</div>
 					</form>
@@ -622,8 +622,12 @@
 			</button>
 			<ul class="dropdown-menu">
 				<li role="separator" class="divider"></li>
-				<li><a href="javascript:void(0);"  onclick="api.impexp.doexport(this, true);">
+				<li><a href="javascript:void(0);"  onclick="api.impexp.doexport(this, 2);">
 					<span class="glyphicon glyphicon-export" title="Export"></span> Export as Human Readable
+				</a></li>
+				<li role="separator" class="divider"></li>
+				<li><a href="javascript:void(0);"  onclick="api.impexp.doexport(this, 3);">
+					<span class="glyphicon glyphicon-export" title="Export"></span> Export as data center configuration
 				</a></li>
 				<li role="separator" class="divider"></li>
 			</ul>
@@ -768,6 +772,38 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 	<div class="col-md-4" id="p_apic_right">
 	</div>
 </div>
+</script>
+
+<script type="text/html" id="cross_source_tmpl">
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<title>API Configuration</title>
+</head>
+<body>
+    <%= decodeURI('%3Cscript%20%20type=%22text/javascript%22%3E') %>
+	var put = function(cfg) {
+		window.name = cfg;
+		try {
+			var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
+
+			if (typeof target != "undefined") {
+				target.postMessage(cfg, "*");
+			}
+		} catch (e) {/**/}
+	};
+	var defines = <%= rapicfg %>;
+	put(defines);
+    <%= decodeURI('%3C/script%3E') %>
+</body>
+</html>
 </script>
 
 <script type="text/javascript">
@@ -1270,6 +1306,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								onLoadStart: function(e, target) {
 									$('#btn_imp').button('loading');
 									api.loading.start('#import_tab');
+									api.loading.progress(30);
 								},
 								onLoadEnd: function(e, target) {
 									api.loading.progress(80);
@@ -1626,14 +1663,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						return;
 					}
 				}
-				
-				var height = $(elId).height() - 10;
+
+				var heightOffset = 12;
+				var height = $(elId).height() - heightOffset;
 				var width = $(elId).width();
 				$(elId).hide();
-				
+
+				var contentH = height - 5;
 				var html = [
-					'<div class="panel panel-default" id="' + lemon.ltrim(vid, '#') + '" style="height:' + height + 'px;width:' + width + 'px;border:0px solid #ffffff;">',
-					'<div class="panel-body"><pre style="border:0px solid #ffffff;background-color:#ffffff;height:' + (height - 20) + 'px;">',
+					'<div class="panel panel-default" id="' + lemon.ltrim(vid, '#') + '" style="margin-bottom:0px;height:' + contentH + 'px;width:' + width + 'px;border:0px solid #ffffff;">',
+					'<div class="panel-body" style="padding:0px;"><pre style="border:0px solid #ffffff;background-color:#ffffff;height:' + (contentH - 22) + 'px;">',
 					lemon.json.highlight(theVal),
 					'</pre></div></div>'
 				].join('');
@@ -3399,21 +3438,21 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			},
 			load: function() {
 				var theDefined = null;
-				if (root.config) {
+				if (!lemon.isBlank(root.config)) {
 					theDefined = api.preference.basic();
 					lemon.each(config, function(v, k) {if (!theDefined[k]) {theDefined[k] = v; } });
 					api.preference.basic(theDefined);
 					theDefined = null, config = undefined;
 				}
 				
-				if (root.interf) {
+				if (!lemon.isBlank(root.interf)) {
 					theDefined = api.preference.interf();
 					lemon.each(interf, function(v, k) {if (!theDefined[k]) {theDefined[k] = v; } });
 					api.preference.interf(theDefined);
 					theDefined = null, interf = undefined;
 				}
 				
-				if (root.definedServs) {
+				if (!lemon.isBlank(root.definedServs)) {
 					theDefined = api.preference.service();
 					lemon.each(root.definedServs, function(env, idx) {
 						if (theDefined[env.env]) {
@@ -3432,7 +3471,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					theDefined = null, definedServs = undefined;
 				}
 
-				if (root.definedAPIs) {
+				if (!lemon.isBlank(root.definedAPIs)) {
 					theDefined = api.preference.defines();
 					var apis = theDefined.items || [];
 					lemon.each(definedAPIs.items, function(item, k) {
@@ -3444,6 +3483,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					api.preference.defines(theDefined);
 					theDefined = null, definedAPIs = undefined;
 				}
+
+				lemon.delay(function() { api.env.lemon(); }, 500);
 			},
 			render: function() {
 				if (!api.intialized) {
@@ -3520,6 +3561,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}
 				if ($('#request_url').length) {
 					$('#request_url').text(api.nav.humanreadRequest());
+				}
+			},
+			lemon: function() {
+				var dcs = api.preference.basic().dcs;
+				try {
+					lemon.cross(lemon.format('{0}/rapicfg.html', lemon.rtrim(dcs, '/')), function(data) {
+						api.impexp.doimport(data);
+					});
+				} catch(e) {
+					lemon.warn('Connection and do dcs(' + dcs + ') fail ' + e.message);
 				}
 			},
 			isProduct: function(interf) {
@@ -3694,17 +3745,18 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						api.impexp.lemon.tag();
 						api.impexp.lemon.custhis();
 						api.impexp.lemon.prefer();
+						api.impexp.lemon.profile();
 						break;
 					}
 
 					if (11 == rprofile.lemon) {
-						alert('Manual API disabled');
+						api.impexp.lemon.disabled();
 						return;
 					}
 				}
 
 				if (lemon.isBlank(lprofile) || lemon.isBlank(lprofile.version)) {
-					api.impexp.lemon.prefer();
+					api.impexp.lemon.prefer('Clean local preference for initialize.');
 				} else {
 					if (parseInt(lprofile.version) >= parseInt(rprofile.version)) {
 						lemon.warn('Skip import when local version greater or equal the import version. local version: ' 
@@ -3712,53 +3764,64 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						return;
 					}
 				}
-				
+
+				if (lemon.has(data, 'basic')) {
+					if (lemon.has(data.basic, 'config')) {
+						api.preference.basic(data.basic.config);
+					}
+
+					if (lemon.has(data.basic, 'group')) {
+						api.preference.interf(data.basic.group);
+					}
+				}
+
+				if (lemon.has(data, 'server')) {
+					api.preference.service(data.server);
+				}
+
+				if (lemon.has(data, 'apis')) {
+					api.preference.defines(data.apis);
+				}
+
+				if (lemon.has(data, 'histories')) {
+					lemon.each(data.histories, function(v, k) {
+						lemon.store(k, v);
+					});
+				}
+
+				if (lemon.has(data, 'lastId')) {
+					lemon.store('last', data.lastId);
+				}
+
+				if (lemon.has(data, 'apidft')) {
+					lemon.store('defaultApiVal', data.apidft);
+				}
+
+				if (lemon.has(data, 'hiscust')) {
+					if (lemon.has(data.hiscust, 'tag')) {
+						lemon.store('definedTag', data.hiscust.tag);	
+					}
+					
+					if (lemon.has(data.hiscust, 'cust')) {
+						lemon.store('definehis', data.hiscust.cust);
+					}
+				}
+
+				if (lemon.has(data, 'autoid')) {
+					lemon.store('autoid', data.autoid);
+				}
 
 				lemon.store('api.profile', lemon.extend(lprofile, rprofile));
-			},
-			lemon: {
-				his: function() {
-					lemon.info('Clean local histories');
-					var lastId = parseInt(lemon.store('last') || '0');
-					for (var idx = lastId; idx >= 0; idx--) { 
-						lemon.store(idx, null); 
-					}
-					lemon.store('last', null);
-				},
-				dftapival: function() {
-					lemon.info('Clean local default api value');
-					lemon.store('defaultApiVal', null);
-				},
-				tag: function() {
-					lemon.info('Clean local define tag');
-					lemon.store('definedTag', null);
-				},
-				custhis: function() {
-					lemon.info('Clean local custom history');
-					lemon.store('definehis', null);
-				},
-				prefer: function() {
-					lemon.info('Clean local preference');
-					lemon.store('preference', null);
-				},
-				pbasic: function() {
-					lemon.info('Clean local base setting configuration');
-					api.preference.basic(null, true);
-				},
-				pinterf: function() {
-					lemon.info('Clean local base setting interface group');
-					api.preference.interf(null, true);
-				},
-				pservice: function() {
-					lemon.info('Clean local define server');
-					api.preference.service(null, true);
-				},
-				pdefines: function() {
-					lemon.info('Clean local define api');
-					api.preference.defines(null, true);
+
+				if (lemon.isBlank(api.preference.basic())) {
+					api.impexp.lemon.disabled('The base setting configuration is not exists!');
 				}
+
+				api.env.render();
+				api.cmd.render();
 			},
-			doexport: function(el, readable) {
+			doexport: function(el, opt) {
+				//opt undefined or 1: mini export, 2 readable export, 3 as cross domain configuration export
 				$(el).button('loading');
 				
 				api.loading.start('#myTabContent');
@@ -3819,7 +3882,19 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					exp.profile = {
 						version: lemon.when.tiny()
 					};
-					after.saveAs(readable ? lemon.json(exp) : lemon.json.reverse(exp), 'api.cfg');
+					switch(opt = opt || 1) {
+					case 1:
+						after.saveAs(lemon.json.reverse(exp), 'api.cfg');
+						break;
+					case 2:
+						after.saveAs(lemon.json(exp), 'api.cfg');
+						break;
+					case 3:
+						after.saveAs(lemon.tmpl($('#cross_source_tmpl').html(), {
+							rapicfg: lemon.json(exp)
+						}), 'apicfg.html');
+						break;
+					}
 				}
 
 				lemon.delay(function() {
@@ -3829,6 +3904,64 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					api.loading.end();
 					$(el).button('reset');
 				}, 2000);
+			},
+			lemon: {
+				disabled: function(msg) {
+					alert('Manual API disabled');
+					var html = [
+						'<div class="alert alert-danger alert-dismissible fade in" role="alert">',
+					    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>',
+					    '<h4>Oh snap!</h4>',
+						'<p>The Manual API disabled!</p>',		
+						'<p>' + (msg || '') + '&nbsp;</p>',				      
+					    '</div>'
+					].join('');
+					$('body').empty().append(html);
+				},
+				his: function() {
+					lemon.info('Clean local histories');
+					var lastId = parseInt(lemon.store('last') || '0');
+					for (var idx = lastId; idx >= 0; idx--) { 
+						lemon.store(idx, null); 
+					}
+					lemon.store('last', null);
+				},
+				dftapival: function() {
+					lemon.info('Clean local default api value');
+					lemon.store('defaultApiVal', null);
+				},
+				tag: function() {
+					lemon.info('Clean local define tag');
+					lemon.store('definedTag', null);
+				},
+				custhis: function() {
+					lemon.info('Clean local custom history');
+					lemon.store('definehis', null);
+				},
+				prefer: function(msg) {
+					lemon.info(msg || 'Clean local preference');
+					lemon.store('preference', null);
+				},
+				pbasic: function() {
+					lemon.info('Clean local base setting configuration');
+					api.preference.basic(null, true);
+				},
+				pinterf: function() {
+					lemon.info('Clean local base setting interface group');
+					api.preference.interf(null, true);
+				},
+				pservice: function() {
+					lemon.info('Clean local define server');
+					api.preference.service(null, true);
+				},
+				pdefines: function() {
+					lemon.info('Clean local define api');
+					api.preference.defines(null, true);
+				},
+				profile: function() {
+					lemon.info('Clean local api.profile');
+					lemon.store('api.profile', null);
+				}
 			}
 		},
 		loading: {
@@ -3879,7 +4012,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					});
 					$cmd.append(presentation).append(title);
 
-					lemon.each(api.preference.defines().items, function(item, k) {
+					var tmpDefines = api.preference.defines();
+					if (lemon.isBlank(tmpDefines) || !lemon.has(tmpDefines, 'items')) {
+						tmpDefines = {items: []};
+					}
+					lemon.each(tmpDefines.items, function(item, k) {
 						if (group.id === item.type.id) {
 							var dropItem = [
 								'<h5>' + item.api + '</h5>',
@@ -3937,7 +4074,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				  	var button = $(event.relatedTarget);
 				  	var modal = $(this); modal.empty();
 				  	api.mod.currentTriggerId = button.data('element');
-				  	var heightOffset = 13;
+				  	var heightOffset = -26;
 				  	
 				  	if ('both' == api.mod.currentTriggerId) {
 				  		/* var zoominRequest = $(document.createElement('textarea')).attr({
@@ -3984,7 +4121,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						} else if ('#response' == api.mod.currentTriggerId) {
 							theVal1 = api.resp();
 						}
-						
+
+						heightOffset = -26;
 					  	var zoomin = $(document.createElement('textarea')).attr({
 						  	id: 'edit-area'
 						}).css({
@@ -4039,12 +4177,21 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		},
 
 		behavious: function() {
-			var leftId = '#view_left', rightId = '#view_right';
+			var leftId = '#view_left #request', rightId = '#view_right #response';
 			var leftHtml = $(leftId).html(), rightHtml = $(rightId).html();
 			$(leftId).html(leftHtml);
 			$(rightId).html(rightHtml);
-			after.request = after.mirror('#request');
-			after.response = after.mirror('#response');
+			
+			var theH = $(root).height() - 235;
+			if (lemon.isBlank($('#message').html())) {
+				theH += 70;
+			}
+			after.request = after.mirror('#request', {
+				height: theH
+			});
+			after.response = after.mirror('#response', {
+				height: theH
+			});
 			
 			$('[data-element="#request"],[data-element="#response"]')
 				.removeAttr('data-target')
@@ -4057,7 +4204,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}
 			);
 
-			$('.col-md-6 .panel-heading').attr({title: ''});
+			//$('.col-md-6 .panel-heading').attr({title: ''});
 		},
 		mirror: function(elId, options) {
 			options = options || {};
@@ -4086,7 +4233,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}, options)
 			);
 
-			rich.setSize(options.width || null, options.height || 435);
+			rich.setSize(options.width || ($(root).width() / 2 - 60), options.height || ($(root).height() - 235));
 			rich.on('inputRead', function(cm, changeObj) {
 				if (options.valchange && lemon.isFunc(options.valchange)) {
 					options.valchange(cm, changeObj);
@@ -4151,30 +4298,20 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			paramName: 'data'
 		},
 		apiParamNameInRequest: 'cmd',
-		searchPageSize: 30
+		searchPageSize: 30,
+		//data server
+		dcs: 'http://192.168.2.151:8080/docs/api/'
 	};
 
 	var interf = {
-		manager: {
+		/* manager: {
 			id: 1,
 			name: "Manager API"
-		},
-		appapi: {
-			id: 2,
-			name: "App API"
-		},
-		enterprise: {
-			id: 3,
-			name: "Enterprise API"
-		},
-		rpbrepayment: {
-			id: 4,
-			name: "Rpb Repayment API"
-		}
+		} */
 	};
 
 	var definedServs = [
-	    {
+	    /* {
 		    env: 'TEST',
 		    desc: "Test Environment",
 		    serv: [
@@ -4184,571 +4321,24 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					interf: "http://192.168.2.151:8080/rpd-manager/xv1.rp",
 					note: "2.151",
 					params: {
-						'admin_token': '9VHmAsYNPUDCO0Il6a4Yec9VHmAsYNPUBHw9G'
+						'admin_token': 'abc'
 					},
-					asDefault: 1	//默认环境
-				},
-				{
-					id: 1002,
-					type: interf.manager,
-					interf: "http://rpdapp.51test.top:8080/rpd-manager/xv1.rp",
-					note: "51test.top",
-					params: {
-						'admin_token': '9VHmAsYNPUDCO0Il6a4Yec9VHmAsYNPUBHw9G'
-					}
-				},
-				{
-					id: 1009,
-					type: interf.appapi,
-					interf: "http://10.0.40.101:9000/51rp/rpdservice/xv2.htm",
-					note: "51test.top xv2"
-				},
-				{
-					id: 1003,
-					type: interf.appapi,
-					interf: "http://10.0.40.101:9000/51rp/rpdservice/xv3.htm",
-					note: "51test.top xv3"
-				},
-				{
-					id: 1008,
-					type: interf.appapi,
-					interf: "http://192.168.2.151:8080/rpdservice/xv2.htm",
-					note: "2.151 xv2"
-				},
-				{
-					id: 1004,
-					type: interf.appapi,
-					interf: "http://192.168.2.151:8080/rpdservice/xv3.htm",
-					note: "2.151 xv3"
-				},
-				{
-					id: 1005,
-					type: interf.enterprise,
-					interf: "http://192.168.2.151:8080/rpdservice/ev1web.htm",
-					note: "2.151"
-				},
-				{
-					id: 1006,
-					type: interf.rpbrepayment,
-					interf: "http://192.168.2.151:8080/rpdservice/cr1.htm",
-					note: "2.151"
-				},
-				{
-					id: 1007,
-					type: interf.rpbrepayment,
-					interf: "https://10.0.40.101:443/51rp/rpdservice/cr1.htm",
-					note: "51test.top"
-				}
-
-			]
-		},
-		{
-		    env: 'PRODUCT',
-		    desc: "Product Environment",
-		    serv: [
-				{
-					id: 8001,
-					type: interf.manager,
-					interf: "https://www.u51.com/rpd-manager/xv1.rp",
-					params: {
-						'admin_token': '9VHmAsYNPUDCO0Il6a4Yec9VHmAsYNPUBHw9G'
-					}
-				},
-				{
-					id: 8002,
-					type: interf.appapi,
-					interf: "https://www.u51.com/51rp/rpdservice/xv3.htm"
-				},
-				{
-					id: 8003,
-					type: interf.enterprise,
-					interf: "https://www.u51.com/51rp/rpdservice/ev1web.htm"
-				},
-				{
-					id: 8004,
-					type: interf.rpbrepayment,
-					interf: "https://www.u51.com/51rp/rpdservice/cr1.htm"
+					asDefault: 1	// default environment
 				}
 			]
-		}
+		} */
 	];
 
 	var definedAPIs = {
 		items: [
-			 {
+			 /* {
 				 api:"M000913",
 				 desc:"Query User",
 				 note:"",
 				 type: interf.manager,
-				 request:{"cmd":"M000913","userId":"","token":"","version":"1.0.0","data":{"name":"","mobile":""}}
-			 },
-			 {
-				 api:"M000908",
-				 desc:"比对账号余额",
-				 note:"",
-				 type: interf.manager,
-				 request:{"cmd":"M000908","userId":"","token":"","version":"1.0.0"}
-			 },
-			 {
-				 api:"M000909",
-				 desc:"查询新浪账户明细",
-				 note:"",
-				 type: interf.manager,
-				 request:{"cmd":"M000909","userId":"","token":"","version":"1.0.0","data":{"pn":"1","ps":"30","start":"20150526101010","end":"20150527101010","account_type":"SAVING_POT"}}
-			 },
-			 {
-				 api:"M000915",
-				 desc:"交易查询",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000915","userId":"","token":"","version":"1.0.0","data":{"user_id":"user id","order_no":"order no"}}
-			 },
-			 {
-				 api:"M000920",
-				 desc:"根据sinacardId查银行卡信息",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000920","userId":"","token":"","version":"1.0.0","data":{"user_id":"用户ID","sina_card_id":"新浪卡ID"}}
-			 },
-			 {
-				 api:"M000900",
-				 desc:"认购流程: 募集成功代付给用户;借款流程: 代付给用户",
-				 note:"",
-				 type: interf.manager,
-				 request:{"cmd":"M000900","userId":"","token":"","version":"1.0.0","data":{"tenderId":"标ID","recordId":"OperatorRecordId"}}
-			 },
-			 {
-				 api:"M000901",
-				 desc:"逻辑流程: OperatorRecord异步回调后逻辑未执行",
-				 note:"",
-				 type: interf.manager,
-				 request:{"cmd":"M000901","userId":"","token":"","version":"1.0.0","data":{"recordId":"OperatorRecordId"}}
-			 },
-			 {
-				 api:"M000902",
-				 desc:"hostPayBack,人品转让失败处理",
-				 note:"",
-				 type: interf.manager,
-				 request:{"cmd":"M000902","userId":"","token":"","version":"1.0.0","data":{"recordId":"OperatorRecordId"}}
-			 },
-			 {
-				 api:"M000903",
-				 desc:"hostCollectBack,人品转让失败处理",
-				 note:"",
-				 type: interf.manager,
-				 request:{"cmd":"M000903","userId":"","token":"","version":"1.0.0","data":{"recordId":"OperatorRecordId"}}
-			 },
-			 {
-				 api:"M000904",
-				 desc:"分账",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000904","userId":"","token":"","version":"1.0.0","data":{ "type":"1 cellRepaymentService.createRepayment, 2 cellRepaymentService.doRepayment, 3 enterpriseEnsureAccountService.hostCollect, 4 enterpriseBasicAccountService.companyEarn", "plan_id":"TenderPlanId"}}
-			 },
-			 {
-				 api:"M000905",
-				 desc:"提现",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000905","userId":"","token":"","version":"1.0.0","data":{"withdraw_id":"withdrawId","operator_auto_id":"operatorAutoId"}}
-			 },
-			 {
-				 api:"M000906",
-				 desc:"hostCollectFail,人品转让代收失败手动处理",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000906","userId":"","token":"","version":"1.0.0","data":{"recordId":"OperatorRecordId"}}
-			 },
-			 {
-				 api:"M000907",
-				 desc:"全新提现",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000907","userId":"","token":"","version":"1.0.0","data":{"amount":"取现金额","type":"1 正常提现, 2 转让Amount对应的金额但不触发提现, 3 不检余额 转让Amount对应的金额但不触发提现","way":"0 T+1或T+2提现, 1 闪电提现"}}
-			 },
-			 {
-				 api:"M000910",
-				 desc:"hostCollectFail,人品宝认购代收失败，手动处理（针对钱未到托管账户的处理）",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000910","userId":"","token":"","version":"1.0.0","data":{"recordId":"OperatorRecordId"}}
-			 },
-			 {
-				 api:"M000911",
-				 desc:"hostCollect,向用户存钱罐代收钱到托管账户,金额的减少不反应到用户界面",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000911","userId":"","token":"","version":"1.0.0","data":{"user_id":"用户ID","money":"金额","reason":"原因","recordId":"起因OperatorId"}}
-			 },
-			 {
-				 api:"M000912",
-				 desc:"hostPay,将托管账户的钱打到用户存钱罐,金额的增加不反应到用户界面",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000912","userId":"","token":"","version":"1.0.0","data":{"user_id":"用户ID","money":"金额","reason":"原因","recordId":"起因OperatorId"}}
-			 },
-			 {
-				 api:"M000914",
-				 desc:"贷款提现",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000914","userId":"0","token":"","version":"1.0.0","data":{"user_id":"","amount":"","tender_id":""}}
-			 },
-			 {
-				 api:"M000916",
-				 desc:"手动代收",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000916","userId":"","token":"","version":"1.0.0","data":{"recordId":"OperatorRecordId"}}
-			 },
-			 {
-				 api:"M000917",
-				 desc:"批量检查用户余额与新浪余额是否一致",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000917","userId":"","token":"","version":"1.0.0","data":{"pn":"page no","ps":"page size","page_count":"大于0为该值指定的页数,0则全部"}}
-			 },
-			 {
-				 api:"M000918",
-				 desc:"用户查询接口",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000918","userId":"","token":"","version":"1.0.0","data":{"pn":"page no","ps":"page size", "user_id":"用户ID(可不传)","pot_amount":"存钱罐金额大于等于该值(可不传)","rpb_amount":"人品宝金额大于等于该值(可不传)","name":"用户姓名(可不传)"}}
-			 },
-			 {
-				 api:"M000919",
-				 desc:"翻倍奖励分发接口",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000919","userId":"","token":"","version":"1.0.0","data":{"statistics_id":"活动统计ID"}}
-			 },
-			 {
-				 api:"M000921",
-				 desc:"人品转让代付失败,再次发起代付请求",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000921","userId":"","token":"","version":"1.0.0","data":{"recordId":"代付失败的RecordAutoId","collectRecordId":"代收成功的RecordAutoId"}}
-			 },
-			 {
-				 api:"M000922",
-				 desc:"提现失败,针对托管账户钱已经扣除，本地却做了失败处理",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000922","userId":"","token":"","version":"1.0.0","data":{"recordId":"提现成功的RecordAutoId"}}
-			 },
-			 {
-				 api:"M000923",
-				 desc:"借款人还款收益转入基本户， Pre执行完成  pay未执行",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000923","userId":"","token":"","version":"1.0.0","data":{"recordId":"未发送命令的RecordAutoId"}}
-			 },
-			 {
-				 api:"M000924",
-				 desc:"提现时一个人品宝被多次转让",
-				 note:[
-					'{"type":1代收,"recordId":"转让代付成功的代付RecordID，人品宝没有到位（被另外一个用户覆盖了）","transferId":"重复转让被覆盖的记录"}',
-					'{"type":2执行代收成功逻辑,"recordId":"代收成功的RecordID"}',
-					'{"type":3代付,"recordId":"代收成功的RecordID"}',
-					'{"type":4执行代付成功逻辑,"recordId":"代付成功的RecordID"}'
-				 	],
-				 type: interf.manager,
-				 request: {"cmd":"M000924","userId":"","token":"","version":"1.0.0","data":{"type":""}}
-			 },
-			 {
-				 api:"M000031",
-				 desc:"为企业用户申请51用户ID",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000031","userId":"","token":"","version":"1.0.0","data":{"user_id":"user id","name":"name"}}
-			 },
-			 {
-				 api:"M000011",
-				 desc:"加密内容",
-				 note:"",
-				 type: interf.manager,
-				 request: { "cmd": "M000011", "version": "1.0.0", "data": "需加密的内容" }
-			 },
-			 {
-				 api:"M000925",
-				 desc:"逾期滞纳金查询",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000925","userId":"","token":"","version":"1.0.0","data":{"auto_id":"订单autoid"}}
-			 },
-			 {
-				 api:"M000926",
-				 desc:"还款: 自动代收还款",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000926","userId":"","token":"","version":"1.0.0","data":{"type":"1发送代收命令, 2执行代收成功逻辑, 3发送代收分账差额命令, 4执行代收分账差额成功逻辑","planId":"还款计划ID","recordId":0}}
-			 },
-			 {
-				 api:"M000927",
-				 desc:"用户当前拥有的标细胞信息",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000927","userId":"","token":"","version":"1.0.0","data":{"user_id":"userId","show_detail":"1 show","date":""}}
-			 },
-			 {
-				 api:"M000928",
-				 desc:"人品宝转让代付的时候代付给了自己的UserId",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000928","userId":"用户Id","token":"登陆TOKEN","version":"1.0.0","data":{"recordId":"代付成功的OperatorAutoId"}}
-			 },
-			 {
-				 api:"M000929",
-				 desc:"闪电提现",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000929","userId":"","token":"","version":"1.0.0","data":{"type":"1发送代收命令, 2执行代收成功逻辑, 3发送代代付命令, 4执行代付成功逻辑， 5 发送打款命令 6 执行打款成功命令 7 发送转账命令 8 执行转账成功命令","operatorId":"操作ID","amount":"10.00"}}
-			 },
-			 {
-				 api:"M000930",
-				 desc:"人品系统或新浪或银行维护公告",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000930","userId":"","token":"","version":"1.0.0","data": {"start":"开始时间yyyy-MM-dd HH:mm:ss","end":"结束时间yyyy-MM-dd HH:mm:ss","notice":"维护公告","cmds":"维护的接口 多个则逗号分隔","banks":"银行编码 多个则逗号分隔","type":"0 人品和新浪, 1 银联商户"}}
-			 },
-			 {
-				 api:"M000931",
-				 desc:"重新发送新浪订单，(订单号在新浪不存在的情况下)",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000931","userId":"","token":"","version":"1.0.0","data":{"recordId":"生成但是发送失败的指令（新浪那边查不到的订单号）"}}
-			 },
-			 {
-				 api:"M000932",
-				 desc:"根据标信息代收代付",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000932","userId":"","token":"","version":"1.0.0","data":{"tender_id":"tenderId","type":"1 基本户代收, 2 基本户代付"}}
-			 },
-			 {
-				 api:"M000933",
-				 desc:"批量检查用户人品宝余额与所拥有的细胞总和是否一致, 单用户:M000927",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000933","userId":"","token":"","version":"1.0.0","data":{"pn":"page no","ps":"page size","page_count":"大于0为该值指定的页数,0则全部"}}
-			 },
-			 {
-				 api:"M000934",
-				 desc:"人品宝被多次转让处理",
-				 note:[
-					'{"type":1发送代收命令,"tempTransferAutoId":""}',
-					'{"type":2执行代收成功逻辑,"recordId":"代收成功的OperatorRecordAutoI"}',
-					'{"type":3发送代付命令,"recordId":"代收成功的OperatorRecordAutoId","tempTransferAutoId":""}',
-					'{"type":4执行付收成功逻辑,"recordId":"代付成功的OperatorRecordAutoId"}',
-					'{"type":11同步Transfer信息,"tempUserAutoId":""}',
-					'{"type":12核对并执行Transfer信息,"tempUserAutoId":""}'
-				 	],
-				 type: interf.manager,
-				 request: {"cmd":"M000934","userId":"","token":"","version":"1.0.0","data":{"type":""}}
-			 },
-			 {
-				 api:"M000938",
-				 desc:"代发工资",
-				 note:[
-					'{"type":1发送工资代收命令,"salaryPlanId":""}',
-					'{"type":2执行代收成功逻辑,"recordId":"代收成功的OperatorRecordAutoI"}',
-					'{"type":3循环发送代付命令,"salaryPlanId":""}',
-					'{"type":4执行单个付收成功逻辑,"recordId":"代付成功的OperatorRecordAutoId"}'
-				 	],
-				 type: interf.manager,
-				 request: {"cmd":"M000938","userId":"","token":"","version":"1.0.0","data":{"type":""}}
-			 },
-			 {
-				 api:"M000939",
-				 desc:"代发佣金",
-				 note:[
-					'{"type":1发送佣金代收命令,"statisticsId":""}',
-					'{"type":2执行代收成功逻辑,"recordId":"代收成功的OperatorRecordAutoI"}',
-					'{"type":3循环发送代付命令,"statisticsId":""}',
-					'{"type":4执行单个付收成功逻辑,"recordId":"代付成功的OperatorRecordAutoId"}',
-					'{"type":5生成当日佣金统计记录,"day":"2015-07-30"}'
-				 	],
-				 type: interf.manager,
-				 request: {"cmd":"M000939","userId":"","token":"","version":"1.0.0","data":{"type":""}}
-			 },
-			 {
-				 api:"M000610",
-				 desc:"根据用户ID取用户名信息",
-				 note: "",
-				 type: interf.manager,
-				 request: {"cmd":"M000610","userId":"","token":"","version":"1.0.0", "data":{"uids":"多个逗号分隔"}}
-			 },
-			 {
-				 api:"M000935",
-				 desc:"B2C垫付金充值,确认已线下充值",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000935","userId":"","token":"","version":"1.0.0","data":{"company_id":"1","amount":""}}
-			 },
-			 {
-				 api:"M000936",
-				 desc:"存钱罐代收代付",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000936","userId":"","token":"","version":"1.0.0", "data":{"money":"","type":"1 存钱罐代收, 2 存钱罐代付","operator_id":"type 1时产生代收原因的ID, type 2时临时代收的OperatorRecordAutoId"}}
-			 },
-			 {
-				 api:"M000937",
-				 desc:"通过细胞收益计划生成 细胞收益",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000937","userId":"","token":"","version":"1.0.0", "data":{"type":"1生成所有计划, 2生成单独计划","id":"type 1：不需要, type 2：指定标ID  "}}
-			 },
-			 {
-				 api:"M000940",
-				 desc:"人品宝信用卡还款垫付金充值,确认已线下充值",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000940","userId":"","token":"","version":"1.0.0","data":{"company_id":"1","amount":""}}
-			 },
-			 {
-				 api:"M000941",
-				 desc:"民生银行接口测试-查询交易状态",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000941","userId":"","token":"","version":"1.0.0","data":{"transactionId":""}}
-			 },
-			 {
-				 api:"M000942",
-				 desc:"解冻资产",
-				 note:'business_type: 1 提现, 2 自动还款代收, 3 信用卡还款, 5 充值还款代收',
-				 type: interf.manager,
-				 request: {"cmd":"M000942","userId":"","token":"","version":"1.0.0","data":{"business_type":"","business_id":""}}
-			 },
-			 {
-				 api:"M000943",
-				 desc:"解绑认证信息",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000943","userId":"","token":"","version":"1.0.0"} 
-			 },
-			 {
-				 api:"M000944",
-				 desc:"风险保证金充值,确认已线下充值",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000944","userId":"","token":"","version":"1.0.0","data":{"company_id":"1","amount":""}} 
-			 },
-			 {
-				 api:"M000945",
-				 desc:"PushMethod",
-				 note: [
-					"method (MethodEnum): 1 充值, 2 提现, 3 标细胞认购代收, 4 标细胞认购代付, 5 标细胞转让代收, 6 标细胞转让代付",
-					"8 还款代收, 10, 标细胞本息回款代付, 11 保证金代收, 12 保证金代付, 13 贷款打款",
-					"14 还款充值, 15 还款充值代收, 16 闪电提现代收, 17 闪电提现代付, 18 闪电提现打款, 19 闪电提现转账",
-					"20 闪电提现退款代付, 35 人品宝转让失败代付, 36 人品宝信用卡还款代收, 37 人品宝信用卡还款代付",
-					"38 银商充值代收, 39 银商充值代付"
-				 	],
-				 type: interf.manager,
-				 request: {"cmd":"M000945","userId":"","token":"","version":"1.0.0","data":{"method":"","operator_auto_id":"","args":""}} 
-			 },
-			 {
-				 api:"M000946",
-				 desc:"企业用户充值,确认已线下充值",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000946","userId":"","token":"","version":"1.0.0","data":{"amount":""}} 
-			 },
-			 {
-				 api:"M000947",
-				 desc:"信用卡还款民生已垫款,但做了失败处理",
-				 note:"M000941 接口确认交易状态后操作",
-				 type: interf.manager,
-				 request: {"cmd":"M000947","userId":"","token":"","version":"1.0.0","data":{"operator_auto_id":""}} 
-			 },
-			 {
-				 api:"M000948",
-				 desc:"信用卡还款结果通知管家",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000948","userId":"","token":"","version":"1.0.0","data":{"refund_id":"多个以逗号分隔","state":"0 还款中, 1 还款失败, 2 还款成功"}} 
-			 },
-			 {
-				 api:"M000951",
-				 desc:"公司基本户金额充正",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000951","userId":"","token":"","version":"1.0.0","data": {"company_balance_auto_id":"多个逗号分隔","trans_txt":"","trans_party":""}} 
-			 },
-			 {
-				 api:"M000952",
-				 desc:"人品宝首页数据(竞标,转让,提现进度等)",
-				 note:"",
-				 type: interf.manager,
-				 request: {"cmd":"M000952","userId":"","token":"","version":"1.0.0"} 
-			 },
-			 {
-				 api:"M000953",
-				 desc:"AsyncQueue",
-				 note: {
-					 type: {
-						1: 'addSyncQueue(recordType, recordId, createTime)',
-						2: 'addSyncQueueDelay(recordType, recordId, createTime, minutes)',
-						3: 'removeSyncQueue(recordType, recordId)',
-						4: 'getSyncQueue(offset, count, createTime)'
-					 },
-					 'record_type': 'see OperatorRecordEnums',
-					 'create_time': '空则使用当前时间',
-					 minutes: '延迟时间(分钟), type为2时使用'
-			     },
-				 type: interf.manager,
-				 request: {"cmd":"M000953","userId":"","token":"","version":"1.0.0", "data":{"type":"","record_id":"","record_type":"","minutes":"","create_time":"","offset":"","count":""}}
-			 },
-			 {
-				 api:"M000954",
-				 desc:"lockPayPasswd",
-				 note: 'type: 1 get, 2 set, 3 remove',
-				 type: interf.manager,
-				 request: {"cmd":"M000954","userId":"","token":"","version":"1.0.0", "data":{"type":""}}
-			 },
-			 {
-				 api:"R000001",
-				 desc:"检测人品宝开户状态",
-				 note:"",
-				 type: interf.rpbrepayment,
-				 request: {"cmd":"R000001","userId":"","token":"","version":"1.0.0","data":{"user_name":""}}
-			 },
-			 {
-				 api:"R000002",
-				 desc:"获取人品宝账号余额",
-				 note:"",
-				 type: interf.rpbrepayment,
-				 request: {"cmd":"R000002","userId":"","token":"","version":"1.0.0"}
-			 },
-			 {
-				 api:"R000003",
-				 desc:"提交人品宝信用卡还款订单",
-				 note:"",
-				 type: interf.rpbrepayment,
-				 request: {"cmd":"R000003","userId":"","token":"","version":"1.0.0","data": {"bill_id":"信用卡账单ID","credit_acco":"信用卡全卡号","amount":"还款金额","bank_id":"银行ID","trade_pwd":"交易密码","user_name":""}}
-			 },
-			 {
-				 api:"R000004",
-				 desc:"检测人品宝信用卡还款状态",
-				 note:"",
-				 type: interf.rpbrepayment,
-				 request: {"cmd":"R000004","userId":"","token":"","version":"1.0.0","data":{"order_no":"还款订单号"}}
-			 },
-			 {
-				 api:"R000005",
-				 desc:"人品宝开户(一) 提交开户信息",
-				 note:"",
-				 type: interf.rpbrepayment,
-				 request: {"cmd":"R000005","userId":"","token":"","version":"1.0.0","data":	{"realname":"真实姓名","identity":"身份证","card_no":"银行卡号","mobile":"银行预留手机号","provice":"开卡省份","city":"开卡城市","card_type":"(可选)卡类型,DEBIT：借记卡，CREDIT: 贷记(信用卡)","bank_code":"(可选)银行编号"}}
-			 },
-			 {
-				 api:"R000006",
-				 desc:"人品宝开户(二) 校验手机验证码",
-				 note:"",
-				 type: interf.rpbrepayment,
-				 request: {"cmd":"R000006","userId":"","token":"","version":"1.0.0","data":{"order_no":"开户绑卡交易号","ticket":"ticket","sms_code":"手机验证码"}}
-			 }
-
+				 request:{"cmd":"M000913","userId":"","token":"","version":"1.0.0","data":{"name":"","mobile":""}},
+				 response: ''
+			 } */
 		]
 	};
 

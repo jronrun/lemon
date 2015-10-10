@@ -36,7 +36,7 @@
 		return proto.get(key) != null;
 	};
 	proto.keys = function() {
-		var ret = []; $.each(proto.getAll(), function(k, v){ ret.push(k); }); return ret;
+		var ret = []; core.each(proto.getAll(), function(v, k){ ret.push(k); }); return ret;
 	};
 	proto.size = function(key, value) {
 		return proto.keys().length;
