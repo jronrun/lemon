@@ -66,39 +66,42 @@
 					<div class="form-group">
 						<div class="input-group">
 					      <div class="input-group-btn">
-					        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> <span class="caret"></span></button>
+					        <button type="button" class="btn btn-default dropdown-toggle" style="border:0px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> 
+					        <span class="caret text-muted"></span></button>
 					        <ul class="dropdown-menu">
 					          <li role="separator" class="divider"></li>
-					          <li><a href="javascript:void(0);" onclick="api.typeSearch(1)">Defined APIs</a></li>
-					          <li><a href="javascript:void(0);" onclick="api.typeSearch(4)">Tag</a></li>
-					          <li><a href="javascript:void(0);" onclick="api.typeSearch(5)">Favourite</a></li>
+					          <li><a href="javascript:void(0);" onclick="api.typeSearch(1)"><span class="text-muted">Defined APIs</span></a></li>
+					          <li><a href="javascript:void(0);" onclick="api.typeSearch(4)"><span class="text-muted">Tag</span></a></li>
+					          <li><a href="javascript:void(0);" onclick="api.typeSearch(5)"><span class="text-muted">Favourite</span></a></li>
 					          <li role="separator" class="divider"></li>
 					        </ul>
 					      </div>
 					      <!-- <input type="text" class="form-control" id="input_search" style="width: 230px;" placeholder="API & Histories.."> -->
-					      <textarea type="text" class="form-control" id="input_search" style="width: 230px;height:34px;" placeholder="API & Histories.."></textarea>
+					      <textarea type="text" class="form-control" id="input_search" style="border:0px;width: 230px;height:34px;" placeholder="API & Histories.."></textarea>
 					    </div>
 					</div>
-					<button type="submit" class="btn btn-default" id="btn_search">
-						<span class="glyphicon glyphicon-search" title="Search"></span>
+					<button type="submit" class="btn btn-default" style="border:0px;" id="btn_search">
+						<span class="glyphicon glyphicon-search text-muted" title="Search"></span>
 					</button>
-					<button type="submit" class="btn btn-default" id="btn_request">Request</button>					
+					<button type="submit" class="btn btn-default" id="btn_request" style="border:0px;"><span class="text-muted">Request</span></button>					
 					<div class="btn-group">
-					  <button type="submit" class="btn btn-default" id="btn_request_tab">Request In New Tab</button>
-					  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-					    <span class="caret"></span>
+					  <button type="submit" class="btn btn-default" style="border:0px;" id="btn_request_tab"><span class="text-muted">Request In New Tab</span></button>
+					  <button type="button" class="btn btn-default dropdown-toggle" style="border:0px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					    <span class="caret text-muted"></span>
 					    <span class="sr-only">Toggle Dropdown</span>
 					  </button>
 					  <ul class="dropdown-menu">
 					    <li role="separator" class="divider"></li>
-					    <li><a href="javascript:void(0);" id="btn_request_get">Request with Get</a></li>
+					    <li><a href="javascript:void(0);" id="btn_request_get"><span class="text-muted">Request with Get</span></a></li>
 					    <li role="separator" class="divider"></li>
-					    <li><a href="javascript:void(0);" id="btn_request_post">Request with Post</a></li>
+					    <li><a href="javascript:void(0);" id="btn_request_post"><span class="text-muted">Request with Post</span></a></li>
 					    <li role="separator" class="divider"></li>
 					  </ul>
 					</div>
 					
-					<button type="submit" class="btn btn-default" id="btn_history">History</button>
+					<button type="submit" class="btn btn-default" style="border:0px;" id="btn_history"><span class="text-muted">History</span></button>
+					<button type="submit" class="btn btn-default" style="border:0px;" id="btn_note"><span class="text-muted">Notes</span></button>
+					<div id="input_note_wrap" style="display:none;"><textarea type="text" class="hidden" id="input_note"></textarea></div>
 				</form>
 				<ul class="nav navbar-nav navbar-right">
 				</ul>
@@ -114,23 +117,23 @@
 					<form>
 						<div class="form-group">
 							<div class="pull-left">
-								<p class="text-muted">&nbsp;&nbsp;Request</p>
+								<button type="button" class="btn btn-default" style="border:0px;"><span class="text-muted">Request</span></button>
 							</div>
-							<div class="btn-group btn-group-xs pull-right">
-								<button type="button" class="btn btn-success" id="from_url">
-								<span class="glyphicon glyphicon-subscript" title="Set Request Data From URL"></span></button>
-								<button type="button" class="btn btn-success" id="as_default">
-								<span class="glyphicon glyphicon-camera" title="Set Request Default Value"></span></button>
-								<button type="button" class="btn btn-success" id="copy_url">
-								<span class="glyphicon glyphicon-copy" title="Show Request URL"></span></button>
-								<button type="button" class="btn btn-success" id="define_api">
-								<span class="glyphicon glyphicon-pencil" title="Define API"></span></button>
-								<button type="button" class="btn btn-success" data-element="#request" data-toggle="modal" data-target="#modal_tpl">
-								<span class="glyphicon glyphicon-tree-deciduous" title="Show Request In Fullscreen (Esc Quit)"></span></button>
-								<button type="button" class="btn btn-success" data-element="both" data-toggle="modal" data-target="#modal_tpl">
-								<span class="glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
-								<button type="button" class="btn btn-success" id="api_define">
-								<span class="glyphicon glyphicon-question-sign" title="Show the Define API"></span></button>
+							<div class="btn-group pull-right">
+								<button type="button" class="btn btn-default" style="border:0px;" id="from_url">
+								<span class="text-muted glyphicon glyphicon-subscript" title="Set Request Data From URL"></span></button>
+								<button type="button" class="btn btn-default" style="border:0px;" id="as_default">
+								<span class="text-muted glyphicon glyphicon-camera" title="Set Request Default Value"></span></button>
+								<button type="button" class="btn btn-default" style="border:0px;" id="copy_url">
+								<span class="text-muted glyphicon glyphicon-copy" title="Show Request URL"></span></button>
+								<button type="button" class="btn btn-default" style="border:0px;" id="define_api">
+								<span class="text-muted glyphicon glyphicon-pencil" title="Define API"></span></button>
+								<button type="button" class="btn btn-default" style="border:0px;" data-element="#request" data-toggle="modal" data-target="#modal_tpl">
+								<span class="text-muted glyphicon glyphicon-tree-deciduous" title="Show Request In Fullscreen (Esc Quit)"></span></button>
+								<button type="button" class="btn btn-default" style="border:0px;" data-element="both" data-toggle="modal" data-target="#modal_tpl">
+								<span class="text-muted glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
+								<button type="button" class="btn btn-default" style="border:0px;" id="api_define">
+								<span class="text-muted glyphicon glyphicon-question-sign" title="Show the Define API"></span></button>
 							</div>
 							<textarea class="form-control" style="border:0px;" rows="21" id="request"></textarea>
 						</div>
@@ -146,13 +149,13 @@
 					<form>
 						<div class="form-group">
 							<div class="pull-left">
-								<p class="text-muted">&nbsp;&nbsp;Response</p>
+								<button type="button" class="btn btn-default" style="border:0px;"><span class="text-muted">Response</span></button>
 							</div>
-							<div class="btn-group btn-group-xs pull-right">
-								<button type="button" class="btn btn-success" data-element="#response" data-toggle="modal" data-target="#modal_tpl">
-								<span class="glyphicon glyphicon-leaf" title="Show Response In Fullscreen (Esc Quit)"></span></button>
-								<button type="button" class="btn btn-success" data-element="both" data-toggle="modal" data-target="#modal_tpl">
-								<span class="glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
+							<div class="btn-group pull-right">
+								<button type="button" class="btn btn-default" style="border:0px;" data-element="#response" data-toggle="modal" data-target="#modal_tpl">
+								<span class="text-muted glyphicon glyphicon-leaf" title="Show Response In Fullscreen (Esc Quit)"></span></button>
+								<button type="button" class="btn btn-default" style="border:0px;" data-element="both" data-toggle="modal" data-target="#modal_tpl">
+								<span class="text-muted glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
 							</div>
 							<textarea class="form-control" rows="21" style="border:0px;" id="response"></textarea>
 						</div>
@@ -213,6 +216,10 @@
 		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/comment-fold.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/anyword-hint.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/search/match-highlighter.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/display/panel.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'mode/xml/xml.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'mode/htmlmixed/htmlmixed.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'keymap/vim.min.js'))
 		//.queueWait(function() {});
 		.queueWait(function() { after.initialize(); });
 	
@@ -1480,6 +1487,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						};
 						break;
 					}
+				});
+
+				$('#btn_note').click(function() {
+					note.open();
 				});
 
 				api.popoverOnBtn("#btn_history", function() {
@@ -3758,8 +3769,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					api.impexp.lemon.prefer('Clean local preference for initialize.');
 				} else {
 					if (parseInt(lprofile.version) >= parseInt(rprofile.version)) {
-						lemon.warn('Skip import when local version greater or equal the import version. local version: ' 
-							+ lprofile.version + ', import version: ' + rprofile.version);
+						lemon.info('import done ' + rprofile.version);
 						return;
 					}
 				}
@@ -3819,7 +3829,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 				api.env.render();
 				api.cmd.render();
-				lemon.info('import success');
+				lemon.info('import success version: ' + rprofile.version);
 			},
 			doexport: function(el, opt) {
 				//opt undefined or 1: mini export, 2 readable export, 3 as cross domain configuration export
@@ -4159,6 +4169,27 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 	//$(function(){ api.initialize(); });
 	
+	var note = note || {
+		instance: null,
+		root: null,
+		open: function() {
+			note.root = $('#input_note_wrap');
+			note.root.show();
+			
+			note.instance = note.instance || CodeMirror.fromTextArea(lemon.query('#input_note'), {
+		        mode: 'htmlmixed',
+		        keyMap: 'vim',
+		        fullScreen: true,
+		        lineNumbers: true,
+		        matchBrackets: true,
+		        showCursorWhenSelecting: true
+		    });
+		},
+		close: function() {
+			note.root.slideToggle();
+		}
+	};
+	
 	var after = after || {
 		styled: false,
 		request: null,
@@ -4221,7 +4252,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				foldGutter: true,
 				content: '',
 				gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-				  	extraKeys: {
+				extraKeys: {
 					  	//http://codemirror.net/doc/manual.html#commands
 				    	"Esc": function(cm) { 
 					    	after.rich.fullscreenTgl(cm) 
