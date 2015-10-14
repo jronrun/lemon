@@ -194,32 +194,56 @@
 		.queueScript(lemon.getUrl(cmprfix + 'codemirror.min.js'))
 		.queueWait()
 		.queueScript(lemon.getUrl(cmprfix + 'addon/dialog/dialog.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/scroll/annotatescrollbar.min.js'))
+		
 		.queueScript(lemon.getUrl(cmprfix + 'addon/search/searchcursor.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/search/matchesonscrollbar.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/search/search.min.js'))
-		.queueScript(lemon.getUrl(cmprfix + 'addon/scroll/annotatescrollbar.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/search/match-highlighter.min.js'))
+		
 		.queueScript(lemon.getUrl(cmprfix + 'addon/edit/matchbrackets.min.js'))
-		.queueScript(lemon.getUrl(cmprfix + 'addon/lint/javascript-lint.min.js'))
-		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/javascript-hint.min.js'))
-		.queueScript(lemon.getUrl(cmprfix + 'mode/javascript/javascript.min.js'))
-		.queueScript(lemon.getUrl(cmprfix + 'addon/lint/json-lint.min.js'))
-		.queueScript(lemon.getUrl(cmprfix + 'addon/selection/active-line.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/edit/matchtags.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/edit/closebrackets.min.js'))
-		.queueScript(lemon.getUrl(cmprfix + 'addon/display/fullscreen.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/edit/closetag.min.js'))
+		
+		.queueScript(lemon.getUrl(cmprfix + 'addon/lint/javascript-lint.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/lint/json-lint.min.js'))
+		
+		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/javascript-hint.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/show-hint.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/anyword-hint.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/xml-hint.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/html-hint.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/css-hint.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/sql-hint.min.js'))
+		
+		.queueScript(lemon.getUrl(cmprfix + 'mode/javascript/javascript.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'mode/xml/xml.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'mode/htmlmixed/htmlmixed.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'mode/css/css.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'mode/meta.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/mode/loadmode.min.js'))
+		
+		.queueScript(lemon.getUrl(cmprfix + 'addon/display/fullscreen.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/display/panel.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/display/autorefresh.min.js'))
+		
 		.queueScript(lemon.getUrl(cmprfix + 'addon/comment/comment.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/comment/continuecomment.min.js'))
+		
 		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/foldcode.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/foldgutter.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/brace-fold.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/indent-fold.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/comment-fold.min.js'))
-		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/anyword-hint.min.js'))
-		.queueScript(lemon.getUrl(cmprfix + 'addon/search/match-highlighter.min.js'))
-		.queueScript(lemon.getUrl(cmprfix + 'addon/display/panel.min.js'))
-		.queueScript(lemon.getUrl(cmprfix + 'mode/xml/xml.min.js'))
-		.queueScript(lemon.getUrl(cmprfix + 'mode/htmlmixed/htmlmixed.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/markdown-fold.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/xml-fold.min.js'))
+		
 		.queueScript(lemon.getUrl(cmprfix + 'keymap/vim.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/selection/active-line.min.js'))
+		
+		.queueScript('http://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js')
+		.queueScript(lemon.getUrl(cmprfix + 'addon/merge/merge.min.js'))
 		//.queueWait(function() {});
 		.queueWait(function() { after.initialize(); });
 	
@@ -234,6 +258,7 @@
 		    cmprfix + 'addon/search/matchesonscrollbar.min.css',
 		    cmprfix + 'addon/display/fullscreen.min.css',
 		    cmprfix + 'addon/hint/show-hint.min.css',
+		    cmprfix + 'addon/merge/merge.min.css',
 		    cmprfix + 'addon/fold/foldgutter.min.css'
 		]);
 		queue.runQueue();
@@ -492,7 +517,7 @@
 					var note = api.customHis(v.k, 'note') || '';
 					if (!lemon.isBlank(note)) {
 				%>
-					<div class="alert alert-warning" role="alert" id=""><%= note %></div>
+					<div class="alert alert-warning" role="alert" style="font-size:75%;"><%= note %></div>
 				<% } %>
 				</div>
 				<footer><span class="badge"><%= no %></span> <font class="text-<%= theStyle %>"><%= envDesc %></font></footer>
@@ -2298,7 +2323,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					
 					var showNoteId = '#show_note_' + hisId;
 					if (!lemon.isBlank(note)) {
-						$(showNoteId).html('<div class="alert alert-warning" role="alert" id="">' + note + '</div>');
+						$(showNoteId).html('<div class="alert alert-warning" role="alert" style="font-size:75%;">' + note + '</div>');
 					} else {
 						$(showNoteId).empty();
 					}
@@ -4172,21 +4197,262 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 	var note = note || {
 		instance: null,
 		root: null,
+		defineEx: [
+		   	{ name: 'wq', shortn: 'wq', handle: function(cm, params) {
+		   		note.save(params);
+				note.close(params);
+			}},
+			{ name: 'q', shortn: 'q', handle: function(cm, params) {
+				note.close(params);
+			}},
+			{ name: 'save', shortn: 'sa', handle: function(cm, params) {
+				note.save(params, 1);
+			}},
+			{ name: 'new', shortn: 'n', handle: function(cm, params) {
+				note.newNote(params);
+			}},
+			{ name: 'edit', shortn: 'e', handle: function(cm, params) {
+				if (lemon.isBlank(params.argString)) {
+					note.tip('edit note need a note id. use "list" commond to get.');
+				} else {
+					note.loadNote(params.args[0]);
+				}
+			}},
+			{ name: 'list', shortn: 'l', handle: function(cm, params) {
+				
+			}},
+			{ name: 'del', shortn: 'd', handle: function(cm, params) {
+				if (lemon.isBlank(params.argString)) {
+					note.tip('del note need a note id. use "list" commond to get.');
+				} else {
+					note.delNote(params.args[0]);
+				}
+			}},
+			{ name: 'wrapword', shortn: 'wrap', handle: function(cm, params) {
+				note.instance.setOption('lineWrapping', !note.instance.getOption('lineWrapping'));
+			}},
+			{ name: 'theme', shortn: 'th', handle: function(cm, params) {
+				if (lemon.isBlank(params.argString)) {
+					note.tip('change theme need a theme name. see <a onclick="note.help.theme();">themes</a>.');
+					return;
+				}
+
+				var theme = params.args[0];
+				lemon.css(lemon.format(lemon.getUrl(cmprfix + 'theme/{0}.min.css'), theme));
+				note.instance.setOption('theme', theme);	
+			}},
+			{ name: 'mode', shortn: 'm', handle: function(cm, params) {
+				if (lemon.isBlank(params.argString)) {
+					note.tip('change mode need a mode name. see <a onclick="note.help.mode();">supports modes</a>.');
+					return;
+				}
+				var val = params.args[0], m, mode, spec;
+				if (m = /.+\.([^.]+)$/.exec(val)) {
+				    var info = CodeMirror.findModeByExtension(m[1]);
+				    if (info) {
+				      mode = info.mode;
+				      spec = info.mime;
+				    }
+				} else if (/\//.test(val)) {
+				    var info = CodeMirror.findModeByMIME(val);
+				    if (info) {
+				      mode = info.mode;
+				      spec = val;
+				    }
+				} else {
+				    mode = spec = val;
+				}
+				
+				if (mode) {
+					if ('json' == spec) {
+						note.prevTheme = note.instance.getOption('theme');
+						spec = 'application/ld+json';
+						note.instance.setOption('theme', 'lemon');	
+					} else {
+						note.instance.setOption('theme', note.prevTheme || 'default');	
+					}
+				    note.instance.setOption('mode', spec);
+				    CodeMirror.autoLoadMode(note.instance, mode);
+				    note.tip('Current mode: ' + spec);
+				} else {
+					note.tip('Could not find a mode corresponding to ' + val);
+				}
+			}},
+			{ name: 'joinline', shortn: 'jo', handle: function(cm, params) {
+				var start = 0, end = note.instance.lineCount();
+				if (params.args) {
+					var len = params.args.length;
+					if (1 == len) {
+						start = parseInt(params.args[0]) - 1;
+					} else if (len > 1) {
+						start = parseInt(params.args[0]) - 1;
+						end = parseInt(params.args[1]) - 1;
+					}
+				}
+				var cursor = note.instance.getCursor();
+
+				var tmpCursor = lemon.clone(cursor);
+				tmpCursor.line = start;
+				note.instance.setCursor(tmpCursor);
+				for (var idx = start; idx < end; idx++) {
+					CodeMirror.Vim.handleKey(note.instance, 'J');
+				}
+				note.instance.setCursor(cursor);
+			}}
+		],
+		help: {
+			mode: function() {
+				window.open('http://codemirror.net/mode/index.html');
+			},
+			theme: function() {
+				window.open('http://codemirror.net/demo/theme.html');
+			}
+		},
+		tip: function(msg) {
+			note.instance.openNotification('<span style="color: red">' + msg + '</span>', {
+				bottom: true, 
+				duration: 5000
+			});
+		},
+		delNote: function(noteId) {
+			var ns = note.pool();
+			var n = ns[noteId];
+			if (lemon.isUndefined(n)) {
+				note.tip('the note ' + noteId + ' is not exists.');
+			} else {
+				delete ns[noteId];
+				lemon.store('note.pool', ns);
+				if (ns.lastId == noteId) {
+					note.newNote();
+				}
+			}
+			return n;
+		},
+		lastNote: function(noteId) {
+			var ns = note.pool();
+			if (lemon.isUndefined(noteId)) {
+				return ns[ns.lastId] || {};
+			}
+
+			ns.lastId = noteId;
+			lemon.store('note.pool', ns);
+			return ns[noteId] || {};
+		},
+		newNote: function(params) {
+			note.pool(api.autoId(), '', '');
+			note.loadNote();
+		},
+		loadNote: function(noteId) {
+			var lastn = note.lastNote(noteId);
+			if (!lemon.isBlank(lastn)) {
+			    note.instance.setValue(lastn.content);
+			    note.instance.noteId = lastn.id;
+			} else {
+				lemon.info('the note ' + noteId + ' is not exists.');
+			}
+		},
+		pool: function(noteId, content, title) {
+			var key = 'note.pool';
+			var ns = lemon.store(key) || {};
+			if (lemon.isUndefined(noteId)) {
+				return ns;
+			}
+
+			var n = ns[noteId];
+			if (lemon.isUndefined(content)) {
+				return n || {};
+			}
+			
+			if (lemon.isBlank(n)) {
+				n = {
+					id: noteId,
+					create: lemon.when(),
+					lastmodify: lemon.when(),
+					content: content
+				};
+				n.title = title || n.create;
+				ns[n.id] = n;
+			} else {
+				n.content = content;
+				n.lastmodify = lemon.when();
+				n.title = title || n.title;
+			}
+
+			ns.lastId = n.id;
+			lemon.store(key, ns);
+			return n;
+		},
 		open: function() {
 			note.root = $('#input_note_wrap');
 			note.root.show();
 			
+			var unDefined = lemon.isBlank(note.instance);
 			note.instance = note.instance || CodeMirror.fromTextArea(lemon.query('#input_note'), {
 		        mode: 'htmlmixed',
 		        keyMap: 'vim',
 		        fullScreen: true,
 		        lineNumbers: true,
 		        matchBrackets: true,
-		        showCursorWhenSelecting: true
+		        lineWrapping: true,
+		        showCursorWhenSelecting: true,
+		        styleActiveLine: true,
+		        foldGutter: true,
+		        autoCloseBrackets: true,
+		        autoCloseTags: true,
+				gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+				matchTags: {
+					bothTags: true
+				},
+		        extraKeys: {
+				  	//http://codemirror.net/doc/manual.html#commands
+			    	"Ctrl-J": "autocomplete",
+			    	"Ctrl-K": "toMatchingTag",
+			    	"Ctrl-Q": function(cm){ 
+				    	cm.foldCode(cm.getCursor()); 
+				    }
+			  	}
 		    });
+
+		    if (unDefined) {
+				CodeMirror.commands.save = note.save;
+				lemon.each(note.defineEx, function(v, k) {
+					CodeMirror.Vim.defineEx(v.name, v.shortn, v.handle);
+				});
+
+				note.loadNote();
+			}
+
+		    note.instance.focus();
 		},
-		close: function() {
-			note.root.slideToggle();
+		save: function(params, opt) {
+			var content = note.instance.getValue(), title = '';
+			if (lemon.isBlank(content)) {
+				return;
+			}
+
+			var linec = note.instance.lineCount();
+			for (var idx = 0; idx < linec; idx++) { 
+				title = note.instance.getLine(idx);
+				if (!lemon.isBlank(title)) {
+					break;
+				}
+			}
+
+			if (lemon.isBlank(note.instance.noteId)) {
+				note.instance.noteId = api.autoId();
+			}
+			note.pool(note.instance.noteId, content, title);
+
+			//1 save as
+			switch(opt = opt || -1) {
+			case 1:
+				var fname = (params && params.args && params.args[0]) ? params.args[0] : '';  
+				after.saveAs(content, fname);
+				break;
+			}
+		},
+		close: function(params) {
+			note.root.hide();
 		}
 	};
 	
@@ -4196,6 +4462,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		response: null,
 		
 		initialize: function() {
+			CodeMirror.modeURL = lemon.getUrl(cmprfix + 'mode/%N/%N.min.js');
 			after.behavious();
 			after.styled = true;
 		},
@@ -4248,15 +4515,20 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				readOnly: false,
 				mode: "application/ld+json",
 				autoCloseBrackets: true,
+				autoCloseTags: true,
 				lineWrapping: true,
 				foldGutter: true,
 				content: '',
 				gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+				matchTags: {
+					bothTags: true
+				},
 				extraKeys: {
 					  	//http://codemirror.net/doc/manual.html#commands
 				    	"Esc": function(cm) { 
 					    	after.rich.fullscreenTgl(cm) 
 					    },
+					    "Ctrl-K": "toMatchingTag",
 				    	"Ctrl-J": "autocomplete",
 				    	"Ctrl-Q": function(cm){ 
 					    	cm.foldCode(cm.getCursor()); 
