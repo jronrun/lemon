@@ -794,7 +794,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
   </div>&nbsp;
   <span class="glyphicon glyphicon-pencil" aria-hidden="true" title="Define Interface Group" onclick="api.redefineEnvInterfG(2);"></span>
 </div>
-
+<%= lemon.repeat('&nbsp;', 4) %>
+	<button type="button" class="btn btn-info" onclick="api.defineMutation();" id="btn_mutation" title="Define as Mutation">
+		<span class="glyphicon glyphicon-unchecked"></span> Define as Mutation 
+	</button>
 			</form>
 			<h4></h4>
 			<textarea id="sa_apic" style="border: 0px solid #ffffff; width: 790px; height: 380px;"></textarea>
@@ -861,7 +864,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			//a=3,b=4
 			{ id: 2, sep: ',', subsep: '=' },
 			//a=3&b=4
-			{ id: 3, sep: '&', subsep: '=' }
+			{ id: 3, sep: '&', subsep: '=' },
+			//a:3&b:4
+			{ id: 4, sep: '&', subsep: ':' },
+			//a=3;b=4
+			{ id: 5, sep: ';', subsep: '=' },
+			//a:3;b:4
+			{ id: 6, sep: ';', subsep: ':' }
 		],
 		initialize: function() {
 			this.env.render();
@@ -921,18 +930,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				});
 
 				$('#from_url').click(function() {
-					var data = api.requ();
-					try {
-						data = decodeURI(data);
-					} catch(e) {
-						lemon.warn(e, 'decodeURI');
-					}
-					try {
-						data = decodeURIComponent(data);
-					} catch(e) {
-						lemon.warn(e, 'decodeURIComponent');
-					}
-					api.requ(data);
+					var data = api.requ(); data = data.replace(/\n/g,'');
 
 					var qidx = data.indexOf('?');
 					if (qidx != -1) {
@@ -940,6 +938,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						lemon.setEnv(theServ);
 						api.env.change(theServ);
 						data = data.substring(qidx + 1);
+					}
+
+					api.requ(data = api.decode(data));
+					var rcfg = api.preference.basic().request;
+					if (rcfg && 1 == rcfg.type) {
+						var rcfgParam = rcfg.paramName + '=';
+						if (data.indexOf(rcfgParam) != -1) {
+							data = data.replace(rcfgParam, '');
+							api.requ(data = api.decode(data, 2));
+						} 
 					}
 
 					var lidx = data.indexOf('{');
@@ -955,10 +963,12 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							if (1 == v.id) {
 								try {
 									analyze = $.parseJSON('{' + data + '}');
-									api.requ(lemon.json(analyze));
+									api.requ(lemon.json(api.decodeJson(analyze)));
 									isContinue = false;
 									break;
-								} catch(e1) {}
+								} catch(e1) {
+									lemon.warn(e1, 'Invalid request JSON data');
+								}
 							}
 
 							try {
@@ -967,7 +977,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 									analyze[kv[0]] = kv[1];
 								});
 								if (!lemon.isBlank(analyze)) {
-									api.requ(lemon.json(analyze));
+									api.requ(lemon.json(api.decodeJson(analyze)));
 									isContinue = false;
 									break;
 								}
@@ -985,7 +995,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							if (data.indexOf(onlyMainSep = '=') != -1 || data.indexOf(onlyMainSep = ':') != -1) {
 								var seps = data.split(onlyMainSep);
 								analyze[seps[0]] = seps[1];
-								api.requ(lemon.json(analyze));
+								api.requ(lemon.json(api.decodeJson(analyze)));
 							}
 						} catch(e) {}
 					}
@@ -1597,6 +1607,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				} else {
 					$(selector + ' .glyphicon').removeClass('glyphicon-check').addClass('glyphicon-unchecked');
 				}
+
+				return isActive ? 1 : 0;
 			},
 			dblclick: function(selector) {
 				//forbiden right click context menu
@@ -1719,6 +1731,40 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					});
 				}
 			},
+		},
+		decode: function(data, opt) {
+			if (!lemon.isString(data)) {
+				return data;
+			}
+			//opt 1 decodeURI, 2 decodeURIComponent, 3 both
+			opt = opt || 1;
+			if (1 == opt || 3 == opt) {
+				try {
+					data = decodeURI(data);
+				} catch(e) {
+					lemon.info(data, 'decode');
+					lemon.warn(e, 'decodeURI');
+				}
+			}
+			if (2 == opt || 3 == opt) {
+				try {
+					data = decodeURIComponent(data);
+				} catch(e) {
+					lemon.info(data, 'decode');
+					lemon.warn(e, 'decodeURIComponent');
+				}
+			}
+			return data;
+		},
+		decodeJson: function(data) {
+			if (!lemon.isJson(data)) {
+				return data;
+			}
+			var target = {};
+			lemon.each(data, function(v, k) {
+				target[api.decode(k, 3)] = api.decode(v, 3);
+			});
+			return target;
 		},
 		typeSearch: function(type) {
 			var val = '';
@@ -2034,6 +2080,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				$('#' + hisId).removeAttr('tag' + tagId).hide();
 			}
 			api.customHis(hisId, 'tag', hisTags);
+		},
+		mutation: function(opt) {
+			return api.nav.check('#btn_mutation', opt);
+		},
+		defineMutation: function(el) {
+			if (api.mutation(1)) {
+				
+			} else {
+				
+			}
 		},
 		tag: function(tagId, tagName) {
 			var key = "definedTag";
@@ -3190,6 +3246,12 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				} 
 
 				else if (curHref == '#theapic') {
+					if (api.mutation()) {
+						step = 'Define as Mutation';
+						
+						return true;
+					}
+					
 					step = 'Define API', override = false;
 					try {
 						var theAPIc = $.parseJSON(api.mirrorVal('#sa_apic'));
