@@ -324,24 +324,24 @@
 			</blockquote>
 			</td>
 			<td>
-				<button type="button" class="btn btn-default btn-xs" onclick="api.setAPIDefaultVal('<%= v.name %>')" id="set_default_<%= v.name %>">
-					<span class="glyphicon glyphicon-camera" title="Set API Default Value"></span>
+				<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.setAPIDefaultVal('<%= v.name %>')" id="set_default_<%= v.name %>">
+					<span class="glyphicon glyphicon-camera text-muted" title="Set API Default Value"></span>
 				</button>
 				<% if (!lemon.isBlank(v.response)) { %>
-				<button type="button" class="btn btn-default btn-xs" onclick="api.onSelectSinleClick(this, 3, 4)" clkey="<%= k %>">
-					<span class="glyphicon glyphicon-eye-open" title="Toggle Request Response"></span>
+				<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.onSelectSinleClick(this, 3, 4)" clkey="<%= k %>">
+					<span class="glyphicon glyphicon-eye-open text-muted" title="Toggle Request Response"></span>
 				</button>
 				<% } %>
-				<button type="button" class="btn btn-default btn-xs" onclick="api.hisTglRequResp('<%= k %>', 3)" id="his_tgl_apirequ_<%= k %>">
-					<span class="glyphicon glyphicon-tree-deciduous" title="Toggle Request"></span>
+				<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.hisTglRequResp('<%= k %>', 3)" id="his_tgl_apirequ_<%= k %>">
+					<span class="glyphicon glyphicon-tree-deciduous text-muted" title="Toggle Request"></span>
 				</button>
 				<% if (!lemon.isBlank(v.response)) { %>
-					<button type="button" class="btn btn-default btn-xs" onclick="api.hisTglRequResp('<%= k %>', 4)" id="his_tgl_apiresp_<%= k %>">
-					<span class="glyphicon glyphicon-leaf" title="Toggle Response"></span>
+					<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.hisTglRequResp('<%= k %>', 4)" id="his_tgl_apiresp_<%= k %>">
+					<span class="glyphicon glyphicon-leaf text-muted" title="Toggle Response"></span>
 					</button>				
 				<% } %>
-				<button type="button" class="btn btn-default btn-xs" onclick="api.redefineAPI('<%= k %>')">
-					<span class="glyphicon glyphicon-pencil" title="Define API"></span>
+				<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.redefineAPI('<%= k %>')">
+					<span class="glyphicon glyphicon-pencil text-muted" title="Define API"></span>
 				</button>
 			</td>
           </tr>
@@ -528,30 +528,30 @@
 			</blockquote>
 		</td>
 		<td>
-			<button type="button" class="btn btn-default btn-xs" onclick="api.historyAPIDesc(<%= v.k %>, '<%= v.api %>')" id="desc_<%= v.k %>">
-				<span class="glyphicon glyphicon-question-sign" title="Show the Define API Description"></span>
+			<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.historyAPIDesc(<%= v.k %>, '<%= v.api %>')" id="desc_<%= v.k %>">
+				<span class="text-muted glyphicon glyphicon-question-sign" title="Show the Define API Description"></span>
 			</button>
-			<button type="button" class="btn btn-default btn-xs" onclick="api.onSelectSinleClick(this)" clkey="<%= v.k %>">
+			<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.onSelectSinleClick(this)" clkey="<%= v.k %>">
 				<span class="glyphicon glyphicon-eye-open" title="Toggle Request Response"></span>
 			</button>
-			<button type="button" class="btn btn-default btn-xs" onclick="api.hisTglRequResp(<%= v.k %>, 1)" id="his_tgl_requ_<%= v.k %>">
-				<span class="glyphicon glyphicon-tree-deciduous" title="Toggle Request"></span>
+			<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.hisTglRequResp(<%= v.k %>, 1)" id="his_tgl_requ_<%= v.k %>">
+				<span class="text-muted glyphicon glyphicon-tree-deciduous" title="Toggle Request"></span>
 			</button>
-			<button type="button" class="btn btn-default btn-xs" onclick="api.hisTglRequResp(<%= v.k %>, 2)" id="his_tgl_resp_<%= v.k %>">
-				<span class="glyphicon glyphicon-leaf" title="Toggle Response"></span>
+			<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.hisTglRequResp(<%= v.k %>, 2)" id="his_tgl_resp_<%= v.k %>">
+				<span class="text-muted glyphicon glyphicon-leaf" title="Toggle Response"></span>
 			</button>
-			<button type="button" class="btn btn-default btn-xs" onclick="api.favourite(this, <%= v.k %>)">
+			<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.favourite(this, <%= v.k %>)">
 				<% if (1 == api.customHis(v.k,'fav')) { %>
-					<span class="glyphicon glyphicon-star" title="Toggle Favourite"></span>
+					<span class="text-muted glyphicon glyphicon-star" title="Toggle Favourite"></span>
 				<% } else { %>
-					<span class="glyphicon glyphicon-star-empty" title="Toggle Favourite"></span>
+					<span class="text-muted glyphicon glyphicon-star-empty" title="Toggle Favourite"></span>
 				<% } %>
 			</button>
-			<button type="button" class="btn btn-default btn-xs" onclick="api.pencil(<%= v.k %>, <%= no %>)" id="pencil_<%= v.k %>">
-				<span class="glyphicon glyphicon-pencil" title="Note"></span>
+			<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.pencil(<%= v.k %>, <%= no %>)" id="pencil_<%= v.k %>">
+				<span class="text-muted glyphicon glyphicon-pencil" title="Note"></span>
 			</button>
-			<button type="button" class="btn btn-default btn-xs" onclick="api.itemTag(<%= v.k %>, <%= no %>)" id="tags_<%= v.k %>">
-				<span class="glyphicon glyphicon-tags" title="Tags"></span>
+			<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.itemTag(<%= v.k %>, <%= no %>)" id="tags_<%= v.k %>">
+				<span class="text-muted glyphicon glyphicon-tags" title="Tags"></span>
 			</button>
 		</td>
 	        </tr>
@@ -930,77 +930,41 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				});
 
 				$('#from_url').click(function() {
-					var data = api.requ(); data = data.replace(/\n/g,'');
-
-					var qidx = data.indexOf('?');
-					if (qidx != -1) {
-						var theServ = data.substr(0, qidx);
-						lemon.setEnv(theServ);
-						api.env.change(theServ);
-						data = data.substring(qidx + 1);
+					var data = api.requ();
+					var decodeData = api.decode(data, 2);
+					if (data != decodeData) {
+						api.requ(api.decode(data, 2));
 					}
-
-					api.requ(data = api.decode(data));
-					var rcfg = api.preference.basic().request;
-					if (rcfg && 1 == rcfg.type) {
-						var rcfgParam = rcfg.paramName + '=';
-						if (data.indexOf(rcfgParam) != -1) {
-							data = data.replace(rcfgParam, '');
-							api.requ(data = api.decode(data, 2));
-						} 
+					
+					var data = api.strAsJSON(data); 
+					if (data.url) {
+						lemon.setEnv(data.url);
+						api.env.change(data.url);
 					}
+					
+					api.requ(lemon.json(data.param));
 
-					var lidx = data.indexOf('{');
-					var ridx = data.lastIndexOf('}');
-					if (lidx >= 0 && ridx >= 0) {
-						data = data.substring(lidx + 1, ridx);
-					} 
-
-					var isContinue = true;
-					for (var i = 0; i < api.analyze.length; i++) {
-						var v = api.analyze[i], analyze = {};;
-						if (data.indexOf(v.sep) != -1 && data.indexOf(v.subsep) != -1) {
-							if (1 == v.id) {
-								try {
-									analyze = $.parseJSON('{' + data + '}');
-									api.requ(lemon.json(api.decodeJson(analyze)));
-									isContinue = false;
-									break;
-								} catch(e1) {
-									lemon.warn(e1, 'Invalid request JSON data');
-								}
-							}
-
-							try {
-								lemon.each(data.split(v.sep), function(v1, i) {
-									var kv = v1.split(v.subsep);
-									analyze[kv[0]] = kv[1];
-								});
-								if (!lemon.isBlank(analyze)) {
-									api.requ(lemon.json(api.decodeJson(analyze)));
-									isContinue = false;
-									break;
-								}
-							} catch(e) {
-								var eMsg = 'Invalid request data';
-								lemon.warn(e, eMsg);
-								api.tip(eMsg + ': ' + lemon.asStr(e.message));
+					var apiTmp = null;
+					if (lemon.isBlank(data.url)) {
+						
+					} else {
+						//-10
+						var sinfo = api.env.which(data.url);
+						if (-10 == sinfo.id) {
+						} else {
+							var rcfg = sinfo.request;
+							if (rcfg && 1 == rcfg.type) {
+								apiTmp = api.getRequestAPI(data.param[rcfg.paramName] || {});
+								api.requ(lemon.json(data.param[rcfg.paramName]));
 							}
 						}
-					};
-
-					if (isContinue) {
-						try {
-							analyze = {}; var onlyMainSep = null;
-							if (data.indexOf(onlyMainSep = '=') != -1 || data.indexOf(onlyMainSep = ':') != -1) {
-								var seps = data.split(onlyMainSep);
-								analyze[seps[0]] = seps[1];
-								api.requ(lemon.json(api.decodeJson(analyze)));
-							}
-						} catch(e) {}
 					}
-
-					lemon.setApi(api.getRequestAPI(analyze) || null);
+					
+					if (lemon.isBlank(apiTmp)) {
+						apiTmp = api.getRequestAPI(apiTmp);
+					}
+					
+					lemon.setApi(apiTmp || null);
 				});
 
 				$('#define_api').click(function() {
@@ -1765,6 +1729,77 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				target[api.decode(k, 3)] = api.decode(v, 3);
 			});
 			return target;
+		},
+		strAsJSON: function(data) {
+			if (!lemon.isString(data)) {
+				return data;
+			}
+			
+			var holder = { url: null, param: {} };
+			data = data.replace(/\n/g,'');
+
+			var qidx = data.indexOf('?');
+			if (qidx != -1) {
+				holder.url = data.substr(0, qidx);
+				data = data.substring(qidx + 1);
+			}
+
+			data = api.decode(data);
+			var isContinue = true;
+			for (var i = 0; i < api.analyze.length; i++) {
+				var v = api.analyze[i], analyze = {};;
+				if (data.indexOf(v.sep) != -1 && data.indexOf(v.subsep) != -1) {
+					if (1 == v.id) {
+						try {
+							analyze = $.parseJSON(lemon.endIf(lemon.startIf(data, '{'), '}'));
+							isContinue = false;
+							break;
+						} catch(e1) {
+							lemon.warn(e1, 'Invalid request JSON data');
+						}
+					}
+
+					try {
+						lemon.each(data.split(v.sep), function(v1, i) {
+							var kv = v1.split(v.subsep);
+							analyze[kv[0]] = kv[1];
+						});
+						if (!lemon.isBlank(analyze)) {
+							isContinue = false;
+							break;
+						}
+					} catch(e) {
+						lemon.warn(e, 'Invalid request data');
+					}
+				}
+			};
+
+			if (isContinue) {
+				try {
+					analyze = {}; var onlyMainSep = null;
+					if (data.indexOf(onlyMainSep = '=') != -1 || data.indexOf(onlyMainSep = ':') != -1) {
+						var seps = data.split(onlyMainSep);
+						analyze[seps[0]] = seps[1];
+					}
+				} catch(e) {}
+			}
+
+			holder.param = analyze;
+			var analyze2 = {};
+			lemon.each(analyze, function(v, k) {
+				var val = api.decode(v, 2);
+				if (lemon.isString(val)) {
+					var lidx = val.indexOf('{');
+					var ridx = val.lastIndexOf('}');
+					if (lidx >= 0 && ridx >= 0) {
+						val = api.strAsJSON(val).param;
+					} 
+				}
+				analyze2[api.decode(k, 2)] = val;
+			});
+
+			holder.param = analyze2;
+			return holder;
 		},
 		typeSearch: function(type) {
 			var val = '';
@@ -3690,7 +3725,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								note: v1.note,
 								params: v1.params,
 								id: v1.id,
-								request: v1.request
+								request: v1.request || api.preference.basic().request
 							};
 							if (lemon.isUndefined(envType)) {
 								result = tmp;
@@ -3713,7 +3748,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					    },
 					    interf: interf,
 					    note: "Temporary",
-					    id: -10
+					    id: -10,
+					    request: api.preference.basic().request
 					};
 				}
 				
