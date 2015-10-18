@@ -101,7 +101,10 @@
 					
 					<button type="submit" class="btn btn-default" style="border:0px;" id="btn_history"><span class="text-muted">History</span></button>
 					<button type="submit" class="btn btn-default" style="border:0px;" id="btn_note"><span class="text-muted">Notes</span></button>
-					<div id="input_note_wrap" style="display:none;"><textarea type="text" class="hidden" id="input_note"></textarea></div>
+					<div id="input_note_wrap" style="display:none;">
+						<textarea type="text" class="hidden" id="input_note"></textarea>
+						<div id="note_tool" style="display:none;"></div>
+					</div>
 				</form>
 				<ul class="nav navbar-nav navbar-right">
 				</ul>
@@ -290,7 +293,8 @@
 	<table class="table table-hover">
 		<caption>API</caption>
         <thead> <tr> <th>#</th> <th>
-			<button type="button" class="btn btn-default btn-sm" id="btn_tgl_api">Request</button>
+			<button type="button" class="btn btn-default btn-sm" id="btn_tgl_apirequ">Request</button>
+			<button type="button" class="btn btn-default btn-sm" id="btn_tgl_apiresp">Response</button>
 			<button type="button" class="btn btn-default btn-sm" id="btn_tgl_interf">Collapse Toggle</button>
 			</th> <th></th></tr> </thead>
         <tbody>
@@ -363,23 +367,24 @@
 			<div class="row">
   				<div class="col-md-6">
 
-				<h4><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Request Response</span></h4>
-				<button type="button" class="btn btn-default btn-sm" id="btn_tgl_requ">Request</button> 
-				<button type="button" class="btn btn-default btn-sm" id="btn_tgl_resp">Response</button>
-				<button type="button" class="btn btn-default btn-sm" id="btn_tgl_interval">Collapse Toggle</button>
+				<h4><span class="label label-info"><span class="glyphicon glyphicon-filter"></span> Request Response</span></h4>
+				<button type="button" class="btn btn-default btn-sm" id="btn_tgl_requ"><span class="text-muted">Request</span></button> 
+				<button type="button" class="btn btn-default btn-sm" id="btn_tgl_resp"><span class="text-muted">Response</span></button>
+				<button type="button" class="btn btn-default btn-sm" id="btn_tgl_interval"><span class="text-muted">Collapse Toggle</span></button>
 
-				<h4><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Favourite</span></h4>
-				<button type="button" class="btn btn-default btn-sm" id="prop_filter_1"><span class="glyphicon glyphicon-star"></span>Favourite</button>
+				<h4><span class="label label-info"><span class="glyphicon glyphicon-filter"></span> Filter Favourite</span></h4>
+				<button type="button" class="btn btn-default btn-sm" id="prop_filter_1">
+				<span class="text-muted glyphicon glyphicon-star"></span> <span class="text-muted">Favourite</span></button>
 
 				<h4>
-					<span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Tags</span>
+					<span class="label label-info"><span class="glyphicon glyphicon-filter"></span> Filter Tags</span>
 					<div class="input-group input-group-sm"> 
-						<span class="input-group-addon"><span title="Toggle Tag Manage Bar" class="glyphicon glyphicon-tag"></span></span>
-						<input type="text" class="form-control" placeholder="Tag" id="tag_input">
+						<span class="input-group-addon" style="border:0px;"><span title="Toggle Tag Manage Bar" class="text-muted glyphicon glyphicon-tag"></span></span>
+						<input type="text" class="form-control" style="border:0px;" placeholder="tag.." id="tag_input">
       					<span class="input-group-btn input-group-sm"> 
-							<button class="btn btn-default btn-sm" type="button" id="tag_add"><span class="glyphicon glyphicon-plus"></span></button> 
-							<button class="btn btn-default btn-sm" type="button" id="tag_edit"><span class="glyphicon glyphicon-edit"></span></button> 
-							<button class="btn btn-default btn-sm" type="button" id="tag_rem"><span class="glyphicon glyphicon-minus"></span></button> 
+							<button class="btn btn-default btn-sm" style="border:0px;" type="button" id="tag_add"><span class="text-muted glyphicon glyphicon-plus"></span></button> 
+							<button class="btn btn-default btn-sm" style="border:0px;" type="button" id="tag_edit"><span class="text-muted glyphicon glyphicon-edit"></span></button> 
+							<button class="btn btn-default btn-sm" style="border:0px;" type="button" id="tag_rem"><span class="text-muted glyphicon glyphicon-minus"></span></button> 
 						</span>
     				</div>
 				</h4>
@@ -390,7 +395,7 @@
 						var aTag = [
 								' <button type="button" onclick="api.ontag('+ v.id + ');"',
 								' class="btn btn-default btn-sm" style="margin-top:5px;" ',
-								' id="tag_filter_'+ v.id + '"> ' + tagName + ' </button> '
+								' id="tag_filter_'+ v.id + '"><span class="text-muted"> ' + tagName + ' </span></button> '
                             	].join('');
 				%>
 				<%= aTag %>
@@ -402,25 +407,25 @@
 				</div>
   				<div class="col-md-6">
 
-					<h4><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Environment</span></h4>
+					<h4><span class="label label-info"><span class="glyphicon glyphicon-filter"></span> Filter Environment</span></h4>
 					<%
 						lemon.each(api.preference.service(), function(v, k) {
 					%>
-						<button type="button" class="btn btn-default btn-sm" id="env_filter_<%= v.env %>"><%= v.desc %></button>
+						<button type="button" class="btn btn-default btn-sm" id="env_filter_<%= v.env %>"><span class="text-muted"><%= v.desc %></span></button>
 					<%
 						});
 					%>
 
-					<h4><span class="label label-default"><span class="glyphicon glyphicon-filter"></span> Filter Server</span></h4>
+					<h4><span class="label label-info"><span class="glyphicon glyphicon-filter"></span> Filter Server</span></h4>
 					<%
 						lemon.each(api.preference.service(), function(env, k) {
 					%>
-						<h6><span class="label label-info"><span class="glyphicon glyphicon-hand-down"></span> <%= env.env %></span></h6>
+						<h6><span class="label label-success"><span class="glyphicon glyphicon-hand-down"></span> <%= env.env %> </span></h6>
 					<%
 						lemon.each(env.serv, function(serv, k) {
 							var servName = api.getInterfGroup(serv.type.id).name + (lemon.isBlank(serv.note) ? '' : (' - ' + serv.note));
 					%>
-							<button type="button" class="btn btn-default btn-sm" style="margin-top:5px;" id="filter_<%= serv.id %>"><%= servName %></button>
+							<button type="button" class="btn btn-default btn-sm" style="margin-top:5px;" id="filter_<%= serv.id %>"><span class="text-muted"><%= servName %></span></button>
 					<%
 							});
 						});
@@ -532,7 +537,7 @@
 				<span class="text-muted glyphicon glyphicon-question-sign" title="Show the Define API Description"></span>
 			</button>
 			<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.onSelectSinleClick(this)" clkey="<%= v.k %>">
-				<span class="glyphicon glyphicon-eye-open" title="Toggle Request Response"></span>
+				<span class="text-muted glyphicon glyphicon-eye-open" title="Toggle Request Response"></span>
 			</button>
 			<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.hisTglRequResp(<%= v.k %>, 1)" id="his_tgl_requ_<%= v.k %>">
 				<span class="text-muted glyphicon glyphicon-tree-deciduous" title="Toggle Request"></span>
@@ -1290,9 +1295,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							api.showMatchedHistories(lemon.searchconds);
 							$(this).slideToggle();
 						});
-						$('#btn_tgl_api').click(function() {
+						$('#btn_tgl_apirequ').click(function() {
 							$(this).button('toggle');
-							$('pre[tgl-api="tgl"]').fadeToggle("slow", "linear");
+							$('pre[tgl-apirequ="tgl"]').fadeToggle("slow", "linear");
+						});
+						$('#btn_tgl_apiresp').click(function() {
+							$(this).button('toggle');
+							$('pre[tgl-apiresp="tgl"]').fadeToggle("slow", "linear");
 						});
 						$('#btn_tgl_interf').click(function() {
 		                	$(this).button('toggle');
@@ -2679,6 +2688,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
            		'</div>'
             ].join('');
             
+            options = options || {title: null};
 			var thePopover = $(selector).popover(lemon.extend({
                 title: '',
                 trigger: 'click',
@@ -4291,14 +4301,146 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 	};
 
 	//$(function(){ api.initialize(); });
+
+	(function(root, core, component){
+	
+	var proto = {};
+	
+	//selctor || area eg: {left: 10, top: 70, w: 100, h: 300}
+	proto = function(watch) {
+		return new direct(watch);
+	};
+
+	var listening = {};
+	function direct(watch) {
+		var theWatch = {};
+		if (lemon.isString(watch) && $(watch).length) {
+			var listenArea = $(watch).offset();
+			listenArea.w = $(watch).width();
+			listenArea.h = $(watch).height();
+			theWatch.el = watch;
+			theWatch.area = listenArea;
+		} else if (lemon.isJson(watch) 
+			&& lemon.has(watch, 'left') 
+			&& lemon.has(watch, 'top') 
+			&& lemon.has(watch, 'w') 
+			&& lemon.has(watch, 'h')) {
+			theWatch.el = 'body';
+			theWatch.area = watch;
+		} else {
+			throw new Error('Arguments ilegal, supports jQuery selector || area eg: {left: 10, top: 70, w: 100, h: 300}');
+		}
+
+		this.watch = theWatch;
+		this.area = {};
+		this.start();
+	}
+
+	direct.prototype.start = function() {
+		var selector = this.watch.el;
+		if (!listening[selector]) {
+			$(selector).bind('mousemove', { rel: this }, moving);
+			listening[selector] = 1;
+		}
+		return this;
+	};
+
+	direct.prototype.stop = function() {
+		var selector = this.watch.el;
+		if (listening[selector]) {
+			$(selector).unbind('mousemove', moving);
+			listening[selector] = 0;
+		}
+		return this;
+	};
+
+	direct.prototype.listen = function(options) {
+		options = core.extend({
+			direct: 'left',
+			offsetX: 5,
+			offsetY: 5,
+			movein: null,
+			moveout: null
+		}, options || {});
+		options.inplace = false;
+		this.area[options.direct] = options;
+		return this;
+	};
+
+	proto.status = function() {
+		return {
+			listening: listening
+		}
+	};
+
+	var moving = function(event) {
+		var rel = event.data.rel, op = null, 
+		area = rel.watch.area, inArea = false, data = {
+			x: event.pageX,
+			y: event.pageY
+		};
+
+		core.each(rel.area, function(v, k) {
+			op = v, data.options = v;
+			switch(k) {
+			case 'left':
+				inArea = (data.x >= area.left && data.x <= (area.left + op.offsetX))
+					&& (data.y >= (area.top + op.offsetY) && data.y <= (area.top + area.h - op.offsetY));
+				break;
+			case 'right':
+				inArea = (data.x >= (area.left + area.w - op.offsetX) && data.x <= (area.left + area.w))
+					&& (data.y >= (area.top + op.offsetY) && data.y <= (area.top + area.h - op.offsetY));
+				break;
+			case 'top':
+				inArea = (data.x >= (area.left + op.offsetX) && data.x <= (area.left + area.w - op.offsetX))
+					&& (data.y >= area.top && data.y <= (area.top + op.offsetY));
+				break;
+			case 'bottom':
+				inArea = (data.x >= (area.left + op.offsetX) && data.x <= (area.left + area.w - op.offsetX))
+					&& (data.y >= (area.top + area.h - op.offsetY) && data.y <= (area.top + area.h));
+				break;
+			case 'leftTop':
+				inArea = (data.x >= area.left && data.x <= (area.left + op.offsetX))
+					&& (data.y >= area.top && data.y <= (area.top + op.offsetY));
+				break;
+			case 'rightTop':
+				inArea = (data.x >= (area.left + area.w - op.offsetX) && data.x <= (area.left + area.w))
+					&& (data.y >= area.top && data.y <= (area.top + op.offsetY));
+				break;
+			case 'leftBottom':
+				inArea = (data.x >= area.left && data.x <= (area.left + op.offsetX))
+					&& (data.y >= (area.top + area.h - op.offsetY) && (data.y <= (area.top + area.h)));
+				break;
+			case 'rightBottom':
+				inArea = (data.x >= (area.left + area.w - op.offsetX) && data.x <= (area.left + area.w))
+					&& (data.y >= (area.top + area.h - op.offsetY) && (data.y <= (area.top + area.h)));
+				break;
+			}
+
+			if (inArea) {
+				if (!op.inplace) {
+					op.inplace = true;
+					core.isFunc(op.movein) && op.movein(data);
+				}
+			} else {
+				if (op.inplace) {
+					op.inplace = false;
+					core.isFunc(op.moveout) && op.moveout(data);
+				}
+			}
+		});
+	};
+
+	core.register(component, proto);
+
+	})(this, this.kiwi, 'mpos');
 	
 	var note = note || {
 		instance: null,
 		root: null,
 		defineEx: [
 		   	{ name: 'wq', shortn: 'wq', handle: function(cm, params) {
-		   		note.save(params);
-				note.close(params);
+		   		note.saveclose(params);
 			}},
 			{ name: 'q', shortn: 'q', handle: function(cm, params) {
 				note.close(params);
@@ -4328,6 +4470,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}},
 			{ name: 'wrapword', shortn: 'wrap', handle: function(cm, params) {
 				note.instance.setOption('lineWrapping', !note.instance.getOption('lineWrapping'));
+			}},
+			{ name: 'menu', shortn: 'menu', handle: function(cm, params) {
+				$('#note_tool').popover('toggle');
 			}},
 			{ name: 'theme', shortn: 'th', handle: function(cm, params) {
 				if (lemon.isBlank(params.argString)) {
@@ -4518,6 +4663,54 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				});
 
 				note.loadNote();
+
+				api.popover('#note_tool', function() {
+					var html = [
+						'<div>',
+						'<div class="pull-left" style="margin-bottom:6px;">',
+						'<button type="submit" class="btn btn-default btn-sm" style="border:0px;" id="nbtn_theme"><span class="text-muted">Theme</span></button>',
+						'</div>',
+						'<div class="pull-right">',
+						'<button type="button" class="close" title="Save & Close" aria-label="Close" onclick="note.saveclose();"><span aria-hidden="true">×</span></button>',
+						'</div>',
+						'</div>'
+					].join('');
+					return html;
+				}).on('show.bs.popover', function() { 
+					var el = $(this).data("bs.popover").tip();
+					var w = Math.floor($(root).width() / 2);
+					el.css({
+						width: w,
+						'max-width': w,
+						'border': 0
+					});
+					el.find('.arrow').remove();
+				}).on('inserted.bs.popover', function() {
+					var el = $(this).data("bs.popover").tip();
+					el.hide();
+				}).on('shown.bs.popover', function() {
+					var el = $(this).data("bs.popover").tip();
+					var w = Math.floor($(root).width() / 2) - 5;
+					el.css({
+						top: -8,
+						left: w
+					});
+					el.slideDown();
+				});;
+
+				lemon.mpos('#input_note_wrap .CodeMirror')
+				.listen({
+					direct:'rightTop',
+					movein: note.close
+				}).listen({
+					direct:'top',
+					movein: function() {
+						$('#note_tool').popover('toggle');
+					},
+					moveout: function() {
+
+					}
+				});
 			}
 
 		    note.instance.focus();
@@ -4551,6 +4744,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		},
 		close: function(params) {
 			note.root.hide();
+		},
+		saveclose: function(params) {
+			note.save(params);
+			note.close(params);
 		}
 	};
 	
