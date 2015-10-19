@@ -14,6 +14,7 @@
 	!function(a,b){var c,d,e,f,g,h,i;f=function(a){return d(a)},f.reverse=function(a){return i(a)},f.highlight=function(a){return j(a)},f.get=function(a,b){return value(a,b)},e=function(a,b){return p[b-1]},g=function(a){return new Array(a+1).join("	")},value=function(b,c){c=c||"";var d=c.indexOf(".")>0?c.split("."):[c],e=b;return a.each(d,function(b,c){var d=b;if(b.indexOf("[")>0&&b.indexOf("]")>0){var f=a.betn(b,"[","]",!0);b=b.replace(f.join(""),"")}if(e=e&&e[b],a.isArray(e)){var g=a.betn(d,"[","]");if(g.length>0){var h=e;a.each(g,function(a,b){h=h&&h[parseInt(a)]}),e=h}}}),e},h=function(b,c,d){var e,f,g,h;return g="",e=a.trim(b),f=e.split(c),f.length>0?(h=[],a.each(f,function(b,c){h.push(a.trim(b))}),g=h.join(d?"":c)):g=e,g},c=function(b){if(a.isBlank(b))return"{}";if(a.isString(b))return b;if(JSON&&a.isJson(b))return JSON.stringify(b);throw new Error("This browser JSON.stringify is unsupported.")},i=function(a){var b;return b=h(c(a),"\n"),b=h(b,"["),b=h(b,"]"),b=h(b,"{"),b=h(b,"}"),b=h(b,","),b=h(b,":")},f.style={".string":{color:"green"},".number":{color:"blue"},".boolean":{color:"darkorange"},".null":{color:"magenta"},".key":{color:"gray"}},f.toCSS=function(a){var b="";for(var c in a){b+=c+" {\n";for(var d in a[c])if("CSS-INHERIT-SELECTOR"==d)for(var e in a[a[c][d]])b+="	"+e+":"+a[a[c][d]][e]+";\n";else b+="	"+d+":"+a[c][d]+";\n";b+="}\n"}return b},f.addStyle=function(b,c){var d;c=c||"json_syntax",a.removeEl("#"+c),d=document,b=d.createElement("style"),b.type="text/css",b.id=c,b.innerHTML=a.isString(b)?b:f.toCSS(f.style),a.query("head").appendChild(b)};var j=function(a){return f.addStyle(),a=d(a).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"),a.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,function(a){var b="number";return/^"/.test(a)?b=/:$/.test(a)?"key":"string":/true|false/.test(a)?b="boolean":/null/.test(a)&&(b="null"),'<span class="'+b+'">'+a+"</span>"})};d=function(a){var b,d,f,h,j,k;if(JSON)return JSON.stringify(JSON.parse(c(a)),void 0,4);for(h="",f=0,a=i(c(a)),d=j=0,k=a.length;k>=0?k>j:j>k;d=k>=0?++j:--j)switch(b=a.charAt(d)){case"{":case"[":h+=b+"\n"+g(++f);break;case"}":case"]":h+="\n"+g(--f)+b;break;case",":h+=",\n"+g(f);break;case":":h+=": ";break;default:h+=b}return h=h.replace(/\[[\d,\s]+?\]/g,function(a){return a.replace(/\s/g,"")}).replace(/\\(\d+)\\/g,e).replace(/\\(\d+)\\/g,e)},a.register(b,f)}(this.kiwi,"json");
 	!function(a,b,c){function d(a){return function(){var b=_a.slice.call(arguments,0);b.unshift(g),k.appendChild(g),g.addBehavior("#default#userData"),g.load(i);var c=a.apply(store,b);return k.removeChild(g),c}}function e(a){return a.replace(/^d/,"___$&").replace(n,"___")}var f={};f=function(a,c,d){if(b.isUndefined(c))return f.get(a);if(b.isNull(c)){var e=f.get(a);return f.remove(a),e}return f.set(a,c),c};var g,h=a.document,i="localStorage",j="script";if(f.isSupport=function(){try{return i in a&&a[i]}catch(b){return!1}},f.serialize=function(c){return a.JSON&&b.isJson(c)?JSON.stringify(c):c},f.deserialize=function(a){if("string"!=typeof a)return a||void 0;try{return JSON.parse(a)}catch(b){return a||void 0}},f.transact=function(a,b,c){var d=f.get(a);null==c&&(c=b,b=null),typeof d==_undef&&(d=b||{}),c(d),f.set(a,d)},f.exists=function(a){return null!=f.get(a)},f.keys=function(){var a=[];return $.each(f.getAll(),function(b,c){a.push(b)}),a},f.size=function(a,b){return f.keys().length},f.isSupport())g=a[i],f.set=function(a,b){return void 0===b?f.remove(a):(g.setItem(a,f.serialize(b)),b)},f.get=function(a){return f.deserialize(g.getItem(a))},f.remove=function(a){g.removeItem(a)},f.clear=function(){g.clear()},f.getAll=function(){var a={};return f.forEach(function(b,c){a[b]=c}),a},f.forEach=function(a){for(var b=0;b<g.length;b++){var c=g.key(b);a(c,f.get(c))}};else if(h.documentElement.addBehavior){var k,l;try{l=new ActiveXObject("htmlfile"),l.open(),l.write("<"+j+">document.w=window</"+j+'><iframe src="/favicon.ico"></iframe>'),l.close(),k=l.w.frames[0].document,g=k.createElement("div")}catch(m){g=h.createElement("div"),k=h.body}var n=new RegExp("[!\"#$%&'()*+,/\\\\:;<=>?@[\\]^`{|}~]","g");f.set=d(function(a,b,c){return b=e(b),void 0===c?f.remove(b):(a.setAttribute(b,f.serialize(c)),a.save(i),c)}),f.get=d(function(a,b){return b=e(b),f.deserialize(a.getAttribute(b))}),f.remove=d(function(a,b){b=e(b),a.removeAttribute(b),a.save(i)}),f.clear=d(function(a){var b=a.XMLDocument.documentElement.attributes;a.load(i);for(var c,d=0;c=b[d];d++)a.removeAttribute(c.name);a.save(i)}),f.getAll=function(a){var b={};return f.forEach(function(a,c){b[a]=c}),b},f.forEach=d(function(a,b){for(var c,d=a.XMLDocument.documentElement.attributes,e=0;c=d[e];++e)b(c.name,f.deserialize(a.getAttribute(c.name)))})}b.register(c,f)}(this,this.kiwi,"store"),function(a,b,c){var d={};d.pushState=window.history&&window.history.pushState&&window.history.replaceState&&!navigator.userAgent.match(/((iPod|iPhone|iPad).+\bOS\s+[1-4]|WebApps\/.+CFNetwork)/),d.store=b.store.isSupport()?!0:!1,b.register(c,d)}(this,this.kiwi,"support");
 	!function(a,b,c){var d={};d=function(a,b){return f(a,b)},d.mozilla=/firefox/.test(navigator.userAgent.toLowerCase()),d.webkit=/webkit/.test(navigator.userAgent.toLowerCase()),d.opera=/opera/.test(navigator.userAgent.toLowerCase()),d.msie=/msie/.test(navigator.userAgent.toLowerCase()),d.form=function(a,b,c,d){e(a,b,c,d)};var e=function(b,c,e,f){var g,h,i,j=!1;i=$(lemon.startIf(c,"#")),i.submit(function(){function c(){try{var a=h.get(0).contentWindow.name||null;null!=a&&(h.remove(),i.remove(),b(a))}catch(c){}}h=$('<iframe name="_rmfrm_form" id="_rmfrm_form" style="display:none;" scrolling="no" frameborder="0"></iframe>'),$(document.body).append(h),i.attr("target","_rmfrm_form"),i.attr("action",e),i.attr("method",f),a.postMessage?b&&(g=null,g=function(c){$(a).unbind("message",g),h.remove(),i.remove(),b(c.originalEvent.data)},$(a).bind("message",g)):(h.load(function(){j?d.msie||c():(j=!0,h.get(0).contentWindow.location="about:blank")}),d.msie&&(h.get(0).onreadystatechange=function(){j&&c()}))})},f=function(b,c){function e(){try{var a=g.get(0).contentWindow.name||null;null!=a&&(g.remove(),c(a))}catch(b){}}var f,g,h=!1;g=$('<iframe name="_rmfrm" id="_rmfrm" style="display:none;" scrolling="no" frameborder="0"></iframe>'),$(document.body).append(g),g.attr("src",b),a.postMessage?c&&(f=null,f=function(b){$(a).unbind("message",f),g.remove(),c(b.originalEvent.data)},$(a).bind("message",f)):(g.load(function(){h?d.msie||e():(h=!0,g.get(0).contentWindow.location="about:blank")}),d.msie&&(g.get(0).onreadystatechange=function(){h&&e()}))};b.register(c,d)}(this,this.kiwi,"cross");
+	!function(a,b,c){function d(a){var b={};if(lemon.isString(a)&&$(a).length){var c=$(a).offset();c.w=$(a).width(),c.h=$(a).height(),b.el=a,b.area=c}else{if(!(lemon.isJson(a)&&lemon.has(a,"left")&&lemon.has(a,"top")&&lemon.has(a,"w")&&lemon.has(a,"h")))throw new Error("Arguments ilegal, supports jQuery selector || area eg: {left: 10, top: 70, w: 100, h: 300}");b.el="body",b.area=a}this.watch=b,this.area={},this.start()}var e={};e=function(a){return new d(a)};var f={};d.prototype.start=function(){var a=this.watch.el;return f[a]||($(a).bind("mousemove",{rel:this},g),f[a]=1),this},d.prototype.stop=function(){var a=this.watch.el;return f[a]&&($(a).unbind("mousemove",g),f[a]=0),this},d.prototype.listen=function(a){return a=b.extend({direct:"left",offsetX:5,offsetY:5,movein:null,moveout:null},a||{}),a.inplace=!1,this.area[a.direct]=a,this},e.status=function(){return{listening:f}};var g=function(a){var c=a.data.rel,d=null,e=c.watch.area,f=!1,g={x:a.pageX,y:a.pageY};b.each(c.area,function(a,c){switch(d=a,g.options=a,c){case"left":f=g.x>=e.left&&g.x<=e.left+d.offsetX&&g.y>=e.top+d.offsetY&&g.y<=e.top+e.h-d.offsetY;break;case"right":f=g.x>=e.left+e.w-d.offsetX&&g.x<=e.left+e.w&&g.y>=e.top+d.offsetY&&g.y<=e.top+e.h-d.offsetY;break;case"top":f=g.x>=e.left+d.offsetX&&g.x<=e.left+e.w-d.offsetX&&g.y>=e.top&&g.y<=e.top+d.offsetY;break;case"bottom":f=g.x>=e.left+d.offsetX&&g.x<=e.left+e.w-d.offsetX&&g.y>=e.top+e.h-d.offsetY&&g.y<=e.top+e.h;break;case"leftTop":f=g.x>=e.left&&g.x<=e.left+d.offsetX&&g.y>=e.top&&g.y<=e.top+d.offsetY;break;case"rightTop":f=g.x>=e.left+e.w-d.offsetX&&g.x<=e.left+e.w&&g.y>=e.top&&g.y<=e.top+d.offsetY;break;case"leftBottom":f=g.x>=e.left&&g.x<=e.left+d.offsetX&&g.y>=e.top+e.h-d.offsetY&&g.y<=e.top+e.h;break;case"rightBottom":f=g.x>=e.left+e.w-d.offsetX&&g.x<=e.left+e.w&&g.y>=e.top+e.h-d.offsetY&&g.y<=e.top+e.h}f?d.inplace||(d.inplace=!0,b.isFunc(d.movein)&&d.movein(g)):d.inplace&&(d.inplace=!1,b.isFunc(d.moveout)&&d.moveout(g))})};b.register(c,e)}(this,this.kiwi,"mousepos");
 </script>
 <style type="text/css">
     .fixed-panel { min-height: 430px; max-height: 430px; overflow-y: scroll; }
@@ -4302,139 +4303,6 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 	//$(function(){ api.initialize(); });
 
-	(function(root, core, component){
-	
-	var proto = {};
-	
-	//selctor || area eg: {left: 10, top: 70, w: 100, h: 300}
-	proto = function(watch) {
-		return new direct(watch);
-	};
-
-	var listening = {};
-	function direct(watch) {
-		var theWatch = {};
-		if (lemon.isString(watch) && $(watch).length) {
-			var listenArea = $(watch).offset();
-			listenArea.w = $(watch).width();
-			listenArea.h = $(watch).height();
-			theWatch.el = watch;
-			theWatch.area = listenArea;
-		} else if (lemon.isJson(watch) 
-			&& lemon.has(watch, 'left') 
-			&& lemon.has(watch, 'top') 
-			&& lemon.has(watch, 'w') 
-			&& lemon.has(watch, 'h')) {
-			theWatch.el = 'body';
-			theWatch.area = watch;
-		} else {
-			throw new Error('Arguments ilegal, supports jQuery selector || area eg: {left: 10, top: 70, w: 100, h: 300}');
-		}
-
-		this.watch = theWatch;
-		this.area = {};
-		this.start();
-	}
-
-	direct.prototype.start = function() {
-		var selector = this.watch.el;
-		if (!listening[selector]) {
-			$(selector).bind('mousemove', { rel: this }, moving);
-			listening[selector] = 1;
-		}
-		return this;
-	};
-
-	direct.prototype.stop = function() {
-		var selector = this.watch.el;
-		if (listening[selector]) {
-			$(selector).unbind('mousemove', moving);
-			listening[selector] = 0;
-		}
-		return this;
-	};
-
-	direct.prototype.listen = function(options) {
-		options = core.extend({
-			direct: 'left',
-			offsetX: 5,
-			offsetY: 5,
-			movein: null,
-			moveout: null
-		}, options || {});
-		options.inplace = false;
-		this.area[options.direct] = options;
-		return this;
-	};
-
-	proto.status = function() {
-		return {
-			listening: listening
-		}
-	};
-
-	var moving = function(event) {
-		var rel = event.data.rel, op = null, 
-		area = rel.watch.area, inArea = false, data = {
-			x: event.pageX,
-			y: event.pageY
-		};
-
-		core.each(rel.area, function(v, k) {
-			op = v, data.options = v;
-			switch(k) {
-			case 'left':
-				inArea = (data.x >= area.left && data.x <= (area.left + op.offsetX))
-					&& (data.y >= (area.top + op.offsetY) && data.y <= (area.top + area.h - op.offsetY));
-				break;
-			case 'right':
-				inArea = (data.x >= (area.left + area.w - op.offsetX) && data.x <= (area.left + area.w))
-					&& (data.y >= (area.top + op.offsetY) && data.y <= (area.top + area.h - op.offsetY));
-				break;
-			case 'top':
-				inArea = (data.x >= (area.left + op.offsetX) && data.x <= (area.left + area.w - op.offsetX))
-					&& (data.y >= area.top && data.y <= (area.top + op.offsetY));
-				break;
-			case 'bottom':
-				inArea = (data.x >= (area.left + op.offsetX) && data.x <= (area.left + area.w - op.offsetX))
-					&& (data.y >= (area.top + area.h - op.offsetY) && data.y <= (area.top + area.h));
-				break;
-			case 'leftTop':
-				inArea = (data.x >= area.left && data.x <= (area.left + op.offsetX))
-					&& (data.y >= area.top && data.y <= (area.top + op.offsetY));
-				break;
-			case 'rightTop':
-				inArea = (data.x >= (area.left + area.w - op.offsetX) && data.x <= (area.left + area.w))
-					&& (data.y >= area.top && data.y <= (area.top + op.offsetY));
-				break;
-			case 'leftBottom':
-				inArea = (data.x >= area.left && data.x <= (area.left + op.offsetX))
-					&& (data.y >= (area.top + area.h - op.offsetY) && (data.y <= (area.top + area.h)));
-				break;
-			case 'rightBottom':
-				inArea = (data.x >= (area.left + area.w - op.offsetX) && data.x <= (area.left + area.w))
-					&& (data.y >= (area.top + area.h - op.offsetY) && (data.y <= (area.top + area.h)));
-				break;
-			}
-
-			if (inArea) {
-				if (!op.inplace) {
-					op.inplace = true;
-					core.isFunc(op.movein) && op.movein(data);
-				}
-			} else {
-				if (op.inplace) {
-					op.inplace = false;
-					core.isFunc(op.moveout) && op.moveout(data);
-				}
-			}
-		});
-	};
-
-	core.register(component, proto);
-
-	})(this, this.kiwi, 'mpos');
-	
 	var note = note || {
 		instance: null,
 		root: null,
@@ -4698,7 +4566,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					el.slideDown();
 				});;
 
-				lemon.mpos('#input_note_wrap .CodeMirror')
+				lemon.mousepos('#input_note_wrap .CodeMirror')
 				.listen({
 					direct:'rightTop',
 					movein: note.close
