@@ -306,9 +306,11 @@
 					if (interfType != v.type.id) {
 						interfType = v.type.id;
 		%>
-			<tr onclick="api.interfType(<%= interfType %>)"> <th></th> <td> <h4><span class="label label-info"><span class="glyphicon glyphicon-flag"></span> <%= v.type.name %></span></h4> </td> </tr>
+			<tr onclick="api.interfType(<%= interfType %>)"> <th></th> <td> 
+				<h4><span class="label label-info"><span class="glyphicon glyphicon-flag"></span> <%= v.type.name %></span></h4> </td> 
+			</tr>
 		<%
-					}
+			}
 		%>
 		   <tr id="<%= k %>" type="<%= interfType %>">
             <th scope="row">
@@ -316,22 +318,30 @@
 			<td onDblClick="api.onSelect('<%= k %>')">
 			<!-- <span class="badge"><%= v.name %></span> -->
 			<blockquote style="width:<%=clientW - 60%>px;">
+				<% if (v.mutation > 0) { %> 
+					<span class="label label-success"> <%= v.name %> Mutation </span> 
+					<span class="text-success"  style="font-size:85%;"><%= lemon.repeat('&nbsp;', 3) %> <%= v.note %></span> 
+				<% } %>
   				<p>
 					<pre style="background-color:#ffffff;border:0px;" tgl-apirequ="tgl"><p class="pull-right text-muted">Request</p><%= lemon.json.highlight(v.request) %></pre>
 				</p>
 				<% if (!lemon.isBlank(v.response)) { %>
 					<%= api.showResponse(v.response) %>					
 				<% } %>
-				<%= api.showNote(v.note) %>
+				<% if (0 == v.mutation) { %>				
+					<%= api.showNote(v.note) %>
+				<% } %>
 				<footer>
 					<%= v.name %> <cite><%= v.desc %></cite>
 				</footer>
 			</blockquote>
 			</td>
 			<td>
+				<% if (0 == v.mutation) { %>
 				<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.setAPIDefaultVal('<%= v.name %>')" id="set_default_<%= v.name %>">
 					<span class="glyphicon glyphicon-camera text-muted" title="Set API Default Value"></span>
 				</button>
+				<% } %>
 				<% if (!lemon.isBlank(v.response)) { %>
 				<button type="button" class="btn btn-default btn-xs" style="border:0px;" onclick="api.onSelectSinleClick(this, 3, 4)" clkey="<%= k %>">
 					<span class="glyphicon glyphicon-eye-open text-muted" title="Toggle Request Response"></span>
@@ -683,6 +693,9 @@
 			<button type="button" class="list-group-item btn btn-default active" id="exp_api"> 
 			<span class="glyphicon glyphicon-check" title="Define API"></span> Define API </button>
 			<p></p>
+			<button type="button" class="list-group-item btn btn-default active" id="exp_mutate"> 
+			<span class="glyphicon glyphicon-check" title="Define API Mutation"></span> Define API Mutation</button>
+			<p></p>
 			<button type="button" class="list-group-item btn btn-default active" id="exp_dft"> 
 			<span class="glyphicon glyphicon-check" title="Define API Default Value"></span> Define API Default Value </button>
 			<p></p>
@@ -979,7 +992,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						if (lemon.isBlank(api.getAPI(capi))) {
 							api.redefineAPI('new');
 						} else {
-							api.redefineAPI(capi);
+							api.redefineAPI(capi, 1);
 						}
 					} else if (!lemon.isBlank(api.requ())) {
 						var cenv = api.env.which(lemon.getEnv());
@@ -1056,6 +1069,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					lemon.descs = [];
 					lemon.nextHis = null;
 					lemon.searchconds = null;
+					
 					api.previousInterval = {
 				   		when: '',
 				   		batch: 0
@@ -1102,18 +1116,25 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						var items = api.preference.defines().items.sort(function(a, b) {
 							return a.type.id - b.type.id;
 						});
+
+						lemon.each(api.apiMutation(), function(v, k) {
+							lemon.each(v, function(mutate, mutateId) {
+								var r = api.nav.makeApi(mutate);
+
+								if (isAdvance) {
+									if (regEx.test(lemon.json.get(mutate.request, searchProp))) {
+										apis['api_' + mutate.api + '_' + mutateId] = r;
+									}
+								} else {
+									if (justAllAPI || regEx.test(mutate.api) || regEx.test(mutate.desc)) {
+										apis['api_' + mutate.api + '_' + mutateId] = r;
+									}
+								}
+							});
+						});
 						
 						lemon.each(items, function(v, k) {
-							var r = {
-								name: v.api,
-								desc: v.desc,
-								note: v.note,
-								type: api.getInterfGroup(v.type.id),
-								when: '',
-								request: v.request,
-								response: v.response || '',
-								interf: ''
-							};
+							var r = api.nav.makeApi(v);
 
 							if (isAdvance) {
 								if (regEx.test(lemon.json.get(v.request, searchProp))) {
@@ -1422,7 +1443,17 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 											request: api.getCleanRequestData()
 										};
 									} else {
-										apic = lemon.clone(api.getAPI(lemon.apicedit));
+										var parts = lemon.apicedit.split('_');
+										lemon.apicedit = parts[0];
+										if (parts.length == 2) {
+											apic = lemon.clone(api.apiMutation(lemon.apicedit, parts[1]));
+											api.mutation(2);
+										} else if (parts.length == 1) {
+											apic = lemon.clone(api.getAPI(lemon.apicedit));
+											if (1 == lemon.apiceditfrom) {
+												apic.request = lemon.extend(apic.request, api.getCleanRequestData());
+											}
+										}
 										if (apic.type) {
 											lemon.fillParam('#p_apic_left', {
 												apiTypeId: apic.type.id
@@ -1445,6 +1476,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 									valchange: function(cm) {
 										try {
 											var apic = $.parseJSON(cm.getValue()), apicId = apic.api;
+											//api.mutation
 											if (apicId && apicId.length > 0) {
 												if (apicId != lemon.prevDefineId) {
 													lemon.prevDefineId = apicId;
@@ -1546,6 +1578,19 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					$(el).button('toggle');
 					$('#request_url').text(api.nav.humanreadRequest($(el).hasClass('active')));
 				}
+			},
+			makeApi: function(aApi) {
+				return {
+					name: aApi.api,
+					desc: aApi.desc,
+					note: aApi.note,
+					type: api.getInterfGroup(aApi.type.id),
+					when: '',
+					request: aApi.request,
+					response: aApi.response || '',
+					interf: '',
+					mutation: aApi.mutation || 0
+				};
 			},
 			makeHis: function(aHis) {
 				var capi = aHis.api || api.getRequestAPI(aHis.request);
@@ -2130,11 +2175,54 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			return api.nav.check('#btn_mutation', opt);
 		},
 		defineMutation: function(el) {
-			if (api.mutation(1)) {
-				
-			} else {
-				
+			var step = '';
+			try {
+				step = 'Define API Mutation';
+				var theAPIc = $.parseJSON(api.mirrorVal('#sa_apic'));
+				if (api.mutation(1)) {
+					var mutateId = $('#btn_mutation').data('mutateId');
+					mutateId = mutateId ? mutateId : api.autoId();
+					$('#btn_mutation').data('mutateId', mutateId);
+					theAPIc.mutation = mutateId;
+				} else {
+					delete theAPIc.mutation;
+				}
+				api.mirrorVal('#sa_apic', theAPIc);
+			} catch(e) {
+				api.preference.tip(step, ' invalid JSON value, ' + e.message);
 			}
+		},
+		apiMutation: function(theapi, mutateId, mutate) {
+			var key = "mutation";
+			var mutates = lemon.store(key) || {};
+			if (lemon.isUndefined(theapi)) {
+				return mutates;
+			}
+
+			var apicMutates = mutates[theapi] || {};
+			if (lemon.isUndefined(mutateId)) {
+				return apicMutates;
+			}
+
+			var mu = apicMutates[mutateId] || {};
+			if (lemon.isBlank(mutate)) {
+				return mu;
+			}
+			
+			if (!lemon.isBlank(mu)) {
+				mutate = lemon.extend(mu, mutate);
+			}
+			apicMutates[mutateId] = mutate;
+			if (lemon.has(mutate, 'delete') && 1 == mutate['delete']) {
+				delete apicMutates[mutateId];
+				mutates[theapi] = apicMutates;
+				lemon.store(key, mutates);
+				return mutate;
+			}
+
+			mutates[theapi] = apicMutates;
+			lemon.store(key, mutates);
+			return mutate;
 		},
 		tag: function(tagId, tagName) {
 			var key = "definedTag";
@@ -2357,8 +2445,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				api.attention(selector);
 			}, 1000);
 		},
-		redefineAPI: function(target) {
+		redefineAPI: function(target, from) {
 			lemon.apicedit = target.replace('api_', '');
+			lemon.apiceditfrom = from || 0;
 			if ($('#btn_search').hasClass('active')) {
 				$('#btn_search').click();
 			}
@@ -2773,7 +2862,12 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}
 			
 			if (lemon.startWith(key, 'api_')) {
-				result = api.getAPI(key.replace('api_', ''));
+				var parts = key.split('_');
+				if (parts.length == 2) {
+					result = api.getAPI(parts[1]);
+				} else {
+					result = api.apiMutation(parts[1], parts[2]);
+				}
 			} else {
 				result = lemon.store(key) || {};
 			}
@@ -2842,8 +2936,14 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			var item = api.getHoverOrSelectItem(key), capi = null;
 			if (!lemon.isBlank(item)) {
 				if (lemon.startWith(key, 'api_')) {
-					capi = key.replace('api_', '');
-					var requestV = api.getAPIDefaultVal(capi) || item.request || {};
+					var parts = key.split('_');
+					capi = parts[1];
+					var requestV = {};
+					if (parts.length == 2) {
+						requestV = api.getAPIDefaultVal(capi) || item.request || {};
+					} else {
+						requestV = item.request;
+					}
 					api.requ(lemon.json(requestV));
 					if (lemon.isBlank(item.response)) {
 					} else {
@@ -3292,13 +3392,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				} 
 
 				else if (curHref == '#theapic') {
+					step = 'Define API', override = false;
 					if (api.mutation()) {
 						step = 'Define as Mutation';
-						
-						return true;
 					}
 					
-					step = 'Define API', override = false;
 					try {
 						var theAPIc = $.parseJSON(api.mirrorVal('#sa_apic'));
 
@@ -3342,9 +3440,18 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						}
 
 						theAPIc.type = api.getInterfGroup(lemon.getParam('#p_apic_left').apiTypeId);
-						var theDefinedInterf = api.preference.defines(),
-							isDel = lemon.has(theAPIc, 'delete') && 1 == theAPIc['delete'], aDefines = [], isNewDefine = true;
-						
+						if (api.mutation() && (theAPIc.mutation > 0)) {
+							if (!lemon.isString(theAPIc.note)) {
+								api.preference.tip(step, 'Property "note" must be a string when define mutation.');
+								return false;
+							}
+							api.apiMutation(theAPIc.api, theAPIc.mutation, theAPIc);
+							lemon.mirror['sa_apic'] = undefined;
+							return true;
+						}
+
+						var theDefinedInterf = api.preference.defines();
+						var isDel = lemon.has(theAPIc, 'delete') && 1 == theAPIc['delete'], aDefines = [], isNewDefine = true;
 						lemon.each(theDefinedInterf.items, function(v, idx) {
 							if (theAPIc.api == v.api) {
 								if (!isDel) {
@@ -3927,6 +4034,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					api.preference.defines(data.apis);
 				}
 
+				if (lemon.has(data, 'mutates')) {
+					lemon.store('mutation', data.mutates);
+				}
+
 				if (lemon.has(data, 'histories')) {
 					lemon.each(data.histories, function(v, k) {
 						lemon.store(k, v);
@@ -3975,6 +4086,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					basic: api.nav.check('#exp_basic'),
 					server: api.nav.check('#exp_server'),
 					apis: api.nav.check('#exp_api'),
+					mutate: api.nav.check('#exp_mutate'),
 					apidft: api.nav.check('#exp_dft'),
 					histories: api.nav.check('#exp_history'),
 					hiscust: api.nav.check('#exp_cust')
@@ -3994,6 +4106,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				
 				if (1 == expcfg.apis) {
 					exp.apis = api.preference.defines()
+				}
+
+				if (1 == expcfg.mutate) {
+					exp.mutates = api.apiMutation();
 				}
 
 				if (1 == expcfg.histories) {
