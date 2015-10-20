@@ -1829,6 +1829,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				var v = api.analyze[i], analyze = {};;
 				if (data.indexOf(v.sep) != -1 && data.indexOf(v.subsep) != -1) {
 					if (1 == v.id) {
+						var lidx = data.indexOf('{');
+						var ridx = data.lastIndexOf('}');
+						if (lidx >= 0 && ridx >= 0) {
+							data = data.substring(lidx, ridx + 1);
+						}
 						try {
 							analyze = $.parseJSON(lemon.endIf(lemon.startIf(data, '{'), '}'));
 							isContinue = false;
