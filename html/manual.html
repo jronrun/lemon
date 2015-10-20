@@ -1527,7 +1527,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								});
 								after.rich.chgFontSize(lemon.mirror["sa_apic"], 15);
 
-								if (apic.defserv && apic.defserv > 0) {
+								if (apic && apic.defserv && apic.defserv > 0) {
 									api.preference.apicEnvClick(api.getServer(apic.defserv));
 								}
 							}
