@@ -18,7 +18,7 @@
 </script>
 <style type="text/css">
     .fixed-panel { min-height: 430px; max-height: 430px; overflow-y: scroll; }
-    .fixed-dropdown { min-height: 530px; max-height: 530px; overflow-y: scroll; max-width: 350px; }
+    .fixed-dropdown { min-height: 130px; max-height: 530px; overflow-y: scroll; max-width: 350px; }
     .block-grey { background-color: #e6e6e6; }
 
 	.cm-s-lemon .CodeMirror { background-color:#ffffff; color:#2e383c; line-height:1.4375; }
@@ -43,15 +43,14 @@
 			</div>
 
 			<div class="collapse navbar-collapse">
-				<ul class="nav navbar-nav">
-					<li class="dropdown"><a href="#" class="dropdown-toggle"
-						data-toggle="dropdown" role="button" aria-expanded="false">Environment
-							<span class="caret"></span>
-					</a>
+				<ul class="nav navbar-nav" id="env_container">
+					<li class="dropdown">
+						<a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Environment <span class="caret"></span> </a>
 						<ul class="dropdown-menu fixed-dropdown" role="menu" id="which_env">
 							<li><a href="#">Test</a></li>
 							<li><a href="#">Product</a></li>
-						</ul></li>
+						</ul>
+					</li>
 				</ul>
 				<ul class="nav navbar-nav">
 					<li class="dropdown"><a href="#" class="dropdown-toggle"
@@ -818,6 +817,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 	<button type="button" class="btn btn-info" onclick="api.defineMutation();" id="btn_mutation" title="Define as Mutation">
 		<span class="glyphicon glyphicon-unchecked"></span> Define as Mutation 
 	</button>
+<%= lemon.repeat('&nbsp;', 4) %>
+	<div class="btn-group" id="apic_env_container"></div>
 			</form>
 			<h4></h4>
 			<textarea id="sa_apic" style="border: 0px solid #ffffff; width: 790px; height: 380px;"></textarea>
@@ -1130,7 +1131,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 										apis['api_' + mutate.api + '_' + mutateId] = r;
 									}
 								} else {
-									if (justAllAPI || regEx.test(mutate.api) || regEx.test(mutate.desc)) {
+									if (justAllAPI || regEx.test(mutate.api) || regEx.test(mutate.note) || regEx.test(mutate.desc)) {
 										apis['api_' + mutate.api + '_' + mutateId] = r;
 									}
 								}
@@ -1369,7 +1370,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								}
 							});
 						});
-						
+
 						$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 							var curTab = e.target, prevTab = e.relatedTarget;
 							api.preference.tab = {
@@ -1445,6 +1446,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							} else if ('#theapic' == curHref) {
 								var settingAPIcHtml = lemon.tmpl($('#setting_apic_tmpl').html(), {});
 								$('#theapic').empty().append(settingAPIcHtml).show();
+								$('#sa_interf').change(function() {
+									api.preference.apicEnvRender();
+								});
+								
 								var apic = null;
 								if (lemon.apicedit) {
 									if ('new' == lemon.apicedit) {
@@ -1466,6 +1471,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 												apic.request = lemon.extend(apic.request, api.getCleanRequestData());
 											}
 										}
+										
 										if (apic.type) {
 											lemon.fillParam('#p_apic_left', {
 												apiTypeId: apic.type.id
@@ -1474,6 +1480,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 										}
 									}
 								}
+
+								api.preference.apicEnvRender();
 
 								lemon.prevDefineId = lemon.apicedit;
 								api.mirrorVal('#sa_apic', apic || {
@@ -1518,6 +1526,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 									}
 								});
 								after.rich.chgFontSize(lemon.mirror["sa_apic"], 15);
+
+								if (apic.defserv && apic.defserv > 0) {
+									api.preference.apicEnvClick(api.getServer(apic.defserv));
+								}
 							}
 						}).on('hide.bs.tab', function (e) {
 							if (!api.preference.saveBasic()) {
@@ -2949,6 +2961,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		onSelect: function(key) {
 			var item = api.getHoverOrSelectItem(key), capi = null;
 			if (!lemon.isBlank(item)) {
+				var typeId = 0;
 				if (lemon.startWith(key, 'api_')) {
 					var parts = key.split('_');
 					capi = parts[1];
@@ -2963,7 +2976,14 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					} else {
 						api.resp(lemon.json(item.response));
 					}
+
+					if (item.defserv && item.defserv > 0) {
+						var serv = api.getServer(item.defserv);
+						lemon.setEnv(serv.interf);
+						api.env.change(serv.interf);
+					}
 					
+					typeId = item.type.id;
 					$("#btn_search").click();
 				} else {
 					capi = item.api || api.getRequestAPI(item.request);
@@ -2977,9 +2997,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					if ($('#btn_search').hasClass('active')) {
 						$('#btn_search').click();
 					}
+					typeId = api.env.which(item.interf).type.id;
 				}
 				
 				lemon.setApi(capi);
+				if (typeId > 0) {
+					api.env.render(typeId);
+				}
 
 				if (after.styled) {
 					
@@ -3241,6 +3265,35 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					api.nav.check('#ss_default', 3);
 				}
 				api.mirrorVal('#ss_server', showServ);
+			},
+			apicEnvClick: function(serv) {
+				var step = '';
+				try {
+					step = api.mutation() ? 'Define API Mutation' : 'Define API';
+					var theAPIc = $.parseJSON(api.mirrorVal('#sa_apic'));
+					theAPIc.defserv = serv.id;
+					api.mirrorVal('#sa_apic', theAPIc);
+				} catch(e) {
+					api.preference.tip(step, ' invalid JSON value, ' + e.message);
+				}
+
+				$('#api_default_serv_href').attr({title: serv.desc}).text(serv.note || serv.type.name);
+				if ('PRODUCT' == serv.env) {
+					$('#api_default_serv_href').removeClass('text-info').addClass('text-danger');
+				} else {
+					$('#api_default_serv_href').removeClass('text-danger').addClass('text-info');
+				}
+			},
+			apicEnvRender: function() {
+				var typeId = parseInt($('#sa_interf').val());
+				$('#apic_env_container').html(api.env.envselect({
+					id: 'api_default_serv',
+					name: 'API default server',
+					typeId: typeId,
+					handle: function(serv) {
+						api.preference.apicEnvClick(serv);
+					}
+				}));
 			},
 			newServId: function() {
 				var theMaxId = 0;
@@ -3751,11 +3804,46 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 				lemon.delay(function() { api.env.lemon(); }, 500);
 			},
-			render: function() {
-				if (!api.intialized) {
-					api.env.load();
+			envselectclick: function(clickId, servId) {
+				var clickFunc = api.env.envClickHandle[clickId]; 
+				lemon.isFunc(clickFunc) && clickFunc(api.getServer(servId));
+			},
+			choosableServs: function() {
+				return api.env._curservs;
+			},
+			defaultChoosableServ: function() {
+				var serv = {};
+				lemon.each(api.env.choosableServs(), function(v, k) {
+					if (v.curDefault) {
+						serv = v;
+						return false;
+					}
+				});
+				
+				return serv;
+			},
+			envselect: function(options) {
+				options = lemon.extend({
+					id: '',
+					name: 'Environment',
+					handle: null,	//handle function(serv)
+					typeId: null,
+					choosable: false
+				}, options || {});
+
+				var clickId = lemon.uniqueId(), defaultCurservs = false;
+				api.env.envClickHandle = api.env.envClickHandle || {};
+				api.env.envClickHandle[clickId] = options.handle;
+				if (options.choosable) {
+					api.env._curservs = {};
 				}
-				var $env = $('#which_env'); $env.empty();
+
+				var html = [
+					'<li class="dropdown" style="list-style-type:none;">',
+					'<a href="javascript:void(0);" id="' + options.id + '_href" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">',
+					options.name + ' <span class="caret"></span> </a>',
+					'<ul class="dropdown-menu fixed-dropdown" role="menu" id="' + options.id + '">',
+				];
 				
 				lemon.each(api.preference.service(), function(envGroup, k) {
 					var isProduct = 'PRODUCT' === envGroup.env;
@@ -3765,48 +3853,84 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						'<span class="label label-' + clazz + '">' + envGroup.desc + '</span>',
 						'</h4></li>'
 						].join('');
-					
-					var presentation = $(document.createElement('li')).attr({ 
-						role:'presentation', 
-						class:'divider' 
-					});
-					$env.append(presentation).append(title);
+
+					html.push('<li role="presentation" class="divider"></li>');
+					html.push(title);
 
 					var prevServTypeId = -1;
 					lemon.each(api.env.servSortEsc(envGroup.serv), function(serv, k) {
-						var blankNote = lemon.isBlank(serv.note);
-						var servGroup = api.getInterfGroup(serv.type.id);
-						if (!blankNote && prevServTypeId != serv.type.id) {
-							var miniG = [
-								'<li role="presentation" class="dropdown-header"><h5>',
-								lemon.repeat('&nbsp;', 2) + servGroup.name,
-								'</h5></li>'
-							].join('');
-							$env.append(miniG);
-							prevServTypeId = serv.type.id;
+						if (!options.typeId || (options.typeId && options.typeId == serv.type.id)) {
+							var blankNote = lemon.isBlank(serv.note);
+							var servGroup = api.getInterfGroup(serv.type.id);
+							if (!blankNote && prevServTypeId != serv.type.id) {
+								var miniG = [
+									'<li role="presentation" class="dropdown-header"><h5>',
+									lemon.repeat('&nbsp;', 2) + servGroup.name,
+									'</h5></li>'
+								].join('');
+								html.push(miniG);
+								prevServTypeId = serv.type.id;
+							}
+							
+							var servName = (blankNote ? servGroup.name : (lemon.repeat('&nbsp;', 5) + serv.note));
+							var liTitle = servGroup.name + (blankNote ? '' : (' - ' + serv.note));
+
+							var aEnv = [ '<li title="' + liTitle + '">' ];
+							if (serv.asDefault && 1 === serv.asDefault) {
+								aEnv.push('<a id="default_env" onclick="api.env.envselectclick(' + clickId + ',' + serv.id + ');">');
+							} else {
+								aEnv.push('<a onclick="api.env.envselectclick(' + clickId + ',' + serv.id + ');">');
+							}
+							aEnv.push('<p class="text-' + (isProduct ? 'warning' : 'info') + '">' + lemon.repeat('&nbsp;', 2) + servName + '</p></a>');
+							aEnv.push('<li>');
+							html.push(aEnv.join(''));
+
+							if (!defaultCurservs) {
+								defaultCurservs = true;
+								serv.curDefault = true;
+							}
+							
+							if (options.choosable) {
+								api.env._curservs[serv.id] = serv;
+							}
 						}
-						
-						var servName = (blankNote ? servGroup.name : (lemon.repeat('&nbsp;', 5) + serv.note));
-						var liTitle = servGroup.name + (blankNote ? '' : (' - ' + serv.note));
-						var href = $(document.createElement('a'));
-						if (serv.asDefault && 1 === serv.asDefault) {
-							href.attr({id: 'default_env'});
-						}
-						href.click(function() {
-							lemon.setEnv(serv.interf);
-							api.env.change(serv.interf);
-						});
-						href.append('<p class="text-' + (isProduct ? 'warning' : 'info') + '">' + lemon.repeat('&nbsp;', 2) + servName + '</p>');
-						var aEnv = $(document.createElement('li')).attr({
-							title : liTitle
-						}).append(href);
-						$env.append(aEnv);
 					});
 
-					$env.append('<li>' + lemon.repeat('&nbsp;', 80) + '</li>');
+					html.push('<li>' + lemon.repeat('&nbsp;', 80) + '</li>');
 				});
+				
+				html.push('</ul>');
+				html.push('</li>');
+				return html.join('');
+			},
+			render: function(typeId) {
+				if (!api.intialized) {
+					api.env.load();
+				}
 
-				$('#default_env').click();
+				$('#env_container').html(api.env.envselect({
+					id: 'which_env',
+					typeId: typeId,
+					choosable: true,
+					handle: function(serv) {
+						lemon.setEnv(serv.interf);
+						api.env.change(serv.interf);
+					}
+				}));
+				if (!typeId) {
+					$('#default_env').click();
+				} else {
+					if (!lemon.isBlank(lemon.getEnv())) {
+						var aEnv = api.env.which(lemon.getEnv());
+						if (aEnv.type.id != typeId) {
+							var serv = api.env.defaultChoosableServ();
+							if (!lemon.isBlank(serv)) {
+								lemon.setEnv(serv.interf);
+								api.env.change(serv.interf);
+							}
+						}
+					}
+				}
 			},
 			change: function(interf) {
 				var env = api.env.which(interf);
@@ -4049,7 +4173,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}
 
 				if (lemon.has(data, 'mutates')) {
-					lemon.store('mutation', data.mutates);
+					lemon.each(data.mutates, function(v, apic) {
+						lemon.each(v, function(mutate, mutateId) {
+							api.apiMutation(apic, mutateId, mutate);
+						});
+					});
 				}
 
 				if (lemon.has(data, 'histories')) {
