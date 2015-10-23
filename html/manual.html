@@ -101,10 +101,11 @@
 					</div>
 					
 					<button type="submit" class="btn btn-default" style="border:0px;" id="btn_history"><span class="text-muted">History</span></button>
-					<button type="submit" class="btn btn-default" style="border:0px;" id="btn_note"><span class="text-muted">Notes</span></button>
+					<button type="submit" class="btn btn-default" style="border:0px;" id="btn_note"><span class="text-muted">Note</span></button>
 					<div id="input_note_wrap" style="display:none;">
 						<textarea type="text" class="hidden" id="input_note"></textarea>
-						<div id="note_tool" style="display:none;"></div>
+						<div id="note_tool" style="display:none;" state="close"></div>
+						<input type="file" id="note_open_file" class="hidden"/>
 					</div>
 				</form>
 				<ul class="nav navbar-nav navbar-right">
@@ -861,7 +862,61 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 </body>
 </html>
 </script>
+		
+<script type="text/html" id="note_tool_tmpl">
+<nav class="navbar navbar-default" style="margin-bottom:0px;border:0px;background-color:#ffffff">
+  <div class="container-fluid">
+      <ul class="nav navbar-nav">
 
+		<li class="dropdown">
+          <a href="javascript:void(0);" id="note_list_dd" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Notes</a>
+          <ul class="dropdown-menu fixed-dropdown" style="max-width: 400px;" id="note_list">
+			<%
+			lemon.each(note.listNote(), function(n, idx) {
+			%>
+				<li nid="<%= n.id %>" id="note_<%= n.id %>"><blockquote style="width:380px;" title="" class="">
+					<h4 class="text-info"><%= n.title %></h4>
+					<h6 class="text-muted">Created    <%= n.create %></h6>
+					<h6 class="text-muted">Modified  <%= n.lastmodify %></h6>
+					<h6 class="text-muted">
+						<span class="badge"><%= n.id %></span>
+						<div class="btn-group pull-right" role="group" aria-label="...">
+  							<button type="button" title="Delete Note <%= n.title %>" id="note_rem_<%= n.id %>" nt="<%= n.title %>" nid="<%= n.id %>" style="border:0px;" class="btn btn-default">
+								<span class="text-danger glyphicon glyphicon-remove-circle"></span>
+							</button>
+						</div>
+					</h6>
+				</blockquote></li>
+			<%
+			});
+			%>
+          </ul>
+        </li>
+
+        <li class="dropdown">
+          <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
+          <ul class="dropdown-menu">
+            <li><a href="javascript:void(0);" onclick="note.newNote();" title=":new"><%= note.menu('New', ':n') %></a></li>
+            <li><a href="javascript:void(0);" onclick="note.openFile();" title=":open"><%= note.menu('Open File...', ':o') %></a></li>
+			<li role="separator" class="divider"></li>
+			<li><a href="javascript:void(0);" onclick="note.menuTgl();" title="Mouse move top toggle menu"><%= note.menu('Close Menu', ':menu') %></a></li>
+			<li><a href="javascript:void(0);" onclick="note.close();" title="Close Note"><%= note.menu('Close Note', ':q') %></a></li>
+			<li role="separator" class="divider"></li>
+			<li><a href="javascript:void(0);" onclick="note.save();" title="Save Note"><%= note.menu('Save Note', ':w') %></a></li>
+			<li><a href="javascript:void(0);" onclick="note.saveclose();" title="Save & Close Note"><%= note.menu('Save & Close Note', ':wq') %></a></li>
+			<li><a href="javascript:void(0);" onclick="note.save(null, 1);" title="Save As..."><%= note.menu('Save As...', ':sa') %></a></li>
+			<li><%= lemon.repeat('&nbsp;', 60) %></li>
+          </ul>
+        </li>
+
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+		<li><a href="javascript:void(0);" class="close" title="Save & Close" aria-label="Close" onclick="note.saveclose();"><span aria-hidden="true">×</span></a></li>
+      </ul>
+  </div>
+</nav>
+</script>
+						
 <script type="text/javascript">
 	root = window;
 	location.hash = 'api';
@@ -978,13 +1033,20 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								apiTmp = api.getRequestAPI(data.param[rcfg.paramName] || {});
 								api.requ(lemon.json(data.param[rcfg.paramName]));
 							}
+							api.env.render(sinfo.type.id);
 						}
 					}
 					
 					if (lemon.isBlank(apiTmp)) {
-						apiTmp = api.getRequestAPI(apiTmp);
+						apiTmp = api.getRequestAPI(data.param);
+						if (!lemon.isBlank(apiTmp)) {
+							var defineTmp = api.getAPI(apiTmp);
+							if (!lemon.isBlank(defineTmp)) {
+								api.env.render(defineTmp.type.id);
+							} 
+						}
 					}
-					
+
 					lemon.setApi(apiTmp || null);
 				});
 
@@ -4454,6 +4516,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								} else {
 									api.resp(lemon.json(item.response));
 								}
+								api.env.render(item.type.id);
 							});
 
 							var anApi = $(document.createElement('li')).append(href);
@@ -4590,7 +4653,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}
 			}},
 			{ name: 'list', shortn: 'l', handle: function(cm, params) {
-				
+				note.showListNote();
+			}},
+			{ name: 'open', shortn: 'o', handle: function(cm, params) {
+				note.openFile();
 			}},
 			{ name: 'del', shortn: 'd', handle: function(cm, params) {
 				if (lemon.isBlank(params.argString)) {
@@ -4688,6 +4754,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				duration: 5000
 			});
 		},
+		openFile: function() {
+			$('#note_open_file').click();
+		},
 		delNote: function(noteId) {
 			var ns = note.pool();
 			var n = ns[noteId];
@@ -4712,9 +4781,32 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			lemon.store('note.pool', ns);
 			return ns[noteId] || {};
 		},
+		showListNote: function() {
+			if (!note.isMenuOpen()) {
+				note.menuTgl();
+			}
+			$('#note_list_dd').click();
+		},
+		listNote: function() {
+			var ns = [];
+			lemon.each(note.pool(), function(n, nid) {
+				if (n.id && n.title && n.create && n.lastmodify) {
+					ns.push({
+						id: n.id,
+						title: n.title,
+						create: n.create,
+						lastmodify: n.lastmodify
+					});
+				}
+			});
+			return ns.sort(function(a, b) {
+				return lemon.when.time(b.lastmodify) - lemon.when.time(a.lastmodify);
+			});
+		},
 		newNote: function(params) {
-			note.pool(api.autoId(), '', '');
-			note.loadNote();
+			/* note.pool(api.autoId(), '', ''); note.loadNote(); */
+			note.instance.setValue('');
+		    note.instance.noteId = null;
 		},
 		loadNote: function(noteId) {
 			var lastn = note.lastNote(noteId);
@@ -4795,39 +4887,75 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 				note.loadNote();
 
+				$('#note_open_file').change(function(event) {
+					api.file.handle(this, event, {
+						onLoadStart: function(e, target) {
+							api.loading.start();
+							api.loading.progress(20);
+						},
+						onLoadEnd: function(e, target) {
+							api.loading.progress(50);
+							lemon.sleep(500);
+							api.loading.progress(85);
+							lemon.delay(function() {
+								api.loading.progress(98);
+								lemon.sleep(500);
+								note.newNote();
+								note.instance.setValue(target.reader.result);
+								api.loading.end();
+								$('#note_open_file').val('');
+							}, 800);
+						}
+					});
+				});
+
 				api.popover('#note_tool', function() {
-					var html = [
-						'<div>',
-						'<div class="pull-left" style="margin-bottom:6px;">',
-						'<button type="submit" class="btn btn-default btn-sm" style="border:0px;" id="nbtn_theme"><span class="text-muted">Theme</span></button>',
-						'</div>',
-						'<div class="pull-right">',
-						'<button type="button" class="close" title="Save & Close" aria-label="Close" onclick="note.saveclose();"><span aria-hidden="true">×</span></button>',
-						'</div>',
-						'</div>'
-					].join('');
-					return html;
+					return lemon.tmpl($('#note_tool_tmpl').html(), {});
+				}).on('hidden.bs.popover', function() { 
+					$('#note_tool').attr({state: 'close'});
 				}).on('show.bs.popover', function() { 
+					
+				}).on('inserted.bs.popover', function() {
+					var el = $(this).data("bs.popover").tip(); el.hide();
+				}).on('shown.bs.popover', function() {
 					var el = $(this).data("bs.popover").tip();
+					$('#note_tool').attr({state: 'open'});
 					var w = Math.floor($(root).width() / 2);
 					el.css({
 						width: w,
 						'max-width': w,
-						'border': 0
+						border: 0,
+						top: -8, 
+						left: (w - 5)
+					});
+					el.find('.popover-content').css({
+						'padding': 0
 					});
 					el.find('.arrow').remove();
-				}).on('inserted.bs.popover', function() {
-					var el = $(this).data("bs.popover").tip();
-					el.hide();
-				}).on('shown.bs.popover', function() {
-					var el = $(this).data("bs.popover").tip();
-					var w = Math.floor($(root).width() / 2) - 5;
-					el.css({
-						top: -8,
-						left: w
-					});
 					el.slideDown();
-				});;
+
+					$('#note_list li').click(function(e) {
+						e.stopPropagation();
+					}).dblclick(function(e) {
+						var nid = parseInt($(this).attr('nid'));
+						note.loadNote(nid);
+						$('#note_list_dd').click();
+					}).hover(function(){  
+						$(this). addClass('block-grey');   
+					},function(){  
+						$(this). removeClass('block-grey');   
+					});
+
+					$('button[id^="note_rem_"]').click(function(e) {
+						var toBeContinue = confirm('Are you sure?\nRemove Note "' + $(this).attr('nt') + '"');
+						if (toBeContinue) {
+							var nid = parseInt($(this).attr('nid'));
+							note.delNote(nid);
+							$('#note_' + nid).remove();
+						}
+						e.stopPropagation();
+					});
+				});
 
 				lemon.mousepos('#input_note_wrap .CodeMirror')
 				.listen({
@@ -4836,7 +4964,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}).listen({
 					direct:'top',
 					movein: function() {
-						$('#note_tool').popover('toggle');
+						note.menuTgl();
 					},
 					moveout: function() {
 
@@ -4872,6 +5000,28 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				after.saveAs(content, fname);
 				break;
 			}
+
+			if (note.isMenuOpen()) {
+				lemon.times(2, note.menuTgl);
+			}
+		},
+		isMenuOpen: function() {
+			return 'open' == $('#note_tool').attr('state');
+		},
+		menuTgl: function() {
+			$('#note_tool').popover('toggle');
+		},
+		menu: function(name, cmd, fix) {
+			name = name || '', cmd = cmd || '', fix = fix || 0;
+			if (lemon.isBlank(cmd)) {
+				return name;
+			}
+			//var len = 50, nlen = name.length, clen = cmd.length;
+			return [
+				name,
+				//lemon.repeat('&nbsp;', len - nlen - clen + fix),
+				'<span class="text-info" style="float:right;position:relative;">' + cmd + '</span>'
+			].join('');
 		},
 		close: function(params) {
 			note.root.hide();
