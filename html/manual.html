@@ -909,6 +909,24 @@ lemon.each(api.preference.service(), function(envGroup, k) {
           </ul>
         </li>
 
+		<li class="dropdown">
+          <a href="javascript:void(0);" id="note_theme_dd" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Theme</a>
+          <ul class="dropdown-menu fixed-dropdown" id="note_theme">
+			<%
+			lemon.each(api.preference.basic().note.themes, function(th, idx) {
+			%>
+				<li>
+					<a href="javascript:void(0);" onclick="note.theme('<%= th %>');" title=":new">
+					<%= th %><% if (th == api.preference.basic().note.theme) { %><span class="pull-right text-info glyphicon glyphicon-check"></span><% } %>
+					</a>
+				</li>
+			<%
+			});
+			%>
+			<li><%= lemon.repeat('&nbsp;', 60) %></li>
+          </ul>
+        </li>
+
       </ul>
       <ul class="nav navbar-nav navbar-right">
 		<li><a href="javascript:void(0);" class="close" title="Save & Close" aria-label="Close" onclick="note.saveclose();"><span aria-hidden="true">×</span></a></li>
@@ -4676,10 +4694,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					note.tip('change theme need a theme name. see <a onclick="note.help.theme();">themes</a>.');
 					return;
 				}
-
-				var theme = params.args[0];
-				lemon.css(lemon.format(lemon.getUrl(cmprfix + 'theme/{0}.min.css'), theme));
-				note.instance.setOption('theme', theme);	
+				note.theme(params.args[0]);
 			}},
 			{ name: 'mode', shortn: 'm', handle: function(cm, params) {
 				if (lemon.isBlank(params.argString)) {
@@ -4786,6 +4801,24 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				note.menuTgl();
 			}
 			$('#note_list_dd').click();
+		},
+		theme: function(th) {
+			var css = th;
+			if (lemon.startWith(th, 'solarized')) {
+				css = 'solarized';
+			}
+			
+			note.themeload = note.themeload || ['default'];
+			if (note.themeload.indexOf(css) == -1) {
+				lemon.css(lemon.format(lemon.getUrl(cmprfix + 'theme/{0}.min.css'), css));
+				note.themeload.push(css);
+			}
+			 
+			note.instance.setOption('theme', th);
+			var bas = api.preference.basic();
+			bas.note.theme = th;
+			api.preference.basic(bas);
+			note.menuRefresh();
 		},
 		listNote: function() {
 			var ns = [];
@@ -4970,6 +5003,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 					}
 				});
+
+				note.theme(api.preference.basic().note.theme);
 			}
 
 		    note.instance.focus();
@@ -5001,15 +5036,18 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				break;
 			}
 
-			if (note.isMenuOpen()) {
-				lemon.times(2, note.menuTgl);
-			}
+			note.menuRefresh();
 		},
 		isMenuOpen: function() {
 			return 'open' == $('#note_tool').attr('state');
 		},
 		menuTgl: function() {
 			$('#note_tool').popover('toggle');
+		},
+		menuRefresh: function() {
+			if (note.isMenuOpen()) {
+				lemon.times(2, note.menuTgl);
+			}
 		},
 		menu: function(name, cmd, fix) {
 			name = name || '', cmd = cmd || '', fix = fix || 0;
@@ -5180,7 +5218,17 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		apiParamNameInRequest: 'cmd',
 		searchPageSize: 30,
 		//data server
-		dcs: 'http://192.168.2.151:8080/docs/api/'
+		dcs: 'http://192.168.2.151:8080/docs/api/',
+		note: {
+			themes: [
+				'default','3024-day','3024-night','abcdef','ambiance','base16-dark','base16-light','bespin','blackboard','cobalt',
+				'colorforth','dracula','eclipse','elegant','erlang-dark','hopscotch','icecoder','isotope','lesser-dark','liquibyte',
+				'material','mbo','mdn-like','midnight','monokai','neat','neo','night','paraiso-dark','paraiso-light','pastel-on-dark',
+				'railscasts','rubyblue','seti','solarized,dark','solarized,light','the-matrix','tomorrow-night-bright','tomorrow-night-eighties',
+				'ttcn','twilight','vibrant-ink','xq-dark','xq-light','yeti','zenburn'
+			],
+			theme: 'default'
+		}
 	};
 
 	var interf = {
