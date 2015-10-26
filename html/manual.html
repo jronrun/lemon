@@ -222,12 +222,17 @@
 		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/css-hint.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/sql-hint.min.js'))
 		
+		
+		.queueScript(lemon.getUrl(cmprfix + 'mode/markdown/markdown.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'mode/javascript/javascript.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'mode/xml/xml.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'mode/htmlmixed/htmlmixed.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'mode/css/css.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'mode/meta.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/mode/loadmode.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/mode/simple.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/mode/overlay.min.js'))
+		.queueScript(lemon.getUrl(cmprfix + 'addon/mode/multiplex.min.js'))
 		
 		.queueScript(lemon.getUrl(cmprfix + 'addon/display/fullscreen.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/display/panel.min.js'))
@@ -892,19 +897,25 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 		<li class="dropdown">
           <a href="javascript:void(0);" id="note_mode_dd" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Language</a>
-          <ul class="dropdown-menu fixed-dropdown" style="max-width: 350px;" id="note_mode">
+          <ul class="dropdown-menu fixed-dropdown" style="max-width: 430px;" id="note_mode">
 			<%
-			lemon.each(notesource.langs, function(lang, idx) {
+			lemon.each(notesource.langs, function(lang, langname) {
 			%>
-				<li>
-				<blockquote style="width:330px;" title="" class="">
-					<h4 class="text-info"><%= lang.lang %></h4>
-					<%
-					if (lang.mime && !lemon.isBlank(lang.mime)) {
-					lemon.each(lang.mime.split(' '), function(mime, i2) {
-					%>
+				<li name="<%= langname %>">
+				<blockquote style="width:410px;" title="" class="">
+					<h4 class="text-info"><%= langname %></h4>
+					<div class="row">
+					<div class="col-md-6">
+					<h6><span class="label label-info"> Defined MIME types </span></h6>
+					<% if (lang.mimes && lang.mimes.length > 0) { lemon.each(lang.mimes, function(mime, i2) { %>
 					<h6 class="text-muted"><%= mime %></h6>
-					<% }); } %>
+					<% }); } else { %> <h6 class="text-muted"><%= lang.mime %></h6> <% } %>
+					</div>
+					<div class="col-md-6">
+					
+					</div>
+					</div>
+					
 				</blockquote>
 				</li>
 			<%
@@ -4789,42 +4800,69 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}
 			 
 			note.instance.setOption('theme', th);
-			var bas = api.preference.basic();
-			bas.note.theme = th;
-			api.preference.basic(bas);
+			note.storecfg('theme', th);
 			note.menuRefresh();
 		},
-		mode: function(lan) {
-			var val = lan, m, mode, spec;
-			if (m = /.+\.([^.]+)$/.exec(val)) {
-			    var info = CodeMirror.findModeByExtension(m[1]);
-			    if (info) {
-			      mode = info.mode;
-			      spec = info.mime;
-			    }
-			} else if (/\//.test(val)) {
-			    var info = CodeMirror.findModeByMIME(val);
-			    if (info) {
-			      mode = info.mode;
-			      spec = val;
-			    }
-			} else {
-			    mode = spec = val;
+		storecfg: function(key, val) {
+			var bas = api.preference.basic();
+			bas.note[key] = val;
+			api.preference.basic(bas);
+		},
+		langInfo: function(lang) {
+			if (lemon.isBlank(lang)) {
+				return null;
+			}
+			var m, info = null;
+			info = notesource.langs[lang];
+			if (!lemon.isBlank(info)) {
+				return info;
 			}
 			
-			if (mode) {
-				if ('json' == spec) {
-					note.prevTheme = note.instance.getOption('theme');
-					spec = 'application/ld+json';
-					note.instance.setOption('theme', 'lemon');	
-				} else {
-					note.instance.setOption('theme', note.prevTheme || 'default');	
-				}
-			    note.instance.setOption('mode', spec);
-			    CodeMirror.autoLoadMode(note.instance, mode);
-			    note.tip('Current mode: ' + spec);
+			if (m = /.+\.([^.]+)$/.exec(lang)) {
+			    info = CodeMirror.findModeByExtension(m[1]);
+			} else if (/\//.test(lang)) {
+			    info = CodeMirror.findModeByMIME(lang);
+			    info.mime = lang;
+			}
+
+			if (!lemon.isBlank(info)) {
+				return info;
+			}
+
+			info = CodeMirror.findModeByFileName(lang);
+			if (!lemon.isBlank(info)) {
+				return info;
+			}
+
+			info = CodeMirror.findModeByName(lang);
+			if (!lemon.isBlank(info)) {
+				return info;
+			}
+			
+			return null;
+		},
+		mode: function(lan, preview) {
+			var info = note.langInfo(lan);
+			if (lemon.isBlank(info)) {
+				note.tip('Could not find a mode corresponding to ' + lan);
+				return;
+			}
+
+			var spec = info.mime, mode = info.mode, isLangJson = 'json' == lan.toLocaleLowerCase();
+			if (isLangJson) {
+				note.prevTheme = note.instance.getOption('theme');
+				spec = 'application/ld+json';
+				note.instance.setOption('theme', 'lemon');
 			} else {
-				note.tip('Could not find a mode corresponding to ' + val);
+				note.instance.setOption('theme', note.prevTheme || api.preference.basic().note.theme);	
+			}
+		    note.instance.setOption('mode', spec);
+		    if (!isLangJson) {
+			    CodeMirror.autoLoadMode(note.instance, mode);
+			}
+		    note.tip('Current mode: ' + info.name + ' ' + spec);
+		    if (!preview) {
+			    note.storecfg('language', info.name);
 			}
 		},
 		listNote: function() {
@@ -4925,6 +4963,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					CodeMirror.Vim.defineEx(v.name, v.shortn, v.handle);
 				});
 
+				//["name", "mime", "mode"], Optional property: ["ext", "mimes", "file", "alias"]
+				lemon.each(CodeMirror.modeInfo || [], function(lang, idx) {
+					notesource.langs[lang.name] = lang;
+				});
+
 				note.loadNote();
 
 				$('#note_open_file').change(function(event) {
@@ -4984,8 +5027,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 					$('#note_mode li').click(function(e) {
 						e.stopPropagation();
+						note.mode($(this).attr('name'), true);
 					}).dblclick(function(e) {
-						
+						note.mode($(this).attr('name'));
+						$('#note_mode_dd').click();
 					}).hover(function(){ $(this).addClass('block-grey'); },function(){ $(this).removeClass('block-grey'); });
 
 					$('button[id^="note_rem_"]').click(function(e) {
@@ -5014,6 +5059,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				});
 
 				note.theme(api.preference.basic().note.theme);
+				var lang = api.preference.basic().note.language;
+				if (!lemon.isBlank(lang)) {
+					note.mode(lang);
+				}
 			}
 
 		    note.instance.focus();
@@ -5234,132 +5283,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			'railscasts','rubyblue','seti','solarized,dark','solarized,light','the-matrix','tomorrow-night-bright','tomorrow-night-eighties',
 			'ttcn','twilight','vibrant-ink','xq-dark','xq-light','yeti','zenburn'
 		],
-		langs: [
-		    { usage:"apl/index.html", load:"apl", mime:"text/apl", lang:"APL" },
-		    { usage:"asn.1/index.html", load:"asn.1", mime:"text/x-ttcn-asn", lang:"ASN.1" },
-		    { usage:"asterisk/index.html", load:"asterisk", mime:"text/x-asterisk", lang:"Asterisk dialplan" },
-		    { usage:"brainfuck/index.html", load:"brainfuck", mime:"text/x-brainfuck", lang:"Brainfuck" },
-		    { usage:"clike/index.html", load:"clike", lang:"C", mime:"text/x-csrc" },
-		    { usage:"clike/index.html", load:"clike", lang:"C++", mime:"text/x-c++src" },
-		    { usage:"clike/index.html", load:"clike", lang:"C#", mime:"text/x-csharp" },
-		    { usage:"clike/index.html", load:"clike", lang:"Ceylon", mime:"text/x-ceylon" },
-	    	{ usage:"clojure/index.html", load:"clojure", mime:"text/x-clojure", lang:"Clojure" },
-	    	{ usage:"css/gss.html", load:"css", mime:"text/x-gss", lang:"Closure Stylesheets (GSS)" },
-	    	{ usage:"cmake/index.html", load:"cmake", mime:"text/x-cmake", lang:"CMake" },
-	    	{ usage:"cobol/index.html", load:"cobol", mime:"", lang:"COBOL" },
-	    	{ usage:"coffeescript/index.html", load:"coffeescript", mime:"text/x-coffeescript", lang:"CoffeeScript" },
-	    	{ usage:"commonlisp/index.html", load:"commonlisp", mime:"text/x-common-lisp", lang:"Common Lisp" },
-	    	{ usage:"css/index.html", load:"css", mime:"text/css", lang:"CSS" },
-	    	{ usage:"cypher/index.html", load:"cypher", mime:"application/x-cypher-query", lang:"Cypher" },
-	    	{ usage:"python/index.html", load:"python", mime:"text/x-cython", lang:"Cython" },
-	    	{ usage:"d/index.html", load:"d", mime:"text/x-d", lang:"D" },
-	    	{ usage:"dart/index.html", load:"dart", mime:"", lang:"Dart" },
-	    	{ usage:"django/index.html", load:"django", mime:"text/x-django", lang:"Django" },
-	    	{ usage:"dockerfile/index.html", load:"dockerfile", mime:"text/x-dockerfile", lang:"Dockerfile" },
-	    	{ usage:"diff/index.html", load:"diff", mime:"text/x-diff", lang:"diff" },
-	    	{ usage:"dtd/index.html", load:"dtd", mime:"application/xml-dtd", lang:"DTD" },
-	    	{ usage:"dylan/index.html", load:"dylan", mime:"text/x-dylan", lang:"Dylan" },
-	    	{ usage:"ebnf/index.html", load:"ebnf", mime:"", lang:"EBNF" },
-	    	{ usage:"ecl/index.html", load:"ecl", mime:"text/x-ecl", lang:"ECL" },
-	    	{ usage:"eiffel/index.html", load:"eiffel", mime:"text/x-eiffel", lang:"Eiffel" },
-	    	{ usage:"elm/index.html", load:"elm", mime:"text/x-elm", lang:"Elm" },
-	    	{ usage:"erlang/index.html", load:"erlang", mime:"text/x-erlang", lang:"Erlang" },
-	    	{ usage:"factor/index.html", load:"factor", mime:"text/x-factor", lang:"Factor" },
-	    	{ usage:"forth/index.html", load:"forth", mime:"text/x-forth", lang:"Forth" },
-	    	{ usage:"fortran/index.html", load:"fortran", mime:"text/x-Fortran", lang:"Fortran" },
-	    	{ usage:"mllike/index.html", lang:"F#", load:"mllike", mime:"text/x-fsharp" },
-	    	{ usage:"gas/index.html", load:"gas", mime:"text/x-gas", lang:"Gas (AT&T-style assembly)" },
-	    	{ usage:"gherkin/index.html", load:"gherkin", mime:"text/x-feature", lang:"Gherkin" },
-	    	{ usage:"go/index.html", load:"go", mime:"text/x-go", lang:"Go" },
-	    	{ usage:"groovy/index.html", load:"groovy", mime:"text/x-groovy", lang:"Groovy" },
-	    	{ usage:"haml/index.html", load:"haml", mime:"text/x-haml", lang:"HAML" },
-	    	{ usage:"handlebars/index.html", load:"handlebars", mime:"text/x-handlebars-template", lang:"Handlebars" },
-	    	{ usage:"haskell/index.html", load:"haskell", mime:"text/x-haskell", lang:"Haskell" },
-	    	{ usage:"haxe/index.html", load:"haxe", mime:"text/x-haxe", lang:"Haxe" },
-	    	{ usage:"haxe/index.html", load:"haxe", mime:"text/x-hxml", lang:"Hxml" },
-	    	{ usage:"htmlembedded/index.html", load:"htmlembedded", mime:"application/x-aspx", lang:"ASP.NET" },
-	    	{ usage:"htmlembedded/index.html", load:"htmlembedded", mime:"application/x-jsp", lang:"JSP" },
-	    	{ usage:"htmlembedded/index.html", load:"htmlembedded", mime:"application/x-ejs", lang:"Embedded Javascript" },
-	    	{ usage:"htmlmixed/index.html", load:"htmlmixed", mime:"text/html", lang:"HTML" },
-	    	{ usage:"http/index.html", load:"http", mime:"message/http", lang:"HTTP" },
-	    	{ usage:"idl/index.html", load:"idl", mime:"text/x-idl", lang:"IDL" },
-	    	{ usage:"clike/index.html", lang:"Java", load:"clike", mime:"text/x-java" },
-	    	{ usage:"clike/index.html", lang:"Shader Programs", load:"clike", mime:"text/x-vertex x-shader/x-fragment" },
-	    	{ usage:"jade/index.html", load:"jade", mime:"text/x-jade", lang:"Jade" },
-	    	{ usage:"javascript/index.html", load:"javascript", mime:"text/javascript application/json application/ld+json text/typescript application/typescript", lang:"JavaScript" },
-	    	{ usage:"javascript/index.html", load:"javascript", mime:"application/ld+json", lang:"JSON" },
-	    	{ usage:"jinja2/index.html", load:"jinja2", mime:"", lang:"Jinja2" },
-	    	{ usage:"julia/index.html", load:"julia", mime:"text/x-julia", lang:"Julia" },
-	    	{ usage:"css/less.html", load:"css", mime:"text/x-less", lang:"LESS" },
-	    	{ usage:"livescript/index.html", load:"livescript", mime:"text/x-livescript", lang:"LiveScript" },
-	    	{ usage:"lua/index.html", load:"lua", mime:"text/x-lua", lang:"Lua" },
-	    	{ usage:"markdown/index.html", load:"markdown", mime:"text/x-markdown", lang:"Markdown (GitHub-flavour)" },
-	    	{ usage:"mathematica/index.html", load:"mathematica", mime:"text/x-mathematica", lang:"Mathematica" },
-	    	{ usage:"mirc/index.html", load:"mirc", mime:"text/mirc", lang:"mIRC" },
-	    	{ usage:"modelica/index.html", load:"modelica", mime:"text/x-modelica", lang:"Modelica" },
-	    	{ usage:"mumps/index.html", load:"mumps", mime:"", lang:"MUMPS" },
-	    	{ usage:"nginx/index.html", load:"nginx", mime:"text/nginx", lang:"Nginx" },
-	    	{ usage:"nsis/index.html", load:"nsis", mime:"text/x-nsis", lang:"NSIS" },
-	    	{ usage:"ntriples/index.html", load:"ntriples", mime:"text/n-triples", lang:"NTriples" },
-	    	{ usage:"clike/index.html", lang:"Objective C", load:"clike", mime:"text/x-objectivec" },
-	    	{ usage:"mllike/index.html", lang:"OCaml", load:"mllike", mime:"text/x-ocaml" }, 
-	    	{ usage:"octave/index.html", load:"octave", mime:"text/x-octave", lang:"Octave" }, 
-	    	{ usage:"oz/index.html", load:"oz", mime:"text/x-oz", lang:"Oz" }, 
-	    	{ usage:"pascal/index.html", load:"pascal", mime:"text/x-pascal", lang:"Pascal" }, 
-	    	{ usage:"pegjs/index.html", load:"pegjs", mime:"", lang:"PEG.js" }, 
-	    	{ usage:"perl/index.html", load:"perl", mime:"text/x-perl", lang:"Perl" }, 
-	    	{ usage:"asciiarmor/index.html", load:"asciiarmor", mime:"application/pgp application/pgp-keys application/pgp-signature", lang:"PGP (ASCII armor)" }, 
-	    	{ usage:"php/index.html", load:"php", mime:"application/x-httpd-php text/x-php", lang:"PHP" }, 
-	    	{ usage:"pig/index.html", load:"pig", mime:"text/x-pig", lang:"Pig Latin" }, 
-	    	{ usage:"properties/index.html", load:"properties", mime:"text/x-properties text/x-ini", lang:"Properties files" }, 
-	    	{ usage:"puppet/index.html", load:"puppet", mime:"text/x-puppet", lang:"Puppet" }, 
-	    	{ usage:"python/index.html", load:"python", mime:"text/x-python", lang:"Python" }, 
-	    	{ usage:"q/index.html", load:"q", mime:"text/x-q", lang:"Q" }, 
-	    	{ usage:"r/index.html", load:"r", mime:"text/x-rsrc", lang:"R" }, 
-	    	{ usage:"rpm/index.html", load:"rpm,", mime:"text/x-rpm-spec text/x-rpm-changes", lang:"RPM" }, 
-	    	{ usage:"rst/index.html", load:"rst", mime:"text/x-rst", lang:"reStructuredText" }, 
-	    	{ usage:"ruby/index.html", load:"ruby", mime:"text/x-ruby", lang:"Ruby" }, 
-	    	{ usage:"rust/index.html", load:"rust", mime:"text/x-rustsrc", lang:"Rust" }, 
-	    	{ usage:"sass/index.html", load:"sass", mime:"text/x-sass", lang:"Sass" }, 
-	    	{ usage:"spreadsheet/index.html", load:"spreadsheet", mime:"text/x-spreadsheet", lang:"Spreadsheet" }, 
-	    	{ usage:"clike/scala.html", lang:"Scala", load:"clike", mime:"text/x-scala" }, 
-	    	{ usage:"scheme/index.html", load:"scheme", mime:"text/x-scheme", lang:"Scheme" }, 
-	    	{ usage:"css/scss.html", load:"css", mime:"text/x-scss", lang:"SCSS" }, 
-	    	{ usage:"shell/index.html", load:"shell", mime:"text/x-sh", lang:"Shell" }, 
-	    	{ usage:"sieve/index.html", load:"sieve", mime:"application/sieve", lang:"Sieve" }, 
-	    	{ usage:"slim/index.html", load:"slim", mime:"application/x-slim", lang:"Slim" }, 
-	    	{ usage:"smalltalk/index.html", load:"smalltalk", mime:"text/x-stsrc", lang:"Smalltalk" }, 
-	    	{ usage:"smarty/index.html", load:"smarty", mime:"text/x-smarty", lang:"Smarty" }, 
-	    	{ usage:"solr/index.html", load:"solr", mime:"text/x-solr", lang:"Solr" }, 
-	    	{ usage:"soy/index.html", load:"soy", mime:"text/x-soy", lang:"Soy" }, 
-	    	{ usage:"stylus/index.html", load:"stylus", mime:"text/x-styl", lang:"Stylus" }, 
-	    	{ usage:"sql/index.html", load:"sql", mime:"text/x-sql text/x-mysql text/x-mariadb text/x-cassandra text/x-plsql text/x-mssql text/x-hive", lang:"SQL" }, 
-	    	{ usage:"sparql/index.html", load:"sparql", mime:"application/sparql-query", lang:"SPARQL" }, 
-	    	{ usage:"clike/index.html", lang:"Squirrel", load:"clike", mime:"text/x-squirrel" }, 
-	    	{ usage:"swift/index.html", load:"swift", mime:"text/x-swift", lang:"Swift" }, 
-	    	{ usage:"stex/index.html", load:"stex", mime:"text/x-stex", lang:"sTeX, LaTeX" }, 
-	    	{ usage:"tcl/index.html", load:"tcl", mime:"text/x-tcl", lang:"Tcl" }, 
-	    	{ usage:"textile/index.html", load:"textile", mime:"text/x-textile", lang:"Textile" }, 
-	    	{ usage:"tiddlywiki/index.html", load:"tiddlywiki", mime:"text/x-tiddlywiki", lang:"Tiddlywiki" }, 
-	    	{ usage:"tiki/index.html", load:"tiki", mime:"", lang:"Tiki wiki" },
-	    	{ usage:"toml/index.html", load:"toml", mime:"text/x-toml", lang:"TOML" },
-	    	{ usage:"tornado/index.html", load:"tornado", mime:"text/x-tornado", lang:"Tornado" },
-	    	{ usage:"troff/index.html", load:"troff", mime:"troff", lang:"troff" },
-	    	{ usage:"ttcn/index.html", load:"ttcn", mime:"text/x-ttcn text/x-ttcn3 text/x-ttcnpp", lang:"TTCN" },
-	    	{ usage:"ttcn-cfg/index.html", load:"ttcn-cfg", mime:"text/x-ttcn-cfg", lang:"TTCN Configuration" },
-	    	{ usage:"turtle/index.html", load:"turtle", mime:"text/turtle", lang:"Turtle" },
-	    	{ usage:"twig/index.html", load:"twig", mime:"", lang:"Twig" },
-	    	{ usage:"vb/index.html", load:"vb", mime:"text/x-vb", lang:"VB.NET" },
-	    	{ usage:"vbscript/index.html", load:"vbscript", mime:"text/vbscript", lang:"VBScript" },
-	    	{ usage:"velocity/index.html", load:"velocity", mime:"text/velocity", lang:"Velocity" },
-	    	{ usage:"verilog/index.html", load:"verilog", mime:"text/x-verilog text/x-systemverilog", lang:"Verilog/SystemVerilog" },
-	    	{ usage:"vhdl/index.html", load:"vhdl", mime:"text/x-vhdl", lang:"VHDL" },
-	    	{ usage:"vue/index.html", load:"vue", mime:"text/x-vue", lang:"Vue.js app" },
-	    	{ usage:"xml/index.html", load:"xml", mime:"application/xml text/html", lang:"XML/HTML" },
-	    	{ usage:"xquery/index.html", load:"xquery", mime:"application/xquery", lang:"XQuery" },
-	    	{ usage:"yaml/index.html", load:"yaml", mime:"text/x-yaml", lang:"YAML" },
-	    	{ usage:"z80/index.html", load:"z80", mime:"text/x-z80 text/x-ez80", lang:"Z80" }
-		]
+		langs: {}
 	};
 
 	var config = {
@@ -5380,7 +5304,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		//data server
 		dcs: 'http://192.168.2.151:8080/docs/api/',
 		note: {
-			theme: 'default'
+			theme: 'default',
+			language: ''
 		}
 	};
 
