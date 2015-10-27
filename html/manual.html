@@ -853,29 +853,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 <nav class="navbar navbar-default" style="margin-bottom:0px;border:0px;background-color:#ffffff">
   <div class="container-fluid">
       <ul class="nav navbar-nav">
-
 		<li class="dropdown">
           <a href="javascript:void(0);" id="note_list_dd" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Notes</a>
           <ul class="dropdown-menu fixed-dropdown" style="max-width: 400px;" id="note_list">
-			<%
-			lemon.each(note.listNote(), function(n, idx) {
-			%>
+			<% lemon.each(note.listNote(), function(n, idx) { var cnid = note.instance.noteId || -1; %>
 				<li nid="<%= n.id %>" id="note_<%= n.id %>"><blockquote style="width:380px;" title="" class="">
-					<h4 class="text-info"><%= n.title %></h4>
-					<h6 class="text-muted">Created <%= '  ' + n.create %></h6>
-					<h6 class="text-muted">Modified <%= ' ' + n.lastmodify %></h6>
-					<h6 class="text-muted">
-						<span class="badge"><%= n.id %></span>
-						<div class="btn-group pull-right" role="group" aria-label="...">
-  							<button type="button" title="Delete Note <%= n.title %>" id="note_rem_<%= n.id %>" nt="<%= n.title %>" nid="<%= n.id %>" style="border:0px;" class="btn btn-default">
-								<span class="text-danger glyphicon glyphicon-remove-circle"></span>
-							</button>
-						</div>
-					</h6>
+					<h4 class="text-info"><%= n.title %><% if (cnid == n.id) { %><span class="pull-right text-danger glyphicon glyphicon-check"></span><% } %></h4>
+					<h6 class="text-muted">Created <%= '  ' + n.create %></h6> <h6 class="text-muted">Modified <%= ' ' + n.lastmodify %></h6>
+					<h6 class="text-muted"> <span class="badge"><%= n.id %></span> <div class="btn-group pull-right" role="group" aria-label="..."> <button type="button" title="Delete Note <%= n.title %>" id="note_rem_<%= n.id %>" nt="<%= n.title %>" nid="<%= n.id %>" style="border:0px;" class="btn btn-default"> <span class="text-danger glyphicon glyphicon-remove-circle"></span> </button> </div> </h6>
 				</blockquote></li>
-			<%
-			});
-			%>
+			<% }); %>
           </ul>
         </li>
 
@@ -897,25 +884,21 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 		<li class="dropdown">
           <a href="javascript:void(0);" id="note_mode_dd" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Language</a>
-          <ul class="dropdown-menu fixed-dropdown" style="max-width: 430px;" id="note_mode">
+          <ul class="dropdown-menu fixed-dropdown" style="max-width: 400px;" id="note_mode">
 			<%
 			lemon.each(notesource.langs, function(lang, langname) {
 			%>
 				<li name="<%= langname %>">
-				<blockquote style="width:410px;" title="" class="">
-					<h4 class="text-info"><%= langname %></h4>
+				<blockquote style="width:380px;" title="" class="">
+					<h4 class="text-success"><%= langname %><% if (langname == api.preference.basic().note.language) { %><span class="pull-right text-danger glyphicon glyphicon-check"></span><% } %></h4>
 					<div class="row">
-					<div class="col-md-6">
-					<h6><span class="label label-info"> Defined MIME types </span></h6>
-					<% if (lang.mimes && lang.mimes.length > 0) { lemon.each(lang.mimes, function(mime, i2) { %>
-					<h6 class="text-muted"><%= mime %></h6>
-					<% }); } else { %> <h6 class="text-muted"><%= lang.mime %></h6> <% } %>
-					</div>
-					<div class="col-md-6">
-					
+					<div class="col-md-8">
+					<h5><p class="text-muted"> Defined MIME types </p></h5>
+					<% if (lang.mimes && lang.mimes.length > 0) { lemon.each(lang.mimes, function(mime, i2) { %> <h5 class="text-muted"><a href="javascript:void(0);" clk="1" val="<%= mime %>"><%= mime %></a></h5> <% }); } else { %> <h5 class="text-muted"><a href="javascript:void(0);" clk="1" val="<%= lang.mime %>"><%= lang.mime %></a></h5> <% } %>
+					</div> <div class="col-md-4">
+					<% if (lang.ext && lang.ext.length > 0) {  %> <h5><p class="text-muted"> Extensions </p></h5> <% lemon.each(lang.ext, function(ext, idx) { %> <h5 class="text-muted"><a href="javascript:void(0);" clk="1" val="<%= ext %>"><%= ext %></a></h5> <% }); }%>
 					</div>
 					</div>
-					
 				</blockquote>
 				</li>
 			<%
@@ -928,8 +911,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		<li class="dropdown">
           <a href="javascript:void(0);" id="note_theme_dd" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Theme</a>
           <ul class="dropdown-menu fixed-dropdown" id="note_theme"> <% lemon.each(notesource.themes, function(th, idx) { %>
-		  <li> <a href="javascript:void(0);" onclick="note.theme('<%= th %>');"> <%= th %><% if (th == api.preference.basic().note.theme) { %><span class="pull-right text-info glyphicon glyphicon-check"></span><% } %> </a> </li>
-		  <% }); %>
+		  <li th="<%= th %>"> <blockquote style="" title="" class=""> <h5 class="text-success"><%= th %><% if (th == api.preference.basic().note.theme) { %> <span class="pull-right text-danger glyphicon glyphicon-check"></span><% } %></h5> </blockquote> </li> <% }); %>
 		  <li><%= lemon.repeat('&nbsp;', 60) %></li>
           </ul>
         </li>
@@ -4787,7 +4769,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			note.menuTgl(2);
 			$('#note_list_dd').click();
 		},
-		theme: function(th) {
+		theme: function(th, preview) {
 			var css = th;
 			if (lemon.startWith(th, 'solarized')) {
 				css = 'solarized';
@@ -4800,8 +4782,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}
 			 
 			note.instance.setOption('theme', th);
-			note.storecfg('theme', th);
-			note.menuRefresh();
+			if (!preview) {
+				note.storecfg('theme', th);
+			}
 		},
 		storecfg: function(key, val) {
 			var bas = api.preference.basic();
@@ -5017,21 +5000,37 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					el.find('.arrow').remove();
 					el.slideDown();
 
-					$('#note_list li').click(function(e) {
+					note.hover($('#note_list li').click(function(e) {
 						e.stopPropagation();
 					}).dblclick(function(e) {
 						var nid = parseInt($(this).attr('nid'));
 						note.loadNote(nid);
-						$('#note_list_dd').click();
-					}).hover(function(){ $(this).addClass('block-grey'); },function(){ $(this).removeClass('block-grey'); });
+						note.menuRefresh();
+					}));
 
-					$('#note_mode li').click(function(e) {
+					note.hover($('#note_theme li').click(function(e) {
+						e.stopPropagation();
+						var th = $(this).attr('th');
+						note.theme(th, true);
+					}).dblclick(function(e) {
+						var th = $(this).attr('th');
+						note.theme(th);
+						note.menuRefresh();
+					}));
+
+					$('#note_mode a[clk="1"]').click(function(e) {
+						e.stopPropagation();
+						note.mode($(this).attr('val'));
+						note.menuRefresh();
+					});
+					
+					note.hover($('#note_mode li').click(function(e) {
 						e.stopPropagation();
 						note.mode($(this).attr('name'), true);
 					}).dblclick(function(e) {
 						note.mode($(this).attr('name'));
-						$('#note_mode_dd').click();
-					}).hover(function(){ $(this).addClass('block-grey'); },function(){ $(this).removeClass('block-grey'); });
+						note.menuRefresh();
+					}));
 
 					$('button[id^="note_rem_"]').click(function(e) {
 						var toBeContinue = confirm('Are you sure?\nRemove Note "' + $(this).attr('nt') + '"');
@@ -5095,6 +5094,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}
 
 			note.menuRefresh();
+		},
+		hover: function(el) {
+			el.hover(function(){ 
+				$(this).addClass('block-grey'); 
+			},function(){ 
+				$(this).removeClass('block-grey'); 
+			});
 		},
 		isMenuOpen: function() {
 			return 'open' == $('#note_tool').attr('state');
