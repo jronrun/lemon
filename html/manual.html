@@ -856,8 +856,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		<li class="dropdown">
           <a href="javascript:void(0);" id="note_list_dd" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Notes</a>
           <ul class="dropdown-menu fixed-dropdown" style="max-width: 400px;" id="note_list">
+			<div class="form-group form-group-lg" style="margin-left:15px;margin-bottom:15px;margin-top:15px;"> <div class="col-sm-12">
+      		<input class="form-control" type="text" id="note_list_qry" style="width:300px;" placeholder="Search Note..."> </div> </div>
 			<% lemon.each(note.listNote(), function(n, idx) { var cnid = note.instance.noteId || -1; %>
-				<li nid="<%= n.id %>" id="note_<%= n.id %>"><blockquote style="width:380px;" title="" class="">
+				<li nid="<%= n.id %>" id="note_<%= n.id %>" note="1"><blockquote style="width:380px;" title="" class="">
 					<h4 class="text-info"><%= n.title %><% if (cnid == n.id) { %><span class="pull-right text-danger glyphicon glyphicon-check"></span><% } %></h4>
 					<h6 class="text-muted">Created <%= '  ' + n.create %></h6> <h6 class="text-muted">Modified <%= ' ' + n.lastmodify %></h6>
 					<h6 class="text-muted"> <span class="badge"><%= n.id %></span> <div class="btn-group pull-right" role="group" aria-label="..."> <button type="button" title="Delete Note <%= n.title %>" id="note_rem_<%= n.id %>" nt="<%= n.title %>" nid="<%= n.id %>" style="border:0px;" class="btn btn-default"> <span class="text-danger glyphicon glyphicon-remove-circle"></span> </button> </div> </h6>
@@ -885,16 +887,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		<li class="dropdown">
           <a href="javascript:void(0);" id="note_mode_dd" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Language</a>
           <ul class="dropdown-menu fixed-dropdown" style="max-width: 400px;" id="note_mode">
-			<%
-			lemon.each(notesource.langs, function(lang, langname) {
-			%>
-				<li name="<%= langname %>">
+			<div class="form-group form-group-lg" style="margin-left:15px;margin-bottom:15px;margin-top:15px;"> <div class="col-sm-12">
+      		<input class="form-control" type="text" id="note_mode_qry" style="width:300px;" placeholder="Search Language..."> </div> </div>
+			<% lemon.each(notesource.langs, function(lang, langname) { %>
+				<li name="<%= langname %>" id="lang_<%= lang.id %>" lang="1">
 				<blockquote style="width:380px;" title="" class="">
 					<h4 class="text-success"><%= langname %><% if (langname == api.preference.basic().note.language) { %><span class="pull-right text-danger glyphicon glyphicon-check"></span><% } %></h4>
 					<div class="row">
 					<div class="col-md-8">
-					<h5><p class="text-muted"> Defined MIME types </p></h5>
-					<% if (lang.mimes && lang.mimes.length > 0) { lemon.each(lang.mimes, function(mime, i2) { %> <h5 class="text-muted"><a href="javascript:void(0);" clk="1" val="<%= mime %>"><%= mime %></a></h5> <% }); } else { %> <h5 class="text-muted"><a href="javascript:void(0);" clk="1" val="<%= lang.mime %>"><%= lang.mime %></a></h5> <% } %>
+					<% if ('null' != lang.mime || (lang.mimes && lang.mimes.length > 0)) { %> <h5><p class="text-muted"> Defined MIME types </p></h5> <% } %>
+					<% if (lang.mimes && lang.mimes.length > 0) { lemon.each(lang.mimes, function(mime, i2) { %> <h5 class="text-muted"><a href="javascript:void(0);" clk="1" val="<%= mime %>"><%= mime %></a></h5> <% }); } else if ('null' != lang.mime) { %> <h5 class="text-muted"><a href="javascript:void(0);" clk="1" val="<%= lang.mime %>"><%= lang.mime %></a></h5> <% } %>
 					</div> <div class="col-md-4">
 					<% if (lang.ext && lang.ext.length > 0) {  %> <h5><p class="text-muted"> Extensions </p></h5> <% lemon.each(lang.ext, function(ext, idx) { %> <h5 class="text-muted"><a href="javascript:void(0);" clk="1" val="<%= ext %>"><%= ext %></a></h5> <% }); }%>
 					</div>
@@ -4947,9 +4949,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				});
 
 				//["name", "mime", "mode"], Optional property: ["ext", "mimes", "file", "alias"]
+				var langs = [];
 				lemon.each(CodeMirror.modeInfo || [], function(lang, idx) {
+					lang.id = lemon.uniqueId();
 					notesource.langs[lang.name] = lang;
+					langs.push(lang);
 				});
+				CodeMirror.modeInfo = langs;
 
 				note.loadNote();
 
@@ -5022,6 +5028,73 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						e.stopPropagation();
 						note.mode($(this).attr('val'));
 						note.menuRefresh();
+					});
+
+					$('#note_list_qry').keyup(function(e) {
+						var val = $(this).val();
+						if (lemon.isBlank(val)) {
+							$('#note_list li[note="1"]').show();
+							return;
+						}
+
+						var ids = [], regEx = new RegExp(val), ismatch = false;
+						lemon.each(note.pool(), function(n, k) {
+							ismatch = false;
+							if (ismatch = regEx.test(n.id)) { }
+							else if (ismatch = regEx.test(n.title)) { } 
+							else if (ismatch = regEx.test(n.lastmodify)) { } 
+							else if (ismatch = regEx.test(n.create)) { } 
+							else if (ismatch = regEx.test(n.content)) { }
+
+							if (ismatch) {
+								ids.push('#note_' + n.id);
+							}
+						});
+
+						$('#note_list li[note="1"]').hide();
+						$(ids.join(',')).show();
+					});
+
+					$('#note_mode_qry').keyup(function(e) {
+						var val = $(this).val();
+						if (lemon.isBlank(val)) {
+							$('#note_mode li[lang="1"]').show();
+							return;
+						}
+						
+						var ids = [], regEx = new RegExp(val), ismatch = false;
+						lemon.each(notesource.langs, function(lang, idx) {
+							ismatch = false;
+							if (ismatch = regEx.test(lang.name)) {
+							} else if (ismatch = regEx.test(lang.mode)) {
+							} else if (!ismatch) {
+								lemon.each(lang.mimes || [], function(mime, idx) {
+									if (ismatch) { return false; }
+									if (ismatch = regEx.test(mime)) { }
+								});
+							}
+
+							if (!ismatch) {
+								lemon.each(lang.ext || [], function(ext, idx) {
+									if (ismatch) { return false; }
+									if (ismatch = regEx.test(ext)) { }
+								});
+							}
+
+							if (!ismatch) {
+								lemon.each(lang.alias || [], function(alias, idx) {
+									if (ismatch) { return false; }
+									if (ismatch = regEx.test(alias)) { }
+								});
+							}
+
+							if (ismatch) {
+								ids.push('#lang_' + lang.id);
+							}
+						});
+
+						$('#note_mode li[lang="1"]').hide();
+						$(ids.join(',')).show();
 					});
 					
 					note.hover($('#note_mode li').click(function(e) {
