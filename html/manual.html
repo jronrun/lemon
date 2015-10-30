@@ -53,14 +53,13 @@
 					</li>
 				</ul>
 				<ul class="nav navbar-nav">
-					<li class="dropdown"><a href="#" class="dropdown-toggle"
-						data-toggle="dropdown" role="button" aria-expanded="false">Which
-							API <span class="caret"></span>
-					</a>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Which API <span class="caret"></span> </a>
 						<ul class="dropdown-menu fixed-dropdown" role="menu" id="which_api">
 							<li><a href="#">api1</a></li>
 							<li><a href="#">api2</a></li>
-						</ul></li>
+						</ul>
+					</li>
 				</ul>
 				<form class="navbar-form navbar-left" role="search">
 					<div class="form-group">
@@ -101,11 +100,27 @@
 					</div>
 					
 					<button type="submit" class="btn btn-default" style="border:0px;" id="btn_history"><span class="text-muted">History</span></button>
-					<button type="submit" class="btn btn-default" style="border:0px;" id="btn_note"><span class="text-muted">Note</span></button>
+					<div class="btn-group">
+					  <button type="submit" class="btn btn-default" style="border:0px;" id="btn_note"><span class="text-muted">Note</span></button>
+					  <button type="button" class="btn btn-default dropdown-toggle" style="border:0px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					    <span class="caret text-muted"></span>
+					    <span class="sr-only">Toggle Dropdown</span>
+					  </button>
+					  <ul class="dropdown-menu">
+					    <li role="separator" class="divider"></li>
+					    <li><a href="javascript:void(0);" id="btn_note_diff"><span class="text-muted">Diff & Merge</span></a></li>
+					    <li role="separator" class="divider"></li>
+					  </ul>
+					</div>
+					
 					<div id="input_note_wrap" style="display:none;">
 						<textarea type="text" class="hidden" id="input_note"></textarea>
 						<div id="note_tool" style="display:none;" state="close"></div>
 						<input type="file" id="note_open_file" class="hidden"/>
+						<input type="file" id="diff_left_file" class="hidden"/>
+						<input type="file" id="diff_editor_file" class="hidden"/>
+						<input type="file" id="diff_right_file" class="hidden"/>
+						<a class="hidden" id="note_merge"></a>
 					</div>
 				</form>
 				<ul class="nav navbar-nav navbar-right">
@@ -194,7 +209,7 @@
 	.script(lemon.getUrl('/bootstrap/3.3.5/js/bootstrap.min.js'))
 	.wait(function() { api.initialize(); });
 
-	var cmprfix = 'codemirror/5.7.0/';
+	var cmprfix = 'codemirror/5.8.0/';
 	var queue = $LAB
 		.queueScript(lemon.getUrl(cmprfix + 'codemirror.min.js'))
 		.queueWait()
@@ -941,10 +956,48 @@ lemon.each(api.preference.service(), function(envGroup, k) {
           </ul>
         </li>
 
+		<li>
+		<a href="javascript:void(0);" id="note_compare" role="button" aria-haspopup="true" aria-expanded="false">Compare</a>
+		</li>
+
       </ul>
       <ul class="nav navbar-nav navbar-right">
 		<li><a href="javascript:void(0);" class="close" title="Close Menu" aria-label="Close" onclick="note.menuTgl();"><span aria-hidden="true">-</span></a></li>
 		<li><a href="javascript:void(0);" class="close" title="Save & Close" aria-label="Close" onclick="note.saveclose();"><span aria-hidden="true">×</span></a></li>
+      </ul>
+  </div>
+</nav>
+</script>
+
+<script type="text/html" id="note_merge_menu_tmpl">
+<nav class="navbar navbar-default navbar-fixed-top" id="nav_merge" style="margin-bottom:0px;border:0px;background-color:#ffffff">
+  <div class="container-fluid">
+      <ul class="nav navbar-nav">
+
+		<li class="dropdown">
+          <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
+          <ul class="dropdown-menu" id="note_edit">
+            <li> <a href="javascript:void(0);" onclick="note.diff.loadLeft();" role="button" aria-haspopup="true" aria-expanded="false">Open File for Left...</a> </li>
+			<li> <a href="javascript:void(0);" onclick="note.diff.loadRight();" role="button" aria-haspopup="true" aria-expanded="false">Open File for Right...</a> </li>
+			<li role="separator" class="divider"></li>
+			<li> <a href="javascript:void(0);" onclick="note.diff.saveNote();" role="button" aria-haspopup="true" aria-expanded="false">Save Note</a> </li>
+			<li> <a href="javascript:void(0);" onclick="note.diff.saveasNewNote();" role="button" aria-haspopup="true" aria-expanded="false">Save As New Note</a> </li>
+			<li> <a href="javascript:void(0);" onclick="note.diff.saveas();" role="button" aria-haspopup="true" aria-expanded="false">Save As...</a> </li>
+			<li><%= lemon.repeat('&nbsp;', 60) %></li>
+          </ul>
+        </li>
+
+		<li><li> <a href="javascript:void(0);" title="Open File for Left..." onclick="note.diff.loadLeft();" role="button" aria-haspopup="true" aria-expanded="false">Left <span class="text-success glyphicon glyphicon-option-horizontal"></span></a></li>
+		<li><li> <a href="javascript:void(0);" title="Open File for Right..." onclick="note.diff.loadRight();" role="button" aria-haspopup="true" aria-expanded="false">Right <span class="text-success glyphicon glyphicon-option-horizontal"></span></a></li>
+		<li><li> <a href="javascript:void(0);" title="Next Different Section" onclick="note.diff.next();" role="button" aria-haspopup="true" aria-expanded="false">Next <span class="text-success glyphicon glyphicon-circle-arrow-down"></span></a></li>
+		<li><li> <a href="javascript:void(0);" title="Previous Different Section" onclick="note.diff.prev();" role="button" aria-haspopup="true" aria-expanded="false">Prev <span class="text-success glyphicon glyphicon-circle-arrow-up"></span></a></li>
+
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+		<li><button type="button" class="btn btn-info btn-xs" style="margin-top:15px;" title="Toggle Three Panes" onclick="note.diff.threeway();" id="btn_threeway"><span class="glyphicon glyphicon-unchecked"></span> Panes</button></li>
+		<li style="margin-left:15px;"><button type="button" class="btn btn-info btn-xs" style="margin-top:15px;" title="Toggle Collapse Unchanged Stretches of Text" onclick="note.diff.collapse();" id="btn_collapse"><span class="glyphicon glyphicon-unchecked"></span> Collapse</button></li>
+		<li id="li_to_note" style="display:none;"> <a href="javascript:void(0);" title="Note" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-th-list"></span></a> </li>
+		<li><a href="javascript:void(0);" class="close" title="Close" aria-label="Close" onclick="note.diff.close();"><span aria-hidden="true">×</span></a></li>
       </ul>
   </div>
 </nav>
@@ -1657,6 +1710,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						$('#btn_history').click();
 					}
 					note.open();
+				});
+
+				$('#btn_note_diff').click(function() {
+					$('#btn_note').click();
+					note.open(1);
 				});
 
 				api.popoverOnBtn("#btn_history", function() {
@@ -2909,7 +2967,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
            		'<div class="popover-content"></div>',
            		'</div>'
             ].join('');
-            
+
+            var headId = 'prevent_twice' + lemon.uniqueId();
             options = options || {title: null};
 			var thePopover = $(selector).popover(lemon.extend({
                 title: '',
@@ -2920,10 +2979,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
                 html: true
             }, options || {}, {
             	//Prevent popover content function is executed twice
-                title: options.title || '<div id="prevent_twice">&nbsp;</div>'
+                title: options.title || ('<div id="' + headId + '">&nbsp;</div>')
             })).on('shown.bs.popover', function() {
             	if (lemon.isBlank(options.title)) {
-                	$('#prevent_twice').parent().hide();
+                	$('#' + headId).parent().hide();
                 }
             });
             
@@ -3284,7 +3343,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		},
 		tip: function(text, options) {
 			options = lemon.extend({
-				//1 main page, 2 settings page
+				//1 main page, 2 settings page, 3 merge page
 				where: 1,
 				level: 'warning',
 				delay: 3000,
@@ -3307,6 +3366,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				break;
 			case 2:
 				$('#message_settings').append(msg);
+				break;
+			case 3:
+				$('#nav_merge').append(msg);
 				break;
 			}
 			
@@ -4120,6 +4182,28 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		},
 		file: {
 			cur: {},
+			read: function(selector, callback) {
+				$(selector).change(function(event) {
+					api.file.handle(this, event, {
+						onLoadStart: function(e, target) {
+							api.loading.start();
+							api.loading.progress(20);
+						},
+						onLoadEnd: function(e, target) {
+							api.loading.progress(50);
+							lemon.sleep(500);
+							api.loading.progress(85);
+							lemon.delay(function() {
+								api.loading.progress(98);
+								lemon.sleep(500);
+								lemon.isFunc(callback) && callback(target.reader.result, target);
+								api.loading.end();
+								$(selector).val('');
+							}, 800);
+						}
+					});
+				});
+			},
 			handle: function(fileInput, event, options) {
 				api.file.cur = api.file.newinst();
 				
@@ -4478,7 +4562,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			start: function(selector) {
 				selector = selector || 'body';
 				var html = [
-					'<nav class="navbar-fixed-bottom" id="loading">',
+					'<nav class="navbar-fixed-bottom" id="loading" style="z-index:100000">',
 					'<div class="container">', 
 					'<div class="progress">',
 					'<div class="progress-bar progress-bar-striped active" id="loading_bar" role="progressbar" ',
@@ -4670,6 +4754,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 	var note = note || {
 		instance: null,
+		merge: null,
+		current: {
+			mode: null,
+			theme: null
+		},
 		root: null,
 		defineEx: [
 		   	{ name: 'wq', shortn: 'wq', handle: function(cm, params) {
@@ -4803,8 +4892,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				delete ns[noteId];
 				lemon.store('note.pool', ns);
 				if (ns.lastId == noteId) {
-					note.newNote();
+					note.instance.noteId = null;
 				}
+				var msg = 'Note ' + n.id + ' ' + n.title + ' is delete.';
+				lemon.info(n.content, msg);
+				note.tip(msg);
 			}
 			return n;
 		},
@@ -4841,7 +4933,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				lemon.css(lemon.format(lemon.getUrl(cmprfix + 'theme/{0}.min.css'), css));
 				note.themeload.push(css);
 			}
-			 
+
+			note.current.theme = th;
 			note.instance.setOption('theme', th);
 			if (!preview) {
 				note.storecfg('theme', th);
@@ -4910,6 +5003,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		    if (!isLangJson) {
 			    CodeMirror.autoLoadMode(note.instance, mode);
 			}
+			note.current.mode = info;
 		    note.tip('Current mode: ' + info.name + ' ' + spec);
 		    if (!preview) {
 			    note.storecfg('language', info.name);
@@ -4931,9 +5025,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				return lemon.when.time(b.lastmodify) - lemon.when.time(a.lastmodify);
 			});
 		},
-		newNote: function(params) {
+		newNote: function(content) {
 			/* note.pool(api.autoId(), '', ''); note.loadNote(); */
-			note.instance.setValue('');
+			note.instance.setValue(content || '');
 		    note.instance.noteId = null;
 		},
 		loadNote: function(noteId) {
@@ -4942,7 +5036,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			    note.instance.setValue(lastn.content);
 			    note.instance.noteId = lastn.id;
 			} else {
-				lemon.info('the note ' + noteId + ' is not exists.');
+				if (noteId) {
+					lemon.info('the note ' + noteId + ' is not exists.');
+				}
 			}
 		},
 		pool: function(noteId, content, title) {
@@ -4976,7 +5072,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			lemon.store(key, ns);
 			return n;
 		},
-		open: function() {
+		open: function(toMerge) {
 			note.root = $('#input_note_wrap');
 			note.root.show();
 			
@@ -5025,26 +5121,42 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 				note.loadNote();
 
-				$('#note_open_file').change(function(event) {
-					api.file.handle(this, event, {
-						onLoadStart: function(e, target) {
-							api.loading.start();
-							api.loading.progress(20);
-						},
-						onLoadEnd: function(e, target) {
-							api.loading.progress(50);
-							lemon.sleep(500);
-							api.loading.progress(85);
-							lemon.delay(function() {
-								api.loading.progress(98);
-								lemon.sleep(500);
-								note.newNote();
-								note.instance.setValue(target.reader.result);
-								api.loading.end();
-								$('#note_open_file').val('');
-							}, 800);
-						}
-					});
+				api.popover('#note_merge', function() {
+					return '<div id="note_merge_view"></div>';
+				}, {
+					title: lemon.tmpl($('#note_merge_menu_tmpl').html(), {})
+				}).on('hidden.bs.popover', function() { 
+					
+				}).on('show.bs.popover', function() { 
+					
+				}).on('inserted.bs.popover', function() {
+					var el = $(this).data("bs.popover").tip(); el.hide();
+				}).on('shown.bs.popover', function() {
+					var el = $(this).data("bs.popover").tip();
+					var w = $(root).width();
+					el.css({ width: w, 'max-width': w, border: 0, top: -10, left: 0, right: 0, bottom: 0, position: 'fixed' });
+					el.find('.popover-content').css({ 'padding': 0 });
+					el.find('.arrow').remove();
+					el.show();
+
+					note.diff.intl();
+				});
+
+				api.file.read('#note_open_file', function(result) {
+					note.newNote();
+					note.instance.setValue(result);
+				});
+
+				api.file.read('#diff_left_file', function(result) {
+					note.diff.load('l', result);
+				});
+
+				api.file.read('#diff_right_file', function(result) {
+					note.diff.load('r', result);
+				});
+
+				api.file.read('#diff_editor_file', function(result) {
+					note.diff.load('e', result);
 				});
 
 				api.popover('#note_tool', function() {
@@ -5194,11 +5306,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						}
 						e.stopPropagation();
 					});
+
+					$('#note_compare').click(function() {
+						note.diff.from = 0;
+						$('#note_merge').click();
+					});
 				});
 
 				lemon.mousepos('#input_note_wrap .CodeMirror')
 				.listen({
-					direct:'rightTop',
+					direct:'leftTop',
 					movein: note.close
 				}).listen({
 					direct:'top',
@@ -5217,7 +5334,219 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}
 			}
 
+			if (toMerge) {
+				note.diff.from = 1;
+				$('#note_merge').click();
+			}
+
 		    note.instance.focus();
+		},
+		diff: {
+			current: null,
+			//0 note tool, 1 home page
+			from: 0,
+			intl: function() {
+				if (note.diff.from) {
+					$('#li_to_note').click(function() {
+						note.diff.close(1);
+					}).show();
+				}
+				var ndv = null;
+				if (lemon.isNull(note.diff.current)) {
+					ndv = note.diff.view({
+						orig2: note.diff.from ? '' : note.instance.getValue(),
+						mode: note.current.mode.mode
+					});
+				} else {
+					ndv = note.diff.view(note.diff.current);
+				}
+
+				note.diff.current = {
+					panes: ndv.panes,
+					collapseIdentical: ndv.options.collapseIdentical,
+					allowEditingOriginals: ndv.options.allowEditingOriginals,
+					mode: ndv.options.mode
+				};
+				note.merge = ndv;
+			},
+			view: function(options) {
+				options = lemon.extend({
+					elId: '#note_merge_view',
+					mergedval: '',
+					panes: 2,
+					orig1: '',
+					orig2: '',
+					connect: null,
+					mode: '',
+					lineNumbers: true,
+					highlightDifferences: true,
+					collapseIdentical: false,
+					allowEditingOriginals: false,
+					height: ($(root).height() - 55),
+					top: 30
+				}, options || {});
+				
+				var target = lemon.query(options.elId); 
+				var mv = CodeMirror.MergeView(target, {
+				    value: options.mergedval,
+				    origLeft: options.panes == 3 ? options.orig1 : null,
+				    orig: options.orig2,
+				    lineNumbers: options.lineNumbers,
+				    mode: options.mode,
+				    highlightDifferences: options.highlightDifferences,
+				    connect: options.connect,
+				    collapseIdentical: options.collapseIdentical,
+				    allowEditingOriginals: options.allowEditingOriginals
+				});
+				
+				var me, ml, mr;
+				if (me = mv.editor()) {
+					me.setSize(null, options.height);
+				}
+				if (ml = mv.leftOriginal()) {
+					ml.setSize(null, options.height);	
+				}
+				if (mr = mv.rightOriginal()) {
+					mr.setSize(null, options.height);
+				}
+				
+				$(mv.wrap).css({top: options.top})
+					.find('.CodeMirror-merge-gap').css({
+						height: options.height,
+						'background-color': '#ffffff'
+					});
+				$(mv.wrap).find('.CodeMirror-gutters').css({
+					border: 0,
+					'background-color': '#ffffff'
+				});
+
+				mv.panes = options.panes;
+				return mv;
+			},
+			tip: function(msg, options) {
+				api.tip(msg, lemon.extend({}, options || {}, {
+					where: 3
+				}));
+			},
+			saveNote: function() {
+				if (!note.diff.from) {
+					note.pool(note.instance.noteId, note.merge.editor().getValue(), note.merge.editor().getLine(0));
+					note.loadNote(note.instance.noteId);
+				} else {
+					note.diff.tip('Cannot save to current note, Please try save as new Note.');
+				}
+			},
+			saveasNewNote: function() {
+				note.pool(api.autoId(), note.merge.editor().getValue(), note.merge.editor().getLine(0));
+			},
+			saveas: function() {
+				after.saveAs(note.merge.editor().getValue());
+			},
+			refresh: function() {
+				$('#note_merge_view').empty(); note.diff.intl();
+				note.diff.current.mergedval = '';
+				note.diff.current.orig1 = '';
+				note.diff.current.orig2 = '';
+			},
+			threeway: function() {
+				note.diff.tgl('#btn_threeway', 2);
+			},
+			collapse: function(threeway) {
+				note.diff.tgl('#btn_collapse');
+			},
+			tgl: function(selector, opt) {
+				api.nav.check(selector, 1);
+				var orig1 = '', orig2 = note.merge.rightOriginal().getValue(), mergedval = note.merge.editor().getValue();
+
+				if (2 == note.diff.current.panes) {
+					orig1 = mergedval;
+				} else if (3 == note.diff.current.panes) {
+					orig1 = note.merge.leftOriginal().getValue();
+				}
+				
+				//1 collapse, 2 threeway, 3 allowEditingOriginals
+				switch(opt || 1) {
+				case 1:
+					note.diff.current.collapseIdentical = !note.diff.current.collapseIdentical;
+					break;
+				case 2:
+					if (2 == note.diff.current.panes) {
+						note.diff.current.panes = 3;
+					} else if (3 == note.diff.current.panes) {
+						note.diff.current.panes = 2;
+					}
+					break;
+				case 3:
+					note.diff.current.allowEditingOriginals = !note.diff.current.allowEditingOriginals; 
+					break;
+				}
+
+				note.diff.current = lemon.extend(note.diff.current, {
+					orig1: orig1,
+					orig2: orig2,
+					mergedval: mergedval
+				});
+				note.diff.refresh();
+			},
+			next: function() {
+				CodeMirror.commands.goNextDiff(note.diff.leftview());
+			},
+			prev: function() {
+				CodeMirror.commands.goPrevDiff(note.diff.leftview());
+			},
+			leftview: function() {
+				if (2 == note.diff.current.panes) {
+					return note.merge.editor();
+				} else if (3 == note.diff.current.panes) {
+					return note.merge.leftOriginal();
+				}
+			},
+			loadLeft: function() {
+				if (2 == note.diff.current.panes) {
+					note.diff.load('e');
+				} else if (3 == note.diff.current.panes) {
+					note.diff.load('l');
+				}
+			},
+			loadRight: function() {
+				note.diff.load('r');
+			},
+			load: function(view, content) {
+				var loaded = !lemon.isUndefined(content);
+				switch(view) {
+				case 'l':
+					if (loaded) {
+						note.merge.leftOriginal().setValue(content);
+					} else { $('#diff_left_file').click(); }
+					break;
+				case 'r':
+					if (loaded) {
+						note.merge.rightOriginal().setValue(content);
+					} else { $('#diff_right_file').click(); }
+					break;
+				case 'e':
+					if (loaded) {
+						note.merge.editor().setValue(content);
+					} else { $('#diff_editor_file').click(); }
+					break;
+				}
+			},
+			close: function(opt) {
+				$('#note_merge').click();
+				note.diff.current = null;
+				// 0 refresh menu and close if, 1 do noting
+				switch(opt || 0) {
+				case 0:
+					note.menuRefresh();
+					if (note.diff.from) {
+						note.close();
+					}
+					break;
+				case 1:
+					note.showListNote();
+					break;
+				}
+			}
 		},
 		save: function(params, opt) {
 			var content = note.instance.getValue(), title = '';
