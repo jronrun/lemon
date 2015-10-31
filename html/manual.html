@@ -963,7 +963,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
       </ul>
       <ul class="nav navbar-nav navbar-right">
 		<li><a href="javascript:void(0);" class="close" title="Close Menu" aria-label="Close" onclick="note.menuTgl();"><span aria-hidden="true">-</span></a></li>
-		<li><a href="javascript:void(0);" class="close" title="Save & Close" aria-label="Close" onclick="note.saveclose();"><span aria-hidden="true">×</span></a></li>
+		<li><a href="javascript:void(0);" class="close" title="Close" aria-label="Close" onclick="note.close();"><span aria-hidden="true">×</span></a></li>
       </ul>
   </div>
 </nav>
@@ -5355,7 +5355,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				if (lemon.isNull(note.diff.current)) {
 					ndv = note.diff.view({
 						orig2: note.diff.from ? '' : note.instance.getValue(),
-						mode: note.current.mode.mode
+						mode: note.current.mode ? note.current.mode.mode : ''
 					});
 				} else {
 					ndv = note.diff.view(note.diff.current);
@@ -5792,7 +5792,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		dcs: 'http://192.168.2.151:8080/docs/api/',
 		note: {
 			theme: 'default',
-			language: '',
+			language: 'html',
 			lineWrapping: true
 		}
 	};
