@@ -704,6 +704,9 @@
 			<button type="button" class="list-group-item btn btn-default active" id="exp_cust"> 
 			<span class="glyphicon glyphicon-check" title="Request History Note & Tag & Favourite"></span> Request History Note & Tag & Favourite </button>
 			<p></p>
+			<button type="button" class="list-group-item btn btn-default" id="exp_note"> 
+			<span class="glyphicon glyphicon-unchecked" title="Notes"></span> Notes </button>
+			<p></p>
 			<button type="button" class="list-group-item btn btn-default" id="exp_history"> 
 			<span class="glyphicon glyphicon-unchecked" title="Request History"></span> Request Histories </button>
 		</div>
@@ -4398,6 +4401,14 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					lemon.store('autoid', data.autoid);
 				}
 
+				if (lemon.has(data, 'notes')) {
+					lemon.each(data.notes, function(n, k) {
+						if ('lastId' != k) {
+							note.pool(n.id, n.content, n.title);
+						}
+					});
+				}
+
 				lemon.store('api.profile', lemon.extend(lprofile, rprofile));
 
 				if (lemon.isBlank(api.preference.basic())) {
@@ -4421,7 +4432,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					mutate: api.nav.check('#exp_mutate'),
 					apidft: api.nav.check('#exp_dft'),
 					histories: api.nav.check('#exp_history'),
-					hiscust: api.nav.check('#exp_cust')
+					hiscust: api.nav.check('#exp_cust'),
+					notes: api.nav.check('#exp_note')
 				};
 
 				var exp = {};
@@ -4467,6 +4479,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					};
 
 					exp.autoid = lemon.store('autoid');
+				}
+
+				if (1 == expcfg.notes) {
+					exp.notes = note.pool();
 				}
 				
 				if (lemon.isBlank(exp)) {
@@ -4771,7 +4787,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				note.save(params, 1);
 			}},
 			{ name: 'new', shortn: 'n', handle: function(cm, params) {
-				note.newNote(params);
+				note.newNote();
 			}},
 			{ name: 'edit', shortn: 'e', handle: function(cm, params) {
 				if (lemon.isBlank(params.argString)) {
