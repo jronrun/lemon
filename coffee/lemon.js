@@ -481,7 +481,7 @@
     }
     return msg.replace(/\{(\d+)\}/gm, function(m, i) {
       var v;
-      v = args[i] || m;
+      v = _.isUndefined(args[i]) ? m : args[i];
       if (_.isObject(v)) {
         return convertAsString(v);
       } else {

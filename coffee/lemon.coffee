@@ -283,7 +283,7 @@ _.format = (msg, args) ->
 	unless _.isArray(args)
 		args = _.slice(arguments, 1)
 	msg.replace(/\{(\d+)\}/gm, (m, i) -> (
-		v = args[i] || m
+		v = if _.isUndefined(args[i]) then m else args[i]
 		if _.isObject(v) then convertAsString(v) else v
 	))
 
