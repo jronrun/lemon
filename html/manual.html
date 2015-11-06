@@ -1082,7 +1082,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				this.to(lemon.format('#apid/{0}/{1}{2}', api, lemon.when.mark(), (lemon.isUndefined(mutateId) ? '' : ('.' + mutateId))));
 			},
 			snap: function(data) {
-				this.to(lemon.format('#snap/{0}', data || api.hash.snapshoot()));
+				this.to(lemon.format('#snap/{0}/{1}', lemon.when.mark(), data || api.hash.snapshoot()));
 			},
 			snapshoot: function() {
 				var data = {
@@ -1107,7 +1107,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						api.apichg(lemon.format('api_{0}{1}', args[1], (lemon.isBlank(mid) ? '' : ('_' + mid)))); 
 						break;
 					case 'snap':
-						var capture = $.parseJSON(LZString.decompressFromEncodedURIComponent(args[1]));
+						var capture = $.parseJSON(LZString.decompressFromEncodedURIComponent(args[2]));
 						api.nav.title(capture.api);
 						api.requ(lemon.json(capture.requ));
 						api.resp(lemon.json(capture.resp));
@@ -1238,8 +1238,27 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					}
 				});
 
-				$('#snapshoot_share').click(function() {
+				api.popover('#snapshoot_share', function() {
+					return '<div id="snap_qrcode"></div>';
+				}, {placement: 'right'}).on('show.bs.popover', function() { 
+					$(this).data("bs.popover").tip().css({
+						'min-width': 288,
+						height: 278
+					});
+				}).on('shown.bs.popover', function() {
 					api.hash.snap();
+					try {
+						$('#snap_qrcode').qrcode({
+							width: 256,
+							height: 256,
+							text: location.href
+						});
+					} catch(e) {
+						$('#snapshoot_share').popover('hide');
+						var msg = 'Generate qrcode fail ' + e.message;
+						lemon.warn(msg);
+						api.tip(msg);
+					}
 				});
 				
 				api.description('#api_define');
@@ -5915,7 +5934,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		apiParamNameInRequest: 'cmd',
 		searchPageSize: 30,
 		//data server
-		dcs: 'http://192.168.2.151:8080/docs/api/',
+		dcs: 'http://jronrun.github.io/',
 		note: {
 			theme: 'default',
 			language: 'html',
