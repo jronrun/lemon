@@ -289,6 +289,10 @@
 		.queueScript(lemon.getUrl(cmprfix + 'addon/merge/merge.min.js'))
 		.queueScript(lemon.getUrl('/lz-string/1.4.4/lz-string.min.js'))
 		.queueScript(lemon.getUrl('/jquery.qrcode/1.0/jquery.qrcode.min.js'))
+		.queueScript(lemon.getUrl('/progress.js/0.1.0/progress.min.js'))
+		.queueScript(lemon.getUrl('/velocity/1.2.3/velocity.min.js'))
+		.queueScript(lemon.getUrl('/velocity/1.2.3/velocity.ui.min.js'))
+		.queueScript('http://jronrun.github.io/refs/jquery.blast.min.js')
 		.queueWait(function() { 
 			after.initialize(); 
 			if (!lemon.isBlank(lemon.prevhash)) {
@@ -310,7 +314,8 @@
 		    cmprfix + 'addon/display/fullscreen.min.css',
 		    cmprfix + 'addon/hint/show-hint.min.css',
 		    cmprfix + 'addon/merge/merge.min.css',
-		    cmprfix + 'addon/fold/foldgutter.min.css'
+		    cmprfix + 'addon/fold/foldgutter.min.css',
+		    'progress.js/0.1.0/progressjs.min.css'
 		]);
 		queue.runQueue();
 
@@ -324,7 +329,7 @@
 </script>
 
 <script type="text/html" id="table_tmpl">
-<div class="panel panel-default" style="border:0px;">
+<div class="panel panel-default" id="r_search" style="border:0px;">
   <% var clientW = document.body.clientWidth - 110; if (lemon.isBlank(histories)) { clientW = clientW + 35; } var panelH = document.body.clientHeight - 85; %>
   <div class="panel-body fixed-panel" style="height:<%=panelH%>px;max-height:<%=panelH%>px;">
 	<% if (!lemon.isBlank(apis)) { %>
@@ -1138,16 +1143,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				api.nav.navTitle();
 				$('.dropdown-toggle').dropdown();
 				
-				var $req = $('#btn_request');
-				$req.click(function() {
+				$('#btn_request').click(function() {
 					if (!api.chkRequest()) { return; }
-					$req.button('loading');
+					var pg = api.progress({selector: '#btn_request'});
 					api.resp('');
 					api.request(function(data) {
 						api.resp(lemon.json(data));
-						$req.button('reset');
+						pg.end();
 					}, function() {
-						$req.button('reset');
+						pg.end();
 					});
 				});
 
@@ -1331,7 +1335,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					lemon.descs = [];
 					lemon.nextHis = null;
 					lemon.searchconds = null;
+					lemon.skeys = [];
 					
+					var pg = api.progress({
+						selector: '#btn_search',
+						auto: {
+							ms: 100,
+							step: 1
+						}
+					});
 					api.previousInterval = {
 				   		when: '',
 				   		batch: 0
@@ -1449,6 +1461,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								showHisBtn = false;
 							}
 
+							lemon.skeys.push(key);
+
 							/*
 							lemon.store.forEach(function(k, v) {
 								if (v && !lemon.isBlank(v.request)) {
@@ -1498,6 +1512,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							}
 							
 							keys.push(cond);
+							lemon.skeys.push(tmp[1]);
 						});
 
 						var opt = 8 == searchType ? 1 : 2;
@@ -1523,6 +1538,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 									}
 								});
 							} else {
+								lemon.skeys.push(key);
 								if (regEx.test(decodeURI(v.name))) {
 									var tagId = parseInt(v.id);
 									lemon.each(api.customHis(), function(v1, k1) {
@@ -1562,9 +1578,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						break;
 
 					case 7: //Settings
+						pg.end();
 						return lemon.tmpl($('#setting_tmpl').html(), {});
 					}
 
+					pg.end();
 					//var empty = 'Couldn’t find any APIs or histories';
 					return lemon.tmpl($('#table_tmpl').html(), {
 						histories: histories, 
@@ -1580,7 +1598,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 	    	            	$('#his_body').append(api.getQueryTrHis(queryR.items, lemon.nextHis.intlNo));
 	    	            });
 		            }
-		            
+
+		            api.matchSearch();
 					switch(lemon.searchType) {
 					case 1:
 					case 2:
@@ -1589,6 +1608,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						$('#btn_show_match_his').click(function() {
 							$(this).button('loading');
 							api.showMatchedHistories(lemon.searchconds);
+							api.matchSearch();
 							$(this).slideToggle();
 						});
 						$('#btn_tgl_apirequ').click(function() {
@@ -2294,6 +2314,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		getQueryTrHis: function(histories, intlNo) {
 			return lemon.tmpl($('#his_tr_tmpl').html(), {histories: histories, intlNo: intlNo});
 		},
+		matchSearch: function() {
+			lemon.each(lemon.skeys, function(v, i) {
+            	api.matched(v, '#r_search');
+            });
+		},
 		showMatchedHistories: function(conds, ps, lastId) {
 			if (!$('#scroll_search_body').length) {
 				$('#btn_search').data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_search_body'});
@@ -2314,6 +2339,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 	            api.scroll('#scroll_search_body', function() {
 	            	var queryR = api.queryNextHis(conds);
 	            	$('#his_body').append(api.getQueryTrHis(queryR.items, lemon.nextHis.intlNo));
+	            	api.matchSearch();
 	            });
 			}
 
@@ -3385,22 +3411,54 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			$(respId).val(data);
 			return data;
 		},
+		matched: function(target, selector) {
+			var blast = $(selector).blast({ search: target });
+			blast.css({
+                backgroundColor: "yellow",
+                transition: "color 400ms"
+            }).velocity({ backgroundColorAlpha: 1 }, { duration: 400 });
+            return blast;
+		},
+		progress: function(options) {
+			options = lemon.extend({
+				selector: null,
+				start: 1,
+				auto: {
+					ms: 1000,
+					step: 1
+				},
+				cfg: {
+					theme: 'blueOverlayRadiusHalfOpacity', 
+					overlayMode: true 
+				}
+			}, options || {});
+			var pg = progressJs(options.selector).setOptions(options.cfg);
+			if (options.start) {
+				pg.start();
+			}
+			if (options.auto) {
+				pg.autoIncrease(options.auto.step, options.auto.ms);
+			}
+			return pg;
+		},
 		requestGetPost: function(selector, type) {
 			$(selector).click(function() {
 				if ($(selector).parent().hasClass('disabled')) {
 					return;
 				}
 				if (!api.chkRequest()) { return; }
-									
-				$('#btn_request').button('loading');
-				$(selector).parent().addClass('disabled');
+				
+				var sameact = '#btn_request_get,#btn_request_post'; 					
+				var pg = api.progress({selector: '#btn_request'});
+				$(sameact).parent().addClass('disabled');
 				api.resp('');
 				api.request(function(data) {
 					api.resp(lemon.json(data));
-					$('#btn_request').button('reset');
-					$(selector).removeClass('disabled');
+					pg.end();
+					$(sameact).parent().removeClass('disabled');
 				}, function(jqXHR, textStatus, errorThrown) {
-					$(selector).parent().removeClass('disabled');
+					$(sameact).parent().removeClass('disabled');
+					pg.end();
 				}, type || 'post');
 			});
 		},
@@ -5393,6 +5451,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 						$('#note_list li[note="1"]').hide();
 						$(ids.join(',')).show();
+
+						$('#note_list').blast(false);
+						api.matched(val, '#note_list');
 					});
 
 					$('#note_mode_qry').keyup(function(e) {
@@ -5435,6 +5496,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 						$('#note_mode li[lang="1"]').hide();
 						$(ids.join(',')).show();
+
+						$('#note_mode').blast(false);
+						api.matched(val, '#note_mode');
 					});
 					
 					note.hover($('#note_mode li').click(function(e) {
@@ -5951,7 +6015,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		apiParamNameInRequest: 'cmd',
 		searchPageSize: 30,
 		//data server
-		dcs: 'http://jronrun.github.io/',
+		dcs: 'http://jronrun.github.io/manual/',
 		note: {
 			theme: 'default',
 			language: 'html',
