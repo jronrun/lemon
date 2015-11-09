@@ -207,11 +207,23 @@
 		}
 	});
 	
-	lemon.css('bootstrap/3.3.5/css/bootstrap.min.css');
+	lemon.css([
+		'bootstrap/3.3.5/css/bootstrap.min.css',
+		'progress.js/0.1.0/progressjs.min.css'
+	]);
+
+	var  homeldend = function() {
+		if (lemon.homeld && lemon.homeld.base && lemon.homeld.queue && lemon.homeld.css) {
+			lemon.homeld.end();
+		}
+	}
+	
 	$LAB
 	.script(lemon.getUrl('/jquery/2.1.4/jquery.min.js')).wait()
 	.script(lemon.getUrl('/bootstrap/3.3.5/js/bootstrap.min.js'))
+	.script(lemon.getUrl('/progress.js/0.1.0/progress.min.js'))
 	.wait(function() { 
+		lemon.homeld = progressJs().start().autoIncrease(5, 100);
 		lemon.prevhash = location.hash;
 		
 		$(root).bind('popstate', function(e) {
@@ -225,6 +237,7 @@
 		});
 		
 		api.initialize(); 
+		lemon.homeld.base = 1; homeldend();
 	});
 
 	var cmprfix = 'codemirror/5.8.0/';
@@ -289,7 +302,6 @@
 		.queueScript(lemon.getUrl(cmprfix + 'addon/merge/merge.min.js'))
 		.queueScript(lemon.getUrl('/lz-string/1.4.4/lz-string.min.js'))
 		.queueScript(lemon.getUrl('/jquery.qrcode/1.0/jquery.qrcode.min.js'))
-		.queueScript(lemon.getUrl('/progress.js/0.1.0/progress.min.js'))
 		.queueScript(lemon.getUrl('/velocity/1.2.3/velocity.min.js'))
 		.queueScript(lemon.getUrl('/velocity/1.2.3/velocity.ui.min.js'))
 		.queueScript('http://jronrun.github.io/refs/jquery.blast.min.js')
@@ -300,6 +312,7 @@
 			} else {
 				api.nav.title();
 			}
+			lemon.homeld.queue = 1; homeldend();
 		});
 	
 	lemon.delay(function() {
@@ -314,8 +327,7 @@
 		    cmprfix + 'addon/display/fullscreen.min.css',
 		    cmprfix + 'addon/hint/show-hint.min.css',
 		    cmprfix + 'addon/merge/merge.min.css',
-		    cmprfix + 'addon/fold/foldgutter.min.css',
-		    'progress.js/0.1.0/progressjs.min.css'
+		    cmprfix + 'addon/fold/foldgutter.min.css'
 		]);
 		queue.runQueue();
 
@@ -325,6 +337,7 @@
     			$LAB.script(lemon.getUrl('/FileSaver.js/2014-11-29/FileSaver.min.js'));
         	}
 		} catch (e) {}
+		lemon.homeld.css = 1; homeldend();
 	}, 500);
 </script>
 
