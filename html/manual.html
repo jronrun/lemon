@@ -1156,7 +1156,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			render: function() {
 				api.nav.navTitle();
 				$('.dropdown-toggle').dropdown();
-				
+
 				$('#btn_request').click(function() {
 					if (!api.isServSupportJSONP()) { return; }
 					if (!api.chkRequest()) { return; }
@@ -3715,6 +3715,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						api.preference.apicEnvClick(serv);
 					}
 				}));
+				$('#show_envs').remove();
 			},
 			newServId: function() {
 				var theMaxId = 0;
@@ -4266,7 +4267,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					options.name + ' <span class="caret"></span> </a>',
 					'<ul class="dropdown-menu fixed-dropdown" role="menu" id="' + options.id + '">',
 				];
-				
+
 				lemon.each(api.preference.service(), function(envGroup, k) {
 					var isProduct = 'PRODUCT' === envGroup.env;
 					var clazz = isProduct ? 'danger' : 'info';
@@ -4318,9 +4319,18 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						}
 					});
 
-					html.push('<li>' + lemon.repeat('&nbsp;', 80) + '</li>');
 				});
+
+				if (!lemon.isBlank(options.typeId)) {
+					html.push('<li role="presentation" class="divider"></li>');
+					html.push('<li title="Show All Environments" id="show_envs" type=""><a><p class="text-success">&nbsp;&nbsp;All Environments</p></a></li>');
+					api.env.prevTypeId = options.typeId;
+				} else if (api.env.prevTypeId) {
+					html.push('<li role="presentation" class="divider"></li>');
+					html.push('<li title="Show Type Filter Environments" id="show_envs" type="' + api.env.prevTypeId + '"><a><p class="text-success">&nbsp;&nbsp;Filter Environments</p></a></li>');
+				}
 				
+				html.push('<li>' + lemon.repeat('&nbsp;', 80) + '</li>');
 				html.push('</ul>');
 				html.push('</li>');
 				return html.join('');
@@ -4340,6 +4350,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						api.chgJSONPView();
 					}
 				}));
+
+				$('#show_envs').bind('click', function() {
+					var tid = $(this).attr('type');
+					api.env.render(lemon.isBlank(tid) ? null : parseInt(tid));
+					return false;
+				});
+				
 				if (!typeId) {
 					$('#default_env').click();
 				} else {
