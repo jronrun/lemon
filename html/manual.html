@@ -1162,6 +1162,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							if (capture.editable) {
 								api.hash.localtrigger = 0;
 								api.hash.capture = capture;
+								api.disable('#left_toolbar');
 							} else {
 								api.disable('.navbar,#left_toolbar,#right_toolbar');
 							}
