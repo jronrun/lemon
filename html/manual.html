@@ -139,7 +139,7 @@
 							<div class="pull-left">
 								<button type="button" class="btn btn-default" style="border:0px;"><span class="text-muted">Request</span></button>
 							</div>
-							<div class="btn-group pull-right">
+							<div class="btn-group pull-right" id="left_toolbar">
 								<button type="button" class="btn btn-default" style="border:0px;" id="from_url">
 								<span class="text-muted glyphicon glyphicon-subscript" title="Set Request Data From URL"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="as_default">
@@ -153,7 +153,11 @@
 								<button type="button" class="btn btn-default" style="border:0px;" data-element="both" data-toggle="modal" data-target="#modal_tpl">
 								<span class="text-muted glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="snapshoot_share">
-								<span class="text-muted glyphicon glyphicon-send" title="Snapshoot current status to Browser address"></span></button>
+								<span class="text-muted glyphicon glyphicon-send" title="Generate QRcode"></span></button>
+								<button type="button" class="btn btn-default" style="border:0px;" id="share_editable">
+								<span class="text-muted glyphicon glyphicon-edit" title="Snapshoot editable current API to browser address to Share"></span></button>
+								<button type="button" class="btn btn-default" style="border:0px;" id="share_readonly">
+								<span class="text-muted glyphicon glyphicon-share" title="Snapshoot readonly current API to browser address to Share"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="api_define">
 								<span class="text-muted glyphicon glyphicon-question-sign" title="Show the Define API"></span></button>
 							</div>
@@ -173,7 +177,7 @@
 							<div class="pull-left">
 								<button type="button" class="btn btn-default" style="border:0px;"><span class="text-muted">Response</span></button>
 							</div>
-							<div class="btn-group pull-right">
+							<div class="btn-group pull-right" id="right_toolbar">
 								<button type="button" class="btn btn-default" id="btn_his_prev" step="-1" style="border:0px;"><span title="Previous History" class="text-muted glyphicon glyphicon-chevron-left"></span></button>
 								<button type="button" class="btn btn-default" id="btn_his_next" step="1" style="border:0px;"><span title="Next History" class="text-muted glyphicon glyphicon-chevron-right"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" data-element="#response" data-toggle="modal" data-target="#modal_tpl">
@@ -306,12 +310,12 @@
 		.queueScript(lemon.getUrl('/velocity/1.2.3/velocity.ui.min.js'))
 		.queueScript('http://jronrun.github.io/refs/jquery.blast.min.js')
 		.queueWait(function() { 
-			after.initialize(); 
 			if (!lemon.isBlank(lemon.prevhash)) {
 				api.hash.page(lemon.ltrim(location.hash, '#'));
 			} else {
 				api.nav.title();
 			}
+			after.initialize(); 
 			lemon.homeld.queue = 1; homeldend();
 		});
 	
@@ -1102,16 +1106,23 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			apid: function(api, mutateId) {
 				this.to(lemon.format('#apid/{0}/{1}{2}', api, lemon.when.mark(), (lemon.isUndefined(mutateId) ? '' : ('.' + mutateId))));
 			},
-			snap: function(data) {
-				this.to(lemon.format('#snap/{0}/{1}', lemon.when.mark(), data || api.hash.snapshoot()));
+			snap: function(data, editable) {
+				api.hash.localtrigger = 1;
+				this.to(lemon.format('#snap/{0}/{1}', lemon.when.mark(), data || api.hash.snapshoot(editable)));
 			},
-			snapshoot: function() {
+			snapshoot: function(editable) {
 				var data = {
 					api: lemon.getApi(),
+					name: api.getAPI(lemon.getApi()).desc,
 					serv: api.getServer(api.env.which(lemon.getEnv()).id),
 					requ: lemon.json.reverse(api.requ()),
 					resp: lemon.json.reverse(api.resp())
 				};
+				
+				if (editable) {
+					data.editable = 1;
+				}
+				
 				return LZString.compressToEncodedURIComponent(lemon.json.reverse(data));
 			},
 			page: function(pg) {
@@ -1144,6 +1155,17 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							api.env.render(typeId);
 						}
 						api.chgJSONPView();
+
+						if (api.hash.localtrigger) {
+							
+						} else {
+							if (capture.editable) {
+								api.hash.localtrigger = 0;
+								api.hash.capture = capture;
+							} else {
+								api.disable('.navbar,#left_toolbar,#right_toolbar');
+							}
+						}
 						break;
 					default: api.tip('Unknow action ' + pg); break;
 					}
@@ -1260,6 +1282,14 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					}
 				});
 
+				$('#share_readonly').click(function() {
+					api.hash.snap();
+				});
+
+				$('#share_editable').click(function() {
+					api.hash.snap(null, 1);
+				});
+				
 				api.popover('#snapshoot_share', function() {
 					return '<div id="snap_qrcode"></div>';
 				}, {placement: 'right'}).on('show.bs.popover', function() { 
@@ -1268,12 +1298,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						height: 278
 					});
 				}).on('shown.bs.popover', function() {
-					api.hash.snap();
 					try {
 						$('#snap_qrcode').qrcode({
 							width: 256,
 							height: 256,
-							text: location.href
+							text: api.requ()
 						});
 					} catch(e) {
 						$('#snapshoot_share').popover('hide');
@@ -3436,6 +3465,12 @@ lemon.each(api.preference.service(), function(envGroup, k) {
             }).velocity({ backgroundColorAlpha: 1 }, { duration: 400 });
             return blast;
 		},
+		disable: function(selector) {
+			return progressJs(selector).setOptions({
+				theme: 'blueOverlayRadiusHalfOpacity', 
+				overlayMode: true 
+			}).start().set(0);
+		},
 		progress: function(options) {
 			options = lemon.extend({
 				selector: null,
@@ -4412,6 +4447,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				return envEnum === (api.env.which(interf || lemon.getEnv(), envType) || {env: ''}).env;
 			},
 			which: function(interf, envType) {
+				if (!lemon.isBlank(api.hash.capture)) {
+					return api.hash.capture.serv;
+				}
+				
 				var result = {};
 				lemon.each(api.preference.service(), function(v, k) {
 					lemon.each(v.serv, function(v1, k1) {
