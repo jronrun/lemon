@@ -310,12 +310,12 @@
 		.queueScript(lemon.getUrl('/velocity/1.2.3/velocity.ui.min.js'))
 		.queueScript('http://jronrun.github.io/refs/jquery.blast.min.js')
 		.queueWait(function() { 
+			after.initialize(); 
 			if (!lemon.isBlank(lemon.prevhash)) {
 				api.hash.page(lemon.ltrim(location.hash, '#'));
 			} else {
 				api.nav.title();
 			}
-			after.initialize(); 
 			lemon.homeld.queue = 1; homeldend();
 		});
 	
@@ -950,6 +950,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			<li><a href="javascript:void(0);" cmd="autocomplete" title=""><%= note.menu('Content Assist', 'Ctrl-J', 'visual & edit') %></a></li>
 			<li><a href="javascript:void(0);" cmd="toMatchingTag" title=""><%= note.menu('Matching Tag', 'Ctrl-K', 'visual & edit') %></a></li>
 			<li role="separator" class="divider"></li>
+			<li><a href="javascript:void(0);" cmd="selectAll" title="Select All"><%= note.menu('Select All', 'Ctrl-A', 'visual & edit') %></a></li>
 			<li><a href="javascript:void(0);" cmd="find" title="/"><%= note.menu('Find...', 'Cmd-F', 'edit') %></a></li>
 			<li><a href="javascript:void(0);" cmd="findNext" title="n"><%= note.menu('Find Next', 'Cmd-G', 'edit') %></a></li>
 			<li><a href="javascript:void(0);" cmd="replace" title=":%s/"><%= note.menu('Replace...', 'Cmd-Alt-F', 'edit') %></a></li>
@@ -1167,6 +1168,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								api.disable('.navbar,#left_toolbar,#right_toolbar');
 							}
 						}
+
+						after.rich.fitSize(after.request);
+						after.rich.fitSize(after.response);
 						break;
 					default: api.tip('Unknow action ' + pg); break;
 					}
@@ -5427,6 +5431,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			    	"Ctrl-J": "autocomplete",
 			    	"Ctrl-K": "toMatchingTag",
 			    	"Ctrl-/": "toggleComment",
+			    	"Ctrl-A": function(cm) {
+			    		note.handleCmd('selectAll');
+				    },
 			    	"Ctrl-Q": function(cm){ 
 				    	cm.foldCode(cm.getCursor()); 
 				    }
@@ -6058,6 +6065,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			return rich;
 		},
 		rich: {
+			fitSize: function(cm) {
+				var theH = $(root).height() - 230;
+				if (lemon.isBlank($('#message').html())) {
+					theH += 70;
+				}
+				cm.setSize(null, theH);
+			},
 			fullscreenTgl: function(cm, full) {
 				if (!cm.getOption('fullScreen')) {
 					after.fullBefore = {
