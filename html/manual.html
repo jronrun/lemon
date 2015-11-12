@@ -1153,7 +1153,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						var typeId = api.env.which(capture.serv.interf).type.id;
 						lemon.setApi(capture.api);
 						if (typeId > 0) {
-							api.env.render(typeId);
+							api.env.dorender(typeId);
 						}
 						api.chgJSONPView();
 
@@ -3900,7 +3900,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							theDefinedService[aChoose.env].serv = keepServs;
 							api.preference.service(theDefinedService);
 							lemon.mirror['ss_server'] = undefined;
-							api.env.render();
+							api.env.dorender();
 							return true;
 						}
 
@@ -3941,7 +3941,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						return false;
 					}
 
-					api.env.render();
+					api.env.dorender();
 					lemon.mirror['ss_server'] = undefined;
 				} 
 
@@ -4126,7 +4126,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						return false;
 					}
 
-					api.env.render();
+					api.env.dorender();
 					api.cmd.render();
 				}
 
@@ -4399,11 +4399,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				html.push('</li>');
 				return html.join('');
 			},
-			render: function(typeId) {
-				if (!api.intialized) {
-					api.env.load();
-				}
-
+			dorender: function(typeId) {
 				$('#env_container').html(api.env.envselect({
 					id: 'which_env',
 					typeId: typeId,
@@ -4420,10 +4416,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 				$('#show_envs').bind('click', function() {
 					var tid = $(this).attr('type');
-					api.env.render(lemon.isBlank(tid) ? null : parseInt(tid));
+					api.env.dorender(lemon.isBlank(tid) ? null : parseInt(tid));
 					return false;
 				});
-				
+			},
+			render: function(typeId) {
+				if (!api.intialized) {
+					api.env.load();
+				}
+
+				api.env.dorender(typeId);
 				if (!typeId) {
 					$('#default_env').click();
 				} else {
@@ -4758,7 +4760,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					api.impexp.lemon.disabled('The base setting configuration is not exists!');
 				}
 
-				api.env.render();
+				api.env.dorender();
 				api.cmd.render();
 				lemon.info('import success version: ' + rprofile.version);
 			},
