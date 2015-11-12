@@ -55,7 +55,7 @@
 				<ul class="nav navbar-nav">
 					<li class="dropdown">
 						<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Which API <span class="caret"></span> </a>
-						<ul class="dropdown-menu fixed-dropdown" role="menu" id="which_api">
+						<ul class="dropdown-menu fixed-dropdown" role="menu" id="which_api" style="border:0px;">
 							<li><a href="#">api1</a></li>
 							<li><a href="#">api2</a></li>
 						</ul>
@@ -67,7 +67,7 @@
 					      <div class="input-group-btn">
 					        <button type="button" class="btn btn-default dropdown-toggle" style="border:0px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> 
 					        <span class="caret text-muted"></span></button>
-					        <ul class="dropdown-menu">
+					        <ul class="dropdown-menu" style="border:0px;"k>
 					          <li role="separator" class="divider"></li>
 					          <li><a href="javascript:void(0);" onclick="api.typeSearch(1)"><span class="text-muted">Defined APIs</span></a></li>
 					          <li><a href="javascript:void(0);" onclick="api.typeSearch(4)"><span class="text-muted">Tag</span></a></li>
@@ -90,7 +90,7 @@
 					    <span class="caret text-muted"></span>
 					    <span class="sr-only">Toggle Dropdown</span>
 					  </button>
-					  <ul class="dropdown-menu">
+					  <ul class="dropdown-menu" style="border:0px;">
 					    <li role="separator" class="divider"></li>
 					    <li><a href="javascript:void(0);" id="btn_request_get"><span class="text-muted">Request with Get</span></a></li>
 					    <li role="separator" class="divider"></li>
@@ -106,7 +106,7 @@
 					    <span class="caret text-muted"></span>
 					    <span class="sr-only">Toggle Dropdown</span>
 					  </button>
-					  <ul class="dropdown-menu">
+					  <ul class="dropdown-menu" style="border:0px;">
 					    <li role="separator" class="divider"></li>
 					    <li><a href="javascript:void(0);" id="btn_note_diff"><span class="text-muted">Diff & Merge</span></a></li>
 					    <li role="separator" class="divider"></li>
@@ -144,14 +144,14 @@
 								<span class="text-muted glyphicon glyphicon-subscript" title="Set Request Data From URL"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="as_default">
 								<span class="text-muted glyphicon glyphicon-camera" title="Set Request Default Value"></span></button>
-								<button type="button" class="btn btn-default" style="border:0px;" id="copy_url">
-								<span class="text-muted glyphicon glyphicon-copy" title="Show Request URL"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="define_api">
 								<span class="text-muted glyphicon glyphicon-pencil" title="Define API"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" data-element="#request" data-toggle="modal" data-target="#modal_tpl">
 								<span class="text-muted glyphicon glyphicon-tree-deciduous" title="Show Request In Fullscreen (Esc Quit)"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" data-element="both" data-toggle="modal" data-target="#modal_tpl">
 								<span class="text-muted glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
+								<button type="button" class="btn btn-default" style="border:0px;" id="copy_url">
+								<span class="text-muted glyphicon glyphicon-copy" title="Show Request URL"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="snapshoot_share">
 								<span class="text-muted glyphicon glyphicon-send" title="Generate QRcode"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="share_editable">
@@ -644,7 +644,7 @@
         <a href="#" id="import_export_tab" class="dropdown-toggle" data-toggle="dropdown" aria-controls="import_export_tab-contents">
         	Import & Export <span class="caret"></span>
         </a>
-        <ul class="dropdown-menu" aria-labelledby="import_export_tab" id="import_export_tab-contents">
+        <ul class="dropdown-menu" style="border:0px;" aria-labelledby="import_export_tab" id="import_export_tab-contents">
           <li><a href="#import_tab" role="tab" id="import_tab-tab" data-toggle="tab" aria-controls="import_tab">@Import</a></li>
           <li><a href="#export_tab" role="tab" id="export_tab-tab" data-toggle="tab" aria-controls="export_tab">@Export</a></li>
         </ul>
@@ -718,7 +718,7 @@
 				<span class="caret"></span>
 				<span class="sr-only">Toggle Dropdown</span>
 			</button>
-			<ul class="dropdown-menu">
+			<ul class="dropdown-menu" style="border:0px;">
 				<li role="separator" class="divider"></li>
 				<li><a href="javascript:void(0);"  onclick="api.impexp.doexport(this, 2);">
 					<span class="glyphicon glyphicon-export" title="Export"></span> Export as Human Readable
@@ -921,7 +921,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
       <ul class="nav navbar-nav">
         <li class="dropdown">
           <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
-          <ul class="dropdown-menu">
+          <ul class="dropdown-menu" style="border:0px;">
             <li><a href="javascript:void(0);" onclick="note.newNote();" title=":new"><%= note.menu('New', ':n', 'visual') %></a></li>
             <li><a href="javascript:void(0);" onclick="note.openFile();" title=":open"><%= note.menu('Open File...', ':o', 'visual') %></a></li>
 			<li role="separator" class="divider"></li>
@@ -937,7 +937,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 		<li class="dropdown">
           <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Edit</a>
-          <ul class="dropdown-menu" id="note_edit">
+          <ul class="dropdown-menu" style="border:0px;" id="note_edit">
             <li><a href="javascript:void(0);" ex="undo" title=":undo"><%= note.menu('Undo', 'u', 'visual') %></a></li>
             <li><a href="javascript:void(0);" ex="redo" title=":redo"><%= note.menu('Redo', 'Ctrl-R', 'visual') %></a></li>
 			<li role="separator" class="divider"></li>
@@ -961,7 +961,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 		<li class="dropdown">
           <a href="javascript:void(0);" id="note_list_dd" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Note</a>
-          <ul class="dropdown-menu fixed-dropdown" style="max-width: 400px;" id="note_list">
+          <ul class="dropdown-menu fixed-dropdown" style="max-width: 400px;border:0px;" id="note_list">
 			<div class="form-group form-group-lg" style="margin-left:15px;margin-bottom:15px;margin-top:15px;"> <div class="col-sm-12">
       		<input class="form-control" type="text" id="note_list_qry" style="width:300px;" placeholder="Search Note..."> </div> </div>
 			<% lemon.each(note.listNote(), function(n, idx) { var cnid = note.instance.noteId || -1; %>
@@ -976,7 +976,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 		<li class="dropdown">
           <a href="javascript:void(0);" id="note_mode_dd" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Language</a>
-          <ul class="dropdown-menu fixed-dropdown" style="max-width: 400px;" id="note_mode">
+          <ul class="dropdown-menu fixed-dropdown" style="max-width: 400px;border:0px;" id="note_mode">
 			<div class="form-group form-group-lg" style="margin-left:15px;margin-bottom:15px;margin-top:15px;"> <div class="col-sm-12">
       		<input class="form-control" type="text" id="note_mode_qry" style="width:300px;" placeholder="Search Language..."> </div> </div>
 			<% lemon.each(notesource.langs, function(lang, langname) { %>
@@ -1002,7 +1002,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 		<li class="dropdown">
           <a href="javascript:void(0);" id="note_theme_dd" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Theme</a>
-          <ul class="dropdown-menu fixed-dropdown" id="note_theme"> <% lemon.each(notesource.themes, function(th, idx) { %>
+          <ul class="dropdown-menu fixed-dropdown" style="border:0px;" id="note_theme"> <% lemon.each(notesource.themes, function(th, idx) { %>
 		  <li th="<%= th %>"> <blockquote style="" title="" class=""> <h5 class="text-success"><%= th %><% if (th == note.storecfg('theme')) { %> <span class="pull-right text-danger glyphicon glyphicon-check"></span><% } %></h5> </blockquote> </li> <% }); %>
 		  <li><%= lemon.repeat('&nbsp;', 60) %></li>
           </ul>
@@ -1028,7 +1028,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 		<li class="dropdown">
           <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">File</a>
-          <ul class="dropdown-menu" id="note_edit">
+          <ul class="dropdown-menu" style="border:0px;" id="note_edit">
             <li> <a href="javascript:void(0);" onclick="note.diff.loadLeft();" role="button" aria-haspopup="true" aria-expanded="false">Open File for Left...</a> </li>
 			<li> <a href="javascript:void(0);" onclick="note.diff.loadRight();" role="button" aria-haspopup="true" aria-expanded="false">Open File for Right...</a> </li>
 			<li role="separator" class="divider"></li>
@@ -1163,7 +1163,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							if (capture.editable) {
 								api.hash.localtrigger = 0;
 								api.hash.capture = capture;
-								api.disable('#left_toolbar');
+								$('#copy_url,#share_editable').remove();
 							} else {
 								api.disable('.navbar,#left_toolbar,#right_toolbar');
 							}
@@ -1300,7 +1300,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}, {placement: 'right'}).on('show.bs.popover', function() { 
 					$(this).data("bs.popover").tip().css({
 						'min-width': 288,
-						height: 278
+						height: 278,
+						border: 0
 					});
 				}).on('shown.bs.popover', function() {
 					try {
@@ -1342,6 +1343,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					placement: 'top'
 				}).on('show.bs.popover', function() { 
 					$(this).data("bs.popover").tip().css({
+						border: 0,
 						maxWidth: (document.body.clientWidth / 2) + 200
 					});
 				}).on('shown.bs.popover', function() {
@@ -2298,6 +2300,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				title: 'API Description'
 			}, options || {})).on('show.bs.popover', function() { 
 				$(this).data("bs.popover").tip().css({
+					border: 0,
 					maxWidth: (document.body.clientWidth / 2) + 200
 				});
 			}).on('shown.bs.popover', function() { 
@@ -2748,6 +2751,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					}
 				}).on('show.bs.popover', function() { 
 					$(this).data("bs.popover").tip().css({
+						border: 0,
 						maxWidth: (document.body.clientWidth / 2) + 200
 					});
 					$(apiDefaultId).addClass('active');
@@ -2809,6 +2813,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					placement: 'left'
 				}).on('show.bs.popover', function() {
 					$(this).data("bs.popover").tip().css({
+						border: 0,
 						maxWidth: (document.body.clientWidth / 2) + 200
 					});
 				}).on('shown.bs.popover', function() {
@@ -2891,6 +2896,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					placement: 'left'
 				}).on('show.bs.popover', function() {
 					$(this).data("bs.popover").tip().css({
+						border: 0,
 						maxWidth: (document.body.clientWidth / 2) + 200
 					});
 				}).on('shown.bs.popover', function() {
@@ -2953,7 +2959,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		popoverOnBtn: function(selector, content, options, onShown, onHidden) {
 			api.popover(selector, content, options)
 			  .on('show.bs.popover', function() { 
-				$(this).data("bs.popover").tip().css({maxWidth: "100%"});
+				$(this).data("bs.popover").tip().css({
+					border: 0,
+					maxWidth: "100%"
+				});
 				$(selector).button('toggle');
 			}).on('hide.bs.popover', function() {
 				switch(lemon.searchType) {
@@ -3698,7 +3707,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				placement: 'bottom',
 				trigger: 'hover'
 			}).on('show.bs.popover', function() { 
-				$(this).data("bs.popover").tip().css({maxWidth: "800px"});
+				$(this).data("bs.popover").tip().css({
+					border: 0,
+					maxWidth: "800px"
+				});
 			});
 			return msg;
 		},
@@ -4305,7 +4317,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					'<li class="dropdown" style="list-style-type:none;">',
 					'<a href="javascript:void(0);" id="' + options.id + '_href" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">',
 					options.name + ' <span class="caret"></span> </a>',
-					'<ul class="dropdown-menu fixed-dropdown" role="menu" id="' + options.id + '">',
+					'<ul class="dropdown-menu fixed-dropdown" style="border:0px;" role="menu" id="' + options.id + '">',
 				];
 
 				lemon.each(api.preference.service(), function(envGroup, k) {
@@ -4985,7 +4997,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					trigger: 'hover',
 					html: true
 				}).on('show.bs.popover', function() { 
-					$(this).data("bs.popover").tip().css({maxWidth: "600px"}); 
+					$(this).data("bs.popover").tip().css({
+						border: 0,
+						maxWidth: "600px"
+					}); 
 				});
 				
 				$('#which_api blockquote').hover(function(){  
