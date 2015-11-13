@@ -3718,7 +3718,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				env: title,
 				id: 'msg_id'
 			}).text(text);
-			$('#message').empty().append(msg).popover({
+			$('#message').empty().append(msg);
+			/* .popover({
 				content: function() {
 					return $('#msg_id').attr('env');
 				},
@@ -3729,7 +3730,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					border: 0,
 					maxWidth: "800px"
 				});
-			});
+			}); */
 			return msg;
 		},
 		preference: {
@@ -4657,7 +4658,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				// 4 clean custom history, 5 clean preference
 				// 6 clean base setting configuration, 7 clean base setting interface group
 				// 8 clean define server, 9 clean define api, 10 clean all
-				// 11 clean all and stop
+				// 11 clean all and stop, 12 readonly
 				if (lemon.has(rprofile, 'lemon')) {
 					switch (rprofile.lemon) {
 					case 1: api.impexp.lemon.his(); break;
@@ -4680,6 +4681,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						api.impexp.lemon.prefer();
 						api.impexp.lemon.profile();
 						break;
+					case 12: api.disable('body'); break;
 					}
 
 					if (11 == rprofile.lemon) {
@@ -6119,13 +6121,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			fullscreenTgl: function(cm, full) {
 				if (!cm.getOption('fullScreen')) {
 					after.fullBefore = {
-						lineNumbers: cm.getOption('lineNumbers')
+						lineNumbers: cm.getOption('lineNumbers'),
+						styleActiveLine: cm.getOption('styleActiveLine')
 					};
 				}
 				
 				cm.setOption("fullScreen", lemon.isUndefined(full) ? !cm.getOption("fullScreen") : full);
 				if (cm.getOption('fullScreen')) {
 					cm.setOption('lineNumbers', true);
+					cm.setOption('styleActiveLine', true);
 				} else {
 					lemon.each(after.fullBefore, function(v, k) {
 						cm.setOption(k, v);
