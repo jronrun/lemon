@@ -141,7 +141,7 @@
 							</div>
 							<div class="btn-group pull-right" id="left_toolbar">
 								<button type="button" class="btn btn-default" style="border:0px;" id="from_url">
-								<span class="text-muted glyphicon glyphicon-subscript" title="Set Request Data From URL"></span></button>
+								<span class="text-muted glyphicon glyphicon-road" title="Set Request Data From URL OR Join Selection with Comma Symbol"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="as_default">
 								<span class="text-muted glyphicon glyphicon-camera" title="Set Request Default Value"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="define_api">
@@ -1232,6 +1232,20 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				});
 
 				$('#from_url').click(function() {
+					if (after.styled && after.request.somethingSelected()) {
+						var sel = after.request.getSelection();
+						if (!lemon.isBlank(sel)) {
+							var join = [], tmp = null;
+							lemon.each(sel.split(/\s/), function(v, idx) {
+								if (!lemon.isBlank(tmp = lemon.trim(v))) {
+									join.push(tmp);
+								}
+							});
+						}
+						after.request.replaceSelection(join.join(','));
+						return false;
+					}
+					
 					var data = api.requ();
 					var decodeData = api.decode(data, 2);
 					if (data != decodeData) {
