@@ -343,6 +343,24 @@
 		} catch (e) {}
 		lemon.homeld.css = 1; homeldend();
 	}, 500);
+
+	lemon.delay(function() {
+		lemon.css(lemon.getUrl('/intro.js/1.1.1/introjs.min.css'));
+		$LAB.script(lemon.getUrl('/intro.js/1.1.1/intro.min.js')).wait(function() {
+			root.help = introJs().setOptions({
+	            steps: [
+	            		{ 
+	                      intro: "hee!"
+	                    },
+	                    {
+	                      element: lemon.query('#view_left'),
+	                      intro: "This is a tooltip."
+	                    }
+	                  ]
+	            });
+			help.start()
+		});
+	}, 1000);
 </script>
 
 <script type="text/html" id="table_tmpl">
