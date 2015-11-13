@@ -1112,10 +1112,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				this.to(lemon.format('#snap/{0}/{1}', lemon.when.mark(), data || api.hash.snapshoot(editable)));
 			},
 			snapshoot: function(editable) {
+				var aserv = api.env.which(lemon.getEnv());
+				if (-10 != aserv.id) {
+					aserv = api.getServer(aserv.id);
+				}
+				
 				var data = {
 					api: lemon.getApi(),
 					name: api.getAPI(lemon.getApi()).desc,
-					serv: api.getServer(api.env.which(lemon.getEnv()).id),
+					serv: aserv,
 					requ: lemon.json.reverse(api.requ()),
 					resp: lemon.json.reverse(api.resp())
 				};
@@ -3299,6 +3304,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						result.env = envGroup.env;
 						result.desc = envGroup.desc;
 						result.type = api.getInterfGroup(serv.type.id);
+						result.request = serv.request || api.preference.basic().request;
 						return false;
 					}
 				});
@@ -4495,7 +4501,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								type: api.getInterfGroup(v1.type.id),
 								interf: v1.interf,
 								note: v1.note,
-								params: v1.params,
+								params: v1.params || {},
 								id: v1.id,
 								request: v1.request || api.preference.basic().request
 							};
