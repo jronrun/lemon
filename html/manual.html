@@ -36,7 +36,7 @@
 </style>
 </head>
 <body>
-	<nav class="navbar navbar-default" style="border:0px;">
+	<nav class="navbar navbar-default" id="home_navbar" style="border:0px;">
 		<div class="container-fluid">
 			<div class="navbar-header">
 				<a class="navbar-brand" href="javascript:void(0);"></a>
@@ -358,7 +358,6 @@
 	                    }
 	                  ]
 	            });
-			help.start()
 		});
 	}, 1000);
 </script>
@@ -934,7 +933,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 </script>
 		
 <script type="text/html" id="note_tool_tmpl">
-<nav class="navbar navbar-default" style="margin-bottom:0px;border:0px;background-color:#ffffff">
+<nav class="navbar navbar-default" id="note_tool_bar" style="margin-bottom:0px;border:0px;background-color:#ffffff">
   <div class="container-fluid">
       <ul class="nav navbar-nav">
         <li class="dropdown">
@@ -1425,13 +1424,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					lemon.searchconds = null;
 					lemon.skeys = [];
 					
-					var pg = api.progress({
-						selector: '#btn_search',
-						auto: {
-							ms: 100,
-							step: 1
-						}
-					});
+					api.progressHome();
 					api.previousInterval = {
 				   		when: '',
 				   		batch: 0
@@ -1666,11 +1659,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						break;
 
 					case 7: //Settings
-						pg.end();
 						return lemon.tmpl($('#setting_tmpl').html(), {});
 					}
 
-					pg.end();
 					//var empty = 'Couldn’t find any APIs or histories';
 					return lemon.tmpl($('#table_tmpl').html(), {
 						histories: histories, 
@@ -1682,8 +1673,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					if (lemon.searchconds && lemon.searchconds.now) {
 	                	$('#btn_search').data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_search_body'});
 	    	            api.scroll('#scroll_search_body', function() {
+	    	            	api.progressHome();
 	    	            	var queryR = api.queryNextHis(lemon.searchconds);
 	    	            	$('#his_body').append(api.getQueryTrHis(queryR.items, lemon.nextHis.intlNo));
+	    	            	api.progressHomeEnd();
 	    	            });
 		            }
 
@@ -1724,18 +1717,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							api.file.handle(this, event, {
 								onLoadStart: function(e, target) {
 									$('#btn_imp').button('loading');
-									api.loading.start('#import_tab');
-									api.loading.progress(30);
+									api.progressHome();
 								},
 								onLoadEnd: function(e, target) {
-									api.loading.progress(80);
-									api.loading.progress(98);
 									api.impexp.doimport(target.reader.result, true);
-									lemon.delay(function() {
-										api.loading.end();
-										$('#btn_imp').button('reset');
-										$('#imp_file').val('');
-									}, 800);
+									api.progressHomeEnd();
+									$('#btn_imp').button('reset');
+									$('#imp_file').val('');
 								}
 							});
 						});
@@ -1911,6 +1899,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						}
 						break;
 					};
+
+					api.progressHomeEnd();
 				}, function(el) {
 					switch(lemon.searchType) {
 					case 7:
@@ -1955,6 +1945,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					lemon.descs = [];
 					lemon.tags = [];
 					lemon.currentP = 1;
+
+					api.progressHome();
 					api.previousInterval = {
 				   		when: '',
 				   		batch: 0
@@ -1963,12 +1955,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
                 }, { title: '', trigger: 'click' }, function(el) {
                 	$(el).data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_body'});
                     api.scroll('#scroll_body', function() {
+                    	api.progressHome();
                         ++lemon.currentP;
     					$('#his_body').append(api.getTrHis());
     					api.tglhis('#btn_tgl_requ', 'pre[tgl-requ="tgl"]');
     					api.tglhis('#btn_tgl_resp', 'pre[tgl-resp="tgl"]');
     					api.doHisFilter();
+    					api.progressHomeEnd();
                     });
+                    api.progressHomeEnd();
                 });
 
 				/* api.nav.textarea('#request');
@@ -2409,6 +2404,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
             });
 		},
 		showMatchedHistories: function(conds, ps, lastId) {
+			api.progressHome();
 			if (!$('#scroll_search_body').length) {
 				$('#btn_search').data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_search_body'});
 
@@ -2426,15 +2422,17 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 				lemon.nextHis = null;
 	            api.scroll('#scroll_search_body', function() {
+	            	api.progressHome();
 	            	var queryR = api.queryNextHis(conds);
 	            	$('#his_body').append(api.getQueryTrHis(queryR.items, lemon.nextHis.intlNo));
 	            	api.matchSearch();
+	            	api.progressHomeEnd();
 	            });
 			}
 
 			var queryR = api.queryNextHis(conds);
         	$('#his_body').append(api.getQueryTrHis(queryR.items, lemon.nextHis.intlNo));
-			
+        	api.progressHomeEnd();
 		},
 		queryNextHis: function(conds) {
 			if (lemon.isBlank(lemon.nextHis)) {
@@ -2538,10 +2536,6 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							break;
 						}
 					}
-
-					/* if (api.loading.exists) {
-						api.loading.qryProgress(matched, ps, looped, recordsLen);
-					} */
 				}
 			}
 
@@ -3535,6 +3529,18 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				overlayMode: true 
 			}).start().set(0);
 		},
+		progressHomeEnd: function() {
+			api.loadingHome.end();
+		},
+		progressHome: function(selector) {
+			api.loadingHome = api.progress({ 
+				selector: selector || api.progressSelector || '#home_navbar', 
+				auto: { ms: 100, step: 1 }, set: 50
+			});
+			if (api.progressSelector) {
+				api.progressSelector = null;
+			}
+		},
 		progress: function(options) {
 			options = lemon.extend({
 				selector: null,
@@ -3543,12 +3549,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					ms: 1000,
 					step: 1
 				},
+				set: 0,
 				cfg: {
 					theme: 'blueOverlayRadiusHalfOpacity', 
 					overlayMode: true 
 				}
 			}, options || {});
-			var pg = progressJs(options.selector).setOptions(options.cfg);
+			var pg = progressJs(options.selector).setOptions(options.cfg).set(options.set);
 			if (options.start) {
 				pg.start();
 			}
@@ -4573,20 +4580,12 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				$(selector).change(function(event) {
 					api.file.handle(this, event, {
 						onLoadStart: function(e, target) {
-							api.loading.start();
-							api.loading.progress(20);
+							api.progressHome();
 						},
 						onLoadEnd: function(e, target) {
-							api.loading.progress(50);
-							lemon.sleep(500);
-							api.loading.progress(85);
-							lemon.delay(function() {
-								api.loading.progress(98);
-								lemon.sleep(500);
-								lemon.isFunc(callback) && callback(target.reader.result, target);
-								api.loading.end();
-								$(selector).val('');
-							}, 800);
+							lemon.isFunc(callback) && callback(target.reader.result, target);
+							api.progressHomeEnd();
+							$(selector).val('');
 						}
 					});
 				});
@@ -4808,8 +4807,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				//opt undefined or 1: mini export, 2 readable export, 3 as cross domain configuration export
 				$(el).button('loading');
 				
-				api.loading.start('#myTabContent');
-				api.loading.progress(10);
+				api.progressHome();
 				var expcfg = {
 					basic: api.nav.check('#exp_basic'),
 					server: api.nav.check('#exp_server'),
@@ -4847,7 +4845,6 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					for (var idx = lastId; idx >= 0; idx--) {
 						exp.histories[idx] = lemon.store(idx);
 						++looped;
-						//api.loading.progress(looped / lastId * 100 - 10);	
 					}
 
 					exp.lastId = lastId;
@@ -4891,13 +4888,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					}
 				}
 
-				lemon.delay(function() {
-					api.loading.progress(98);
-				}, 1000);
-				lemon.delay(function() {
-					api.loading.end();
-					$(el).button('reset');
-				}, 2000);
+				api.progressHomeEnd();
+				$(el).button('reset');
 			},
 			lemon: {
 				disabled: function(msg) {
@@ -4956,38 +4948,6 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					lemon.info('Clean local api.profile');
 					lemon.store('api.profile', null);
 				}
-			}
-		},
-		loading: {
-			exists: false,
-			start: function(selector) {
-				selector = selector || 'body';
-				var html = [
-					'<nav class="navbar-fixed-bottom" id="loading" style="z-index:100000">',
-					'<div class="container">', 
-					'<div class="progress">',
-					'<div class="progress-bar progress-bar-striped active" id="loading_bar" role="progressbar" ',
-					'aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 0.1%">',      
-					'<span class="sr-only" id="loading_desc">0.1% Complete</span>',
-					'</div>',	  
-					'</div>',
-					'</div>',
-					'</nav>'
-				].join('');
-				
-				$(selector).append(html);
-				api.loading.exists = true;
-			},
-			qryProgress: function(matched, match, looped, loop) {
-				api.loading.progress(Math.max(matched / match, looped / loop) * 100);
-			},
-			progress: function(percent) {
-				$('#loading_bar').css({ width: percent + '%' });
-				$('#loading_desc').empty().html(percent + '% Complete');
-			},
-			end: function() {
-				$('#loading').remove();
-				api.loading.exists = false;
 			}
 		},
 		cmd: {
@@ -5292,6 +5252,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}
 		},
 		openFile: function() {
+			api.progressSelector = '#note_tool_bar';
 			$('#note_open_file').click();
 		},
 		delNote: function(noteId) {
@@ -5932,6 +5893,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				note.diff.load('r');
 			},
 			load: function(view, content) {
+				api.progressSelector = '#nav_merge';
 				var loaded = !lemon.isUndefined(content);
 				switch(view) {
 				case 'l':
