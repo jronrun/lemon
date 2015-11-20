@@ -1209,13 +1209,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				$('#btn_request').click(function() {
 					if (!api.isServSupportJSONP()) { return; }
 					if (!api.chkRequest()) { return; }
-					var pg = api.progress({selector: '#btn_request'});
+					api.progressHome();
 					api.resp('');
 					api.request(function(data) {
 						api.resp(lemon.json(data));
-						pg.end();
+						api.progressHomeEnd();
 					}, function() {
-						pg.end();
+						api.progressHomeEnd();
 					});
 				});
 
@@ -3566,22 +3566,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		},
 		requestGetPost: function(selector, type) {
 			$(selector).click(function() {
-				if ($(selector).parent().hasClass('disabled')) {
-					return;
-				}
 				if (!api.chkRequest()) { return; }
 				
-				var sameact = '#btn_request_get,#btn_request_post'; 					
-				var pg = api.progress({selector: '#btn_request'});
-				$(sameact).parent().addClass('disabled');
+				api.progressHome();
 				api.resp('');
 				api.request(function(data) {
 					api.resp(lemon.json(data));
-					pg.end();
-					$(sameact).parent().removeClass('disabled');
+					api.progressHomeEnd();
 				}, function(jqXHR, textStatus, errorThrown) {
-					$(sameact).parent().removeClass('disabled');
-					pg.end();
+					api.progressHomeEnd();
 				}, type || 'post');
 			});
 		},
