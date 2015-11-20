@@ -4475,7 +4475,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				if (!typeId) {
 					$('#default_env').click();
 				} else {
-					if (!lemon.isBlank(lemon.getEnv())) {
+					if (!lemon.isBlank(lemon.getEnv()) && !api.env.prevTypeId) {
 						var aEnv = api.env.which(lemon.getEnv());
 						if (aEnv.type.id != typeId) {
 							var serv = api.env.defaultChoosableServ();
