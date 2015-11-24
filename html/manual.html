@@ -449,6 +449,7 @@
 				<button type="button" class="btn btn-default btn-sm" id="btn_tgl_requ"><span class="text-muted">Request</span></button> 
 				<button type="button" class="btn btn-default btn-sm" id="btn_tgl_resp"><span class="text-muted">Response</span></button>
 				<button type="button" class="btn btn-default btn-sm" id="btn_tgl_interval"><span class="text-muted">Collapse Toggle</span></button>
+				<button type="button" class="btn btn-info btn-sm" id="btn_extract"> <span class="glyphicon glyphicon-tint"></span> Extract... </button>
 
 				<h4><span class="label label-info"><span class="glyphicon glyphicon-filter"></span> Filter Favourite</span></h4>
 				<button type="button" class="btn btn-default btn-sm" id="prop_filter_1">
@@ -1071,6 +1072,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
   </div>
 </nav>
 </script>
+
+<script type="text/html" id="extract_tmpl">
+
+</script>
 						
 <script type="text/javascript">
 	root = window;
@@ -1569,35 +1574,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 					case 8: //Complex
 					case 9:
-						var keys = [];
-						lemon.each(key.split(8 == searchType ? '|' : '&'), function(v, idx) {
-							var tmp = v.split(':'), cond = {}, condK = null;
-							if (lemon.startWith(tmp[0], '/l.')) {
-								cond = {
-									type: 'requ',
-									prop: tmp[0].replace('/l.', ''),
-									match: new RegExp(tmp[1])
-								};
-							} else if (lemon.startWith(tmp[0], '/r.')) {
-								cond = {
-									type: 'resp',
-									prop: tmp[0].replace('/r.', ''),
-									match: new RegExp(tmp[1])
-								};
-							} else {
-								cond = {
-									type: 'both',
-									prop: tmp[0],
-									match: new RegExp(tmp[1])
-								};
-							}
-							
-							keys.push(cond);
-							lemon.skeys.push(tmp[1]);
+						lemon.searchconds = api.getSearchConds(key, function(unitkey) {
+							lemon.skeys.push(unitkey);
 						});
-
-						var opt = 8 == searchType ? 1 : 2;
-						lemon.searchconds = { opt: opt, exp: keys };
 						var r  = api.queryNextHis(lemon.searchconds);
 						if (r.realSize > 0) {
 							lemon.searchconds.now = true;
@@ -3007,161 +2986,178 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				lemon.isFunc(onHidden) && onHidden(this);
 			}).on('shown.bs.popover', function() {
 				lemon.isFunc(onShown) && onShown(this);
+				api.historyCtl();				
+			});
+		},
+		historyCtl: function() {
+			api.popover('#btn_extract', function() {
+				return lemon.tmpl($('#extract_tmpl').html(), {});
+			}, {
+				title: 'Extract What You Need',
+				placement: 'right'
+			}).on('hidden.bs.popover', function() {
+				
+			}).on('show.bs.popover', function() {
+				
+			}).on('shown.bs.popover', function() {
+				var el = $(this).data("bs.popover").tip();
+				var w = $(root).width() / 2;
+				el.css({ width: w, 'max-width': w, border: 0 });
+			});
 
-				$('#btn_tgl_requ').click(function() {
-					$(this).button('toggle');
-					lemon.scrollNext = true;
-					api.tglhis(this, 'pre[tgl-requ="tgl"]');
-				});
-				$('#btn_tgl_resp').click(function() {
-					$(this).button('toggle');
-					lemon.scrollNext = true;
-                	//$('pre[tgl-resp="tgl"]').fadeToggle("slow", "linear");
-					api.tglhis(this, 'pre[tgl-resp="tgl"]');
+			$('#btn_tgl_requ').click(function() {
+				$(this).button('toggle');
+				lemon.scrollNext = true;
+				api.tglhis(this, 'pre[tgl-requ="tgl"]');
+			});
+			$('#btn_tgl_resp').click(function() {
+				$(this).button('toggle');
+				lemon.scrollNext = true;
+            	//$('pre[tgl-resp="tgl"]').fadeToggle("slow", "linear");
+				api.tglhis(this, 'pre[tgl-resp="tgl"]');
+            });
+            $('#btn_tgl_interval').click(function() {
+            	$(this).button('toggle');
+            	var isActive = $(this).hasClass('active');
+            	lemon.each(api.batches || [], function(v, k) {
+            		var exp = api.getHisFilterExp();
+            		var target = '';
+        			if (!lemon.isBlank(exp)) {
+        				target = 'tr[batch="' + v + '"]' + exp;
+        			} else {
+            			target = 'tr[batch="' + v + '"]';
+        			}
+        			if (isActive) {
+        				$(target).hide("slow", "linear");
+            		} else {
+            			$(target).show("slow", "linear");
+                	}
                 });
-                $('#btn_tgl_interval').click(function() {
-                	$(this).button('toggle');
-                	var isActive = $(this).hasClass('active');
-                	lemon.each(api.batches || [], function(v, k) {
-                		var exp = api.getHisFilterExp();
-                		var target = '';
-            			if (!lemon.isBlank(exp)) {
-            				target = 'tr[batch="' + v + '"]' + exp;
-            			} else {
-                			target = 'tr[batch="' + v + '"]';
-            			}
-            			if (isActive) {
-            				$(target).hide("slow", "linear");
-                		} else {
-                			$(target).show("slow", "linear");
-                    	}
-                    });
-                });
+            });
 
-                $('#tag_edit').click(function() {
-                	var $input = $('#tag_input');
-                	var tagId = $input.attr('tagId');
-                	var msg = '';
-                	var tagNmae = $input.val();
-                	if (tagId && !lemon.isBlank(tagNmae)) {
-	                    var id = '#tag_filter_' + tagId;
-	                    api.tag(tagId, tagNmae);
-	                    $(id).text(tagNmae);
-	                    msg = ' Edit Done!';
-	                    $('span[id$=' + tagId + ']').children('span').text(tagNmae);
+            $('#tag_edit').click(function() {
+            	var $input = $('#tag_input');
+            	var tagId = $input.attr('tagId');
+            	var msg = '';
+            	var tagNmae = $input.val();
+            	if (tagId && !lemon.isBlank(tagNmae)) {
+                    var id = '#tag_filter_' + tagId;
+                    api.tag(tagId, tagNmae);
+                    $(id).text(tagNmae);
+                    msg = ' Edit Done!';
+                    $('span[id$=' + tagId + ']').children('span').text(tagNmae);
+                } else {
+                    msg = ' None Exist Tag.';
+                }
+            	api.inlineTip('#tag_edit', msg);
+            });
+            $('#tag_add').click(function() {
+                $(this).button('disable');
+                var $input = $('#tag_input');
+                var $group = $('#tag_group');
+                var tag = $input.val();
+                if (!lemon.isBlank(tag)) {
+                    var tagId = api.autoId();
+                    var theTag = api.tag(tagId, tag);
+                    var msg = '';
+                    if (!theTag.exists) {
+                        var tagBtn = [
+							' <button type="button" onclick="api.ontag('+ tagId + ');"',
+							' class="btn btn-default btn-sm" style="margin-top:5px;" ',
+							' id="tag_filter_'+ tagId + '"> ' + tag + ' </button> '
+                        	].join('');
+                        $group.append(tagBtn);
+                        $input.attr({tagId: theTag.id});
+                        msg = ' Add Done!';
                     } else {
-                        msg = ' None Exist Tag.';
+                        msg = ' Tag Exists.';
                     }
-                	api.inlineTip('#tag_edit', msg);
-                });
-                $('#tag_add').click(function() {
-                    $(this).button('disable');
-                    var $input = $('#tag_input');
-                    var $group = $('#tag_group');
-                    var tag = $input.val();
-                    if (!lemon.isBlank(tag)) {
-                        var tagId = api.autoId();
-                        var theTag = api.tag(tagId, tag);
-                        var msg = '';
-                        if (!theTag.exists) {
-                            var tagBtn = [
-								' <button type="button" onclick="api.ontag('+ tagId + ');"',
-								' class="btn btn-default btn-sm" style="margin-top:5px;" ',
-								' id="tag_filter_'+ tagId + '"> ' + tag + ' </button> '
-                            	].join('');
-	                        $group.append(tagBtn);
-	                        $input.attr({tagId: theTag.id});
-	                        msg = ' Add Done!';
-                        } else {
-                            msg = ' Tag Exists.';
-                        }
-                        
-                        api.inlineTip('#tag_add', msg);
-                    }
-                });
-                $('#tag_rem').click(function() {
-                	var $input = $('#tag_input');
-                	var tagId = $input.attr('tagId');
-                	var msg = '';
-                	if (tagId) {
-	                    var id = '#tag_filter_' + tagId;
-	                    api.tag(tagId, -1);
-	                    $(id).remove();
-	                    $input.removeAttr('tagId');
-	                    msg = ' Remove Done!';
+                    
+                    api.inlineTip('#tag_add', msg);
+                }
+            });
+            $('#tag_rem').click(function() {
+            	var $input = $('#tag_input');
+            	var tagId = $input.attr('tagId');
+            	var msg = '';
+            	if (tagId) {
+                    var id = '#tag_filter_' + tagId;
+                    api.tag(tagId, -1);
+                    $(id).remove();
+                    $input.removeAttr('tagId');
+                    msg = ' Remove Done!';
 
-	                    $('span[id$=' + tagId + ']').remove();
-	                    $(lemon.format('[tag{0}="{0}"]', tagId)).removeAttr('tag' + tagId).hide();
-	                    api.filters.tag = lemon.rmByVal(api.filters.tag, parseInt(tagId));
-	                    api.doHisFilter();
-                    } else {
-                        msg = ' None Exist Tag.';
-                    }
-                	api.inlineTip('#tag_rem', msg);
-                });
+                    $('span[id$=' + tagId + ']').remove();
+                    $(lemon.format('[tag{0}="{0}"]', tagId)).removeAttr('tag' + tagId).hide();
+                    api.filters.tag = lemon.rmByVal(api.filters.tag, parseInt(tagId));
+                    api.doHisFilter();
+                } else {
+                    msg = ' None Exist Tag.';
+                }
+            	api.inlineTip('#tag_rem', msg);
+            });
 
-                api.filters = {
-                	env: [],
-                	interf: [],
-                	prop: [],
-                	tag: []
-                };
-                $('button[id^="env_filter_"],button[id^="filter_"],button[id^="prop_filter_"]').click(function() {
-					var isActive = $(this).hasClass('active');
-					var id = $(this).attr('id');
-					var mark = lemon.ltrim(id, 'env_filter_|filter_|prop_filter_');
-					
-					var whichGroup = 0;
-					var expTpl = '';
-					if (lemon.startWith(id, 'env_filter_')) {
-						whichGroup = 1;
-						expTpl = '[env="{0}"]';
-					} else if (lemon.startWith(id, 'filter_')) {
-						whichGroup = 2;
-						expTpl = '[interf="{0}"]';
-					} else if (lemon.startWith(id, 'prop_filter_')) {
-						whichGroup = 3;
-						expTpl = '[prop="{0}"]';
+            api.filters = {
+            	env: [],
+            	interf: [],
+            	prop: [],
+            	tag: []
+            };
+            $('button[id^="env_filter_"],button[id^="filter_"],button[id^="prop_filter_"]').click(function() {
+				var isActive = $(this).hasClass('active');
+				var id = $(this).attr('id');
+				var mark = lemon.ltrim(id, 'env_filter_|filter_|prop_filter_');
+				
+				var whichGroup = 0;
+				var expTpl = '';
+				if (lemon.startWith(id, 'env_filter_')) {
+					whichGroup = 1;
+					expTpl = '[env="{0}"]';
+				} else if (lemon.startWith(id, 'filter_')) {
+					whichGroup = 2;
+					expTpl = '[interf="{0}"]';
+				} else if (lemon.startWith(id, 'prop_filter_')) {
+					whichGroup = 3;
+					expTpl = '[prop="{0}"]';
+				}
+				
+				$(this).button('toggle');
+				if (isActive) {
+					switch (whichGroup) {
+					case 1:
+						api.filters.env.pop();
+						break;
+					case 2:
+						api.filters.interf.pop();
+						break;
+					case 3:
+						api.filters.prop.pop();
+						break;
 					}
-					
-					$(this).button('toggle');
-					if (isActive) {
-						switch (whichGroup) {
-						case 1:
-							api.filters.env.pop();
-							break;
-						case 2:
-							api.filters.interf.pop();
-							break;
-						case 3:
-							api.filters.prop.pop();
-							break;
+				} else {
+					switch (whichGroup) {
+					case 1:
+						if (api.filters.env.length > 0) {
+							$('#env_filter_' + api.filters.env.pop()).button('toggle');
 						}
-					} else {
-						switch (whichGroup) {
-						case 1:
-							if (api.filters.env.length > 0) {
-								$('#env_filter_' + api.filters.env.pop()).button('toggle');
-							}
-							api.filters.env.push(mark);
-							break;
-						case 2:
-							if (api.filters.interf.length > 0) {
-								$('#filter_' + api.filters.interf.pop()).button('toggle');
-							}
-							api.filters.interf.push(mark);
-							break;
-						case 3:
-							if (api.filters.interf.length > 0) {
-								$('#prop_filter_' + api.filters.prop.pop()).button('toggle');
-							}
-							api.filters.prop.push(mark);
-							break;
+						api.filters.env.push(mark);
+						break;
+					case 2:
+						if (api.filters.interf.length > 0) {
+							$('#filter_' + api.filters.interf.pop()).button('toggle');
 						}
+						api.filters.interf.push(mark);
+						break;
+					case 3:
+						if (api.filters.interf.length > 0) {
+							$('#prop_filter_' + api.filters.prop.pop()).button('toggle');
+						}
+						api.filters.prop.push(mark);
+						break;
 					}
-					
-					api.doHisFilter();
-				});
+				}
+				
+				api.doHisFilter();
 			});
 		},
 		getHisFilterExp: function() {
@@ -3265,6 +3261,38 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}
 			
 			return true;
+		},
+		getSearchConds: function(key, valueHandle) {
+			var keys = [], split = '';
+			if (key.indexOf('|') != -1) { split = '|'; } else if (key.indexOf('&') != -1) { split = '&'; }
+			lemon.each(key.split(split), function(v, idx) {
+				var tmp = v.split(':'), cond = {}, condK = null;
+				if (lemon.startWith(tmp[0], '/l.')) {
+					cond = {
+						type: 'requ',
+						prop: tmp[0].replace('/l.', ''),
+						match: new RegExp(tmp[1])
+					};
+				} else if (lemon.startWith(tmp[0], '/r.')) {
+					cond = {
+						type: 'resp',
+						prop: tmp[0].replace('/r.', ''),
+						match: new RegExp(tmp[1])
+					};
+				} else {
+					cond = {
+						type: 'both',
+						prop: tmp[0],
+						match: new RegExp(tmp[1])
+					};
+				}
+				
+				keys.push(cond);
+				lemon.isFunc(valueHandle) && valueHandle(tmp[1]);
+			});
+
+			var opt = '|' == split ? 1 : 2;
+			return { opt: opt, exp: keys };
 		},
 		getCleanRequestData: function(data) {
 			var data = api.requ();
