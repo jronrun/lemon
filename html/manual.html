@@ -1476,6 +1476,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							'<h4></h4>'
 						].join('');
 						$('#advance_qry').after(btn);
+						api.advqry.fill('advance_qry');
 						el.show();
 					}
 				});
@@ -3082,12 +3083,50 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					$('#btn_extract').button('toggle');
 					options.show && options.show(this);
 				}).on('shown.bs.popover', function() {
-					api.advqry.addCond(options.container);
 					options.shown && options.shown(this);
 				});
 			},
 			close: function(triggerId) {
 				$(triggerId).click();
+			},
+			fill: function(containerId) {
+				var key = $('#input_search').val();
+				var params = {};
+				if (!lemon.isBlank(key)) {
+					if (key.indexOf('|') != -1) {
+						params.symbol = '|';
+					} else if (key.indexOf('&') != -1) {
+						params.symbol = '&';
+					} else {
+						params.symbol = '&';
+					}
+
+					lemon.each(key.split(params.symbol), function(v, i) {
+						var idx = api.advqry.addCond(containerId), op = 'both', sk = '', sv = '', tmp = null;
+						var isrequ = false, isresp = false, tmpk = v;
+						var isrequ = lemon.startWith(v, '/l.'), isresp = lemon.startWith(v, '/r.');
+						if (isrequ) {
+							op = 'requ', tmpk = v.substring(3);
+						} else if (isresp) {
+							op = 'resp', tmpk = v.substring(3);
+						}
+						
+						tmp = tmpk.split(':');
+						if (tmp.length >= 2) {
+							sk = tmp[0]; sv = tmp[1];
+						} else {
+							sv = tmp[0];
+						}
+
+						params['op' + idx] = op;
+						params['key' + idx] = sk;
+						params['val' + idx] = sv;
+					});
+
+					lemon.fillParam(containerId, params);
+				} else {
+					api.advqry.addCond(containerId);
+				}
 			},
 			search: function(containerId, triggerId) {
 				//{symbol: "&", op10: "requ", key10: "", val10: ""}
@@ -3110,10 +3149,12 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				api.advqry.close(triggerId);
 			},
 			addCond: function(containerId) {
+				var idx = lemon.uniqueId();
 				var cond = lemon.tmpl($('#extract_tmpl').html(), {
-					index: lemon.uniqueId()
+					index: idx
 				});
 				$('#' + containerId).append(cond);
+				return idx;
 			},
 			remCond: function(condId) {
 				$('#ex_filter_' + condId).remove();
