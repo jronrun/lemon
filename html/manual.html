@@ -61,13 +61,16 @@
 						</ul>
 					</li>
 				</ul>
+				<button type="button" class="hidden" id="btn_advance"></button>
 				<form class="navbar-form navbar-left" role="search">
 					<div class="form-group">
-						<div class="input-group">
+						<div class="input-group" id="group_search">
 					      <div class="input-group-btn">
 					        <button type="button" class="btn btn-default dropdown-toggle" style="border:0px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> 
 					        <span class="caret text-muted"></span></button>
 					        <ul class="dropdown-menu" style="border:0px;"k>
+					          <li role="separator" class="divider"></li>
+					          <li> <a href="javascript:void(0);" onclick="api.typeSearch(12)"><span class="text-muted">Advance Search</span></a> </li>
 					          <li role="separator" class="divider"></li>
 					          <li><a href="javascript:void(0);" onclick="api.typeSearch(1)"><span class="text-muted">Defined APIs</span></a></li>
 					          <li><a href="javascript:void(0);" onclick="api.typeSearch(4)"><span class="text-muted">Tag</span></a></li>
@@ -1073,14 +1076,39 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 </nav>
 </script>
 
+<script type="text/html" id="extract_base_tmpl">
+<form class="form-inline" id="<%= cid %>">
+<h4>
+<span class="label label-info"><span class="glyphicon glyphicon-filter"></span> Matches</span>
+<select class="form-control btn-sm" name="symbol"> 
+	<option value="&">AND</option>
+	<option value="|">OR</option>
+</select>
+<button type="button" class="btn btn-default" onclick="api.advqry.addCond('<%= cid %>');"><span class="text-muted glyphicon glyphicon-plus"></span></button>
+</h4>
+</form>
+<h4></h4>
+</script>
 <script type="text/html" id="extract_tmpl">
-
+<div ex="filter" idx="<%= index %>" id="ex_filter_<%= index %>">
+<h4></h4>
+<select class="form-control" name="op<%= index %>"> 
+	<option value="both">Request OR Response</option>
+	<option value="requ">Request</option>
+	<option value="resp">Response</option>
+</select>
+<input type="text" class="form-control" name="key<%= index %>" placeholder="'s property">
+<input type="text" class="form-control" name="val<%= index %>" placeholder="like this value">
+<button type="button" class="btn btn-default" onclick="api.advqry.remCond('<%= index %>');"><span class="text-muted glyphicon glyphicon-minus"></span></button>
+</div>
 </script>
 						
 <script type="text/javascript">
 	root = window;
-	lemon.addDateMask({tiny: 'yyyymmddHHMMss'});
-	lemon.addDateMask({mark: 'yyyymmddHHMMss.l'});
+	lemon.addDateMask({
+		tiny: 'yyyymmddHHMMss',
+		mark: 'yyyymmddHHMMss.l'
+	});
 	lemon.console();
 	lemon.getset({
 		env: null,
@@ -1420,6 +1448,38 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					}
 				});
 
+				api.advqry.intl({
+					triggerId: '#btn_advance',
+					container: 'advance_qry',
+					title: 'Advance Search',
+					inserted: function(el) {
+						var el = $(el).data("bs.popover").tip();
+						el.find('.arrow').remove();
+						el.hide();
+					},
+					hidden: function(el) {
+						api.enable('#group_search,#btn_search');
+					},
+					shown: function(el) {
+						var el = $(el).data("bs.popover").tip();
+						var offset = $('#input_search').offset(), h = $('#input_search').height();
+						el.css({
+							left: offset.left - 150,
+							top: offset.top + h
+						});
+						api.disable('#group_search,#btn_search');
+						var btn = [
+							'<h4></h4>',
+							'<p class="pull-right" style="margin-right:13px;">',
+							'<button type="button" onclick="api.advqry.search(\'#advance_qry\',\'#btn_advance\');" class="btn btn-primary">',
+							'<span class="glyphicon glyphicon-search" title="Search"></span> Search</button></p>',
+							'<h4></h4>'
+						].join('');
+						$('#advance_qry').after(btn);
+						el.show();
+					}
+				});
+
 				api.popoverOnBtn('#btn_search', function() {
 					lemon.notes = [];
 					lemon.defaults = [];
@@ -1442,7 +1502,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					var searchProp = '';
 					if (!lemon.isBlank(key)) {
 						searchType = 2;
-						if (key.indexOf('|') > 0) {
+						if (lemon.startWith(key, '/l') || lemon.startWith(key, '/r')) {
+							searchType = 8;
+						} else if (key.indexOf('|') > 0) {
 							searchType = 8;
 						} else if (key.indexOf('&') > 0) {
 							searchType = 9;
@@ -1669,6 +1731,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							$(this).button('loading');
 							api.showMatchedHistories(lemon.searchconds);
 							api.matchSearch();
+							api.historyCtl();
 							$(this).slideToggle();
 						});
 						$('#btn_tgl_apirequ').click(function() {
@@ -2253,7 +2316,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			holder.param = analyze2;
 			return holder;
 		},
-		typeSearch: function(type) {
+		typeSearch: function(type, key) {
 			var val = '';
 			switch (type) {
 			case 1: break;
@@ -2262,6 +2325,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			case 6: val = 'ALL'; break;
 			case 7: val = 'SETTING'; break;
 			case 11: val = 'MUTATION'; break;
+			case 100: val = key || ''; break;
+			case 12:
+				$('#btn_advance').click();
+				return;
 			}
 			$('#input_search').val(val);
 			if (4 != type) {
@@ -2989,20 +3056,74 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				api.historyCtl();				
 			});
 		},
+		advqry: {
+			intl: function(options) {
+				var title = [
+				 	options.title,
+				 	'<div class="pull-right">',
+				 	'<button type="button" class="close" aria-label="Close" onclick="api.advqry.close(\'' + options.triggerId + '\');">',
+				 	'<span aria-hidden="true">&times;</span></button>',
+				 	'</div>'
+				 ].join('');
+				api.popover(options.triggerId, function() {
+					return lemon.tmpl($('#extract_base_tmpl').html(), {cid: options.container});
+				}, {
+					title: title,
+					placement: 'bottom'
+				}).on('inserted.bs.popover', function() {
+					options.inserted && options.inserted(this);
+				}).on('hidden.bs.popover', function() {
+					options.hidden && options.hidden(this);
+					$('#btn_extract').button('toggle');
+				}).on('show.bs.popover', function() {
+					var el = $(this).data("bs.popover").tip();
+					var w = $(root).width() / 2 - 26;
+					el.css({ width: w, 'max-width': w, border: 0 });
+					$('#btn_extract').button('toggle');
+					options.show && options.show(this);
+				}).on('shown.bs.popover', function() {
+					api.advqry.addCond(options.container);
+					options.shown && options.shown(this);
+				});
+			},
+			close: function(triggerId) {
+				$(triggerId).click();
+			},
+			search: function(containerId, triggerId) {
+				//{symbol: "&", op10: "requ", key10: "", val10: ""}
+				var params = lemon.getParam(containerId);
+				var keys = [];
+				$(containerId + ' div[ex="filter"]').each(function(i, el) {
+					var idx = $(this).attr('idx');
+					var op = params['op' + idx], sk = params['key' + idx], sv = params['val' + idx], exp = '';
+					if (!lemon.isBlank(op) && !lemon.isBlank(sk) && !lemon.isBlank(sv)) {
+						exp = sk + ':' + sv;
+						switch(op) {
+						case 'requ': exp = '/l.' + exp; break;
+						case 'resp': exp = '/r.' + exp; break;
+						case 'both': break;
+						}
+						keys.push(exp);
+					}
+				});
+				api.typeSearch(100, keys.join(params.symbol));
+				api.advqry.close(triggerId);
+			},
+			addCond: function(containerId) {
+				var cond = lemon.tmpl($('#extract_tmpl').html(), {
+					index: lemon.uniqueId()
+				});
+				$('#' + containerId).append(cond);
+			},
+			remCond: function(condId) {
+				$('#ex_filter_' + condId).remove();
+			}
+		},
 		historyCtl: function() {
-			api.popover('#btn_extract', function() {
-				return lemon.tmpl($('#extract_tmpl').html(), {});
-			}, {
-				title: 'Extract What You Need',
-				placement: 'right'
-			}).on('hidden.bs.popover', function() {
-				
-			}).on('show.bs.popover', function() {
-				
-			}).on('shown.bs.popover', function() {
-				var el = $(this).data("bs.popover").tip();
-				var w = $(root).width() / 2;
-				el.css({ width: w, 'max-width': w, border: 0 });
+			api.advqry.intl({
+				triggerId: '#btn_extract',
+				container: 'his_extract',
+				title: 'Extract What You Need'
 			});
 
 			$('#btn_tgl_requ').click(function() {
@@ -3263,7 +3384,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			return true;
 		},
 		getSearchConds: function(key, valueHandle) {
-			var keys = [], split = '';
+			var keys = [], split = '|';
 			if (key.indexOf('|') != -1) { split = '|'; } else if (key.indexOf('&') != -1) { split = '&'; }
 			lemon.each(key.split(split), function(v, idx) {
 				var tmp = v.split(':'), cond = {}, condK = null;
@@ -3556,6 +3677,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				theme: 'blueOverlayRadiusHalfOpacity', 
 				overlayMode: true 
 			}).start().set(0);
+		},
+		enable: function(selector) {
+			progressJs(selector).end();
 		},
 		progressHomeEnd: function() {
 			api.loadingHome.end();
