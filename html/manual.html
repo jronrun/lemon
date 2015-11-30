@@ -3192,9 +3192,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				
 				api.progressHome(); $(el).addClass('disabled');
 				var cid = '#' + $(el).attr('cid'), pid = '#' + $(el).attr('pid'), rdata = '';
-				var conds = lemon.searchconds ? lemon.searchconds : api.getSearchConds(api.advqry.getKeys(pid));
+				var fkey = api.advqry.getKeys(pid);
+				var conds = lemon.searchconds ? lemon.searchconds : api.getSearchConds(fkey);
 				var data = api.queryHistories(conds, -1);
-				console.log(data);
 
 				var extrs = api.advqry.getExtracts(cid);
 				if (lemon.isBlank(extrs.requ) && lemon.isBlank(extrs.resp)) {
@@ -3222,6 +3222,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						}
 					});
 
+					props.summary = {
+						size: props.extracts.length,
+						time: lemon.when(),
+						filter: fkey
+					};
 					rdata = lemon.json(props);
 				}
 
