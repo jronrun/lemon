@@ -1085,6 +1085,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 	<option value="|">OR</option>
 </select>
 <button type="button" class="btn btn-default" onclick="api.advqry.addCond('<%= cid %>');"><span class="text-muted glyphicon glyphicon-plus"></span></button>
+<button type="button" class="btn btn-default" cid="<%= cid %>" onclick="api.advqry.camera(this);"><span class="text-muted glyphicon glyphicon-camera"></span></button>
 </h4>
 </form>
 <h4></h4>
@@ -1100,6 +1101,27 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 <input type="text" class="form-control" name="key<%= index %>" placeholder="'s property">
 <input type="text" class="form-control" name="val<%= index %>" placeholder="like this value">
 <button type="button" class="btn btn-default" onclick="api.advqry.remCond('<%= index %>');"><span class="text-muted glyphicon glyphicon-minus"></span></button>
+</div>
+</script>
+<script type="text/html" id="extract_prop_base_tmpl">
+<form class="form-inline" id="<%= cid %>">
+<h4>
+<span class="label label-info"><span class="glyphicon glyphicon-filter"></span> Extract Properties</span>
+<button type="button" class="btn btn-default" onclick="api.advqry.addProp('<%= cid %>');"><span class="text-muted glyphicon glyphicon-plus"></span></button>
+<button type="button" class="btn btn-primary pull-right" cid="<%= cid %>" pid="<%= parentCid %>" onclick="api.advqry.extract2note(this);"><span class="glyphicon glyphicon-tint"></span> Extract to Note</button>
+</h4>
+</form>
+<h4></h4>
+</script>
+<script type="text/html" id="extract_prop_tmpl">
+<div ex="prop" idx="<%= index %>" id="ex_prop_<%= index %>">
+<select class="form-control" name="op<%= index %>"> 
+	<option value="requ">Request</option>
+	<option value="resp">Response</option>
+</select>
+<input type="text" class="form-control" name="key<%= index %>" id="fname_key_<%= index %>" onkeyup="api.advqry.chgProp(this);" placeholder="'s property">
+<input type="text" class="form-control" name="val<%= index %>" id="fname_val_<%= index %>" placeholder="as filed name...">
+<button type="button" class="btn btn-default" onclick="api.advqry.remProp('<%= index %>');"><span class="text-muted glyphicon glyphicon-minus"></span></button>
 </div>
 </script>
 						
@@ -1461,6 +1483,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						api.enable('#group_search,#btn_search');
 					},
 					shown: function(el) {
+						if ($('#btn_search').hasClass('active')) {
+							$('#btn_search').click();
+						}
+						
 						var el = $(el).data("bs.popover").tip();
 						var offset = $('#input_search').offset(), h = $('#input_search').height();
 						el.css({
@@ -1712,6 +1738,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						theHisTrs: api.getTrHis(1, histories)
 					});
 				}, { title: '', trigger: 'click' }, function(el) {
+					if ($('#btn_history').hasClass('active')) {
+						$('#btn_history').click();
+					}
 					if (lemon.searchconds && lemon.searchconds.now) {
 	                	$('#btn_search').data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_search_body'});
 	    	            api.scroll('#scroll_search_body', function() {
@@ -1957,12 +1986,6 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				});
 
 				$('#btn_note').click(function() {
-					if ($('#btn_search').hasClass('active')) {
-						$('#btn_search').click();
-					}
-					if ($('#btn_history').hasClass('active')) {
-						$('#btn_history').click();
-					}
 					note.open();
 				});
 
@@ -1988,6 +2011,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					lemon.descs = [];
 					lemon.tags = [];
 					lemon.currentP = 1;
+					lemon.searchconds = null;
 
 					api.progressHome();
 					api.previousInterval = {
@@ -1996,6 +2020,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				    };
                     return lemon.tmpl($('#table_tmpl').html(), {histories: 1, apis: {}, showHisBtn: false, theHisTrs: api.getTrHis()});
                 }, { title: '', trigger: 'click' }, function(el) {
+                	if ($('#btn_search').hasClass('active')) {
+						$('#btn_search').click();
+					}
                 	$(el).data("bs.popover").tip().find('div .panel-body').attr({id: 'scroll_body'});
                     api.scroll('#scroll_body', function() {
                     	api.progressHome();
@@ -2517,6 +2544,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			var recordsLen = parseInt(lemon.store('last') || '0');
 			lastId = lastId || recordsLen;
 			var items = {}, ps = ps || api.preference.basic().searchPageSize, matched = 0, looped = 0;
+			ps = -1 == ps ? (lastId + 1) : ps;
 			
 			for (var idx = lastId; idx >= 0; idx--) {
 				var item = lemon.store(idx);
@@ -3075,12 +3103,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					options.inserted && options.inserted(this);
 				}).on('hidden.bs.popover', function() {
 					options.hidden && options.hidden(this);
-					$('#btn_extract').button('toggle');
 				}).on('show.bs.popover', function() {
 					var el = $(this).data("bs.popover").tip();
 					var w = $(root).width() / 2 - 26;
 					el.css({ width: w, 'max-width': w, border: 0 });
-					$('#btn_extract').button('toggle');
 					options.show && options.show(this);
 				}).on('shown.bs.popover', function() {
 					options.shown && options.shown(this);
@@ -3130,6 +3156,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			},
 			search: function(containerId, triggerId) {
 				//{symbol: "&", op10: "requ", key10: "", val10: ""}
+				api.typeSearch(100, api.advqry.getKeys(containerId));
+				api.advqry.close(triggerId);
+			},
+			getKeys: function(containerId) {
 				var params = lemon.getParam(containerId);
 				var keys = [];
 				$(containerId + ' div[ex="filter"]').each(function(i, el) {
@@ -3145,8 +3175,80 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						keys.push(exp);
 					}
 				});
-				api.typeSearch(100, keys.join(params.symbol));
-				api.advqry.close(triggerId);
+				return keys.join(params.symbol);
+			},
+			getExtracts: function(containerId) {
+				var rdata = {requ: {}, resp: {}}, extrs = lemon.getParam(containerId);
+				$(containerId + ' div[ex="prop"]').each(function(i, el) {
+					var idx = $(this).attr('idx');
+					rdata[extrs['op' + idx]][extrs['key' + idx]] = extrs['val' + idx];
+				});
+				return rdata;
+			},
+			extract2note: function(el) {
+				if ($(el).hasClass('disabled')) {
+					return;
+				}
+				
+				api.progressHome(); $(el).addClass('disabled');
+				var cid = '#' + $(el).attr('cid'), pid = '#' + $(el).attr('pid'), rdata = '';
+				var conds = lemon.searchconds ? lemon.searchconds : api.getSearchConds(api.advqry.getKeys(pid));
+				var data = api.queryHistories(conds, -1);
+				console.log(data);
+
+				var extrs = api.advqry.getExtracts(cid);
+				if (lemon.isBlank(extrs.requ) && lemon.isBlank(extrs.resp)) {
+					rdata = lemon.json(data.items);
+				} else {
+					var props = { extracts: [] };
+					lemon.each(data.items, function(item, idx) {
+						var rprop = {}, tmp = null;
+						lemon.each(extrs.requ, function(v, k) {
+							if ('all' == k) {
+								rprop.request = item.request;
+							} else if (!lemon.isBlank(tmp = lemon.json.get(item.request, k))) {
+								rprop[v] = tmp;
+							}
+						});
+						lemon.each(extrs.resp, function(v, k) {
+							if ('all' == k) {
+								rprop.response = item.response;
+							} else if (!lemon.isBlank(tmp = lemon.json.get(item.response, k))) {
+								rprop[v] = tmp;
+							}
+						});
+						if (!lemon.isBlank(rprop)) {
+							props.extracts.push(rprop);
+						}
+					});
+
+					rdata = lemon.json(props);
+				}
+
+				note.open();
+				note.newNote(rdata);
+				note.mode('json');
+				
+				api.progressHomeEnd();
+				$(el).removeClass('disabled');
+			},
+			chgProp: function(el) {
+				var kid = '#' + $(el).attr('id'), vid = kid.replace('_key_', '_val_'), k = $(kid).val();
+				$(vid).val(k.substring(k.lastIndexOf('.') + 1));				
+			},
+			addProp: function(containerId) {
+				var idx = lemon.uniqueId();
+				var cond = lemon.tmpl($('#extract_prop_tmpl').html(), {
+					index: idx
+				});
+				$('#' + containerId).append(cond);
+				return idx;
+			},
+			remProp: function(idx) {
+				$('#ex_prop_' + idx).remove();
+			},
+			camera: function(el) {
+				$('#input_search').val(api.advqry.getKeys('#' + $(el).attr('cid')));
 			},
 			addCond: function(containerId) {
 				var idx = lemon.uniqueId();
@@ -3164,7 +3266,21 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			api.advqry.intl({
 				triggerId: '#btn_extract',
 				container: 'his_extract',
-				title: 'Extract What You Need'
+				title: 'Extract What You Need',
+				shown: function(el) {
+					$('#btn_extract').button('toggle');
+					if ($('#btn_search').hasClass('active')) {
+						api.advqry.fill('his_extract');
+					}
+
+					$('#his_extract').after(lemon.tmpl($('#extract_prop_base_tmpl').html(), { 
+						parentCid: 'his_extract',
+						cid: 'his_extract_prop' 
+					}));
+				},
+				hidden: function(el) {
+					$('#btn_extract').button('toggle');
+				}
 			});
 
 			$('#btn_tgl_requ').click(function() {
@@ -5670,6 +5786,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				lemon.each(note.defineEx, function(v, k) {
 					CodeMirror.Vim.defineEx(v.name, v.shortn, v.handle);
 				});
+
+				after.rich.chgStyle(note.instance, {'z-index': 50000});
 
 				//["name", "mime", "mode"], Optional property: ["ext", "mimes", "file", "alias"]
 				var langs = [];
