@@ -3149,7 +3149,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					if (!lemon.isUndefined(console)) {
 						root.repl = new Console(lemon.query('#repl_view'), {outputH: offset.height - 30});
 						repl.wrapLog(console);
-						repl.input.setOption("extraKeys", {
+						after.rich.mapkey(repl.input, {
 							Enter: function(cm) {
 								var text = repl.input.getValue().trim();
 								if (text) { repl.exec(text); }
@@ -6492,6 +6492,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			return rich;
 		},
 		rich: {
+			mapkey: function(cm, keymap) {
+				cm.setOption("extraKeys", lemon.extend(cm.getOption('extraKeys'), keymap || {}));
+			},
 			toLastLine: function(cm) {
 				cm.scrollIntoView({line: cm.lastLine()})
 			},
