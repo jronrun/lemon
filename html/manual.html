@@ -3150,6 +3150,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						root.repl = new Console(lemon.query('#repl_view'), {outputH: offset.height - 30});
 						repl.wrapLog(console);
 						after.rich.mapkey(repl.input, {
+							Tab: 'autocomplete',
 							Enter: function(cm) {
 								var text = repl.input.getValue().trim();
 								if (text) { repl.exec(text); }
