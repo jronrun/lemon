@@ -5,7 +5,7 @@ module.exports = function(grunt) {
 		env : grunt.file.readJSON("env.json"),
 		
 		clean: {
-			 js: ["coffee/ext/*.min.js"]
+			 js: ['coffee/ext/*.min.js', 'coffee/refs/*.min.js']
 		},
 	
         uglify : {
@@ -13,13 +13,22 @@ module.exports = function(grunt) {
         		beautify: false
         	},
         	styles: {
-    	      files: [{
+    	      files: [
+				{
+				    expand: true,
+				    cwd: 'coffee/ext',
+				    src: '**/*.js',
+				    dest: 'coffee/ext',
+				    ext: '.min.js'
+				},
+				{
     	          expand: true,
-    	          cwd: 'coffee/ext',
+    	          cwd: 'coffee/refs',
     	          src: '**/*.js',
-    	          dest: 'coffee/ext',
+    	          dest: 'coffee/refs',
     	          ext: '.min.js'
-    	      }]
+				}
+    	      ]
     	    },
 			coffee : {
 				files: {

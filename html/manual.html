@@ -156,7 +156,7 @@
 								<button type="button" class="btn btn-default" style="border:0px;" id="copy_url">
 								<span class="text-muted glyphicon glyphicon-copy" title="Show Request URL"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="snapshoot_share">
-								<span class="text-muted glyphicon glyphicon-send" title="Generate QRcode"></span></button>
+								<span class="text-muted glyphicon glyphicon-qrcode" title="Generate QRcode"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="share_editable">
 								<span class="text-muted glyphicon glyphicon-edit" title="Snapshoot editable current API to browser address to Share"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="share_readonly">
@@ -178,7 +178,8 @@
 					<form>
 						<div class="form-group">
 							<div class="pull-left">
-								<button type="button" class="btn btn-default" style="border:0px;"><span class="text-muted">Response</span></button>
+								<button type="button" class="btn btn-default" id="btn_repl" style="border:0px;"><span class="text-muted">Response</span></button>
+								<div id="area_repl"> <button type="button" class="hidden" id="btn_resp" style="border:0px;"></button> </div>
 							</div>
 							<div class="btn-group pull-right" id="right_toolbar">
 								<button type="button" class="btn btn-default" id="btn_his_prev" step="-1" style="border:0px;"><span title="Previous History" class="text-muted glyphicon glyphicon-chevron-left"></span></button>
@@ -361,6 +362,16 @@
 	                    }
 	                  ]
 	            });
+		});
+		
+		$LAB.script('http://jronrun.github.io/refs/console/console.min.js').wait(function() { 
+			lemon.css([
+				lemon.getUrl(cmprfix + 'theme/eclipse.min.css'), 
+				lemon.getUrl(cmprfix + 'theme/base16-dark.min.css'),
+				'http://jronrun.github.io/refs/console/console.css'
+			]);
+
+			api.repl.intl();
 		});
 	}, 1000);
 </script>
@@ -1994,6 +2005,20 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					note.open(1);
 				});
 
+				$('#btn_repl').click(function() {
+					$(this).button('toggle');
+					var isActive = $(this).hasClass('active');
+					if (isActive) {
+						if (!api.repl.views) {
+							api.repl.views = true;
+							$('#btn_resp').click();
+						}
+						$('#area_repl').show();
+					} else {
+						$('#area_repl').hide();
+					}
+				});
+
 				$('#btn_his_prev, #btn_his_next').click(function() {
 					var lastId = parseInt(lemon.store('last') || '0');
 					var hid = api.hash.curHisId || lastId;
@@ -3084,6 +3109,57 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				lemon.isFunc(onShown) && onShown(this);
 				api.historyCtl();				
 			});
+		},
+		repl: {
+			views: false,
+			intl: function() {
+				var wrap = after.response.getWrapperElement();
+				var offset = $(wrap).position();
+				offset.width = $(wrap).width() + 23;
+				offset.height = $(wrap).height() + 26;
+				
+				api.popover('#btn_resp', function() {
+					return [
+						'<div id="repl_view"></div>'
+					].join('');
+				}, {
+					placement: 'bottom'
+				}).on('inserted.bs.popover', function() {
+					var el = $(this).data("bs.popover").tip();
+					el.hide();
+				}).on('hidden.bs.popover', function() {
+					$('#btn_resp').button('toggle');
+				}).on('show.bs.popover', function() {
+					var el = $(this).data("bs.popover").tip();
+					el.find('.arrow').remove();
+				}).on('shown.bs.popover', function() {
+					$('#btn_resp').button('toggle');
+					var el = $(this).data("bs.popover").tip();
+					el.css({ 
+						top: offset.top - 5, 
+						left: offset.left - 15, 
+						'max-width': offset.width, 
+						width: offset.width,
+						height: offset.height,
+						'max-height': offset.height,
+						border: 0 
+					});
+					el.show();
+
+					if (!lemon.isUndefined(console)) {
+						root.repl = new Console(lemon.query('#repl_view'), {outputH: offset.height - 30});
+						repl.wrapLog(console);
+						repl.input.setOption("extraKeys", {
+							Enter: function(cm) {
+								var text = repl.input.getValue().trim();
+								if (text) { repl.exec(text); }
+								after.rich.toLastLine(repl.output);
+							}
+						});
+						repl.input.focus();
+					}
+				});
+			}
 		},
 		advqry: {
 			intl: function(options) {
@@ -5818,7 +5894,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}).on('shown.bs.popover', function() {
 					var el = $(this).data("bs.popover").tip();
 					var w = $(root).width();
-					el.css({ width: w, 'max-width': w, border: 0, top: -10, left: 0, right: 0, bottom: 0, position: 'fixed' });
+					el.css({ width: w, 'max-width': w, border: 0, top: -10, left: 0, right: 0, bottom: 0, position: 'fixed', 'z-index': 50003});
 					el.find('.popover-content').css({ 'padding': 0 });
 					el.find('.arrow').remove();
 					el.show();
@@ -5860,7 +5936,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						'max-width': w,
 						border: 0,
 						top: -8, 
-						left: (w - 5)
+						left: (w - 5),
+						'z-index': 50001
 					});
 					el.find('.popover-content').css({
 						'padding': 0
@@ -6100,11 +6177,12 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					mr.setSize(null, options.height);
 				}
 				
-				$(mv.wrap).css({top: options.top})
-					.find('.CodeMirror-merge-gap').css({
-						height: options.height,
-						'background-color': '#ffffff'
-					});
+				$(mv.wrap).css({
+					top: options.top
+				}).find('.CodeMirror-merge-gap').css({
+					height: options.height,
+					'background-color': '#ffffff'
+				});
 				$(mv.wrap).find('.CodeMirror-gutters').css({
 					border: 0,
 					'background-color': '#ffffff'
@@ -6414,6 +6492,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			return rich;
 		},
 		rich: {
+			toLastLine: function(cm) {
+				cm.scrollIntoView({line: cm.lastLine()})
+			},
 			fitSize: function(cm) {
 				var theH = $(root).height() - 230;
 				if (lemon.isBlank($('#message').html())) {
