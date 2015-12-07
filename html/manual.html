@@ -397,7 +397,7 @@
 		   <tr id="<%= k %>" type="<%= interfType %>">
             <th scope="row">
 			</th>
-			<td onDblClick="api.onSelect('<%= k %>', this)">
+			<td onDblClick="api.onSelect('<%= k %>', this)" ctype="2">
 			<blockquote style="width:<%=clientW - 60%>px;">
 				<% if (v.mutation > 0) { %> 
 					<span class="label label-success"> <%= v.name %> Mutation </span> 
@@ -599,7 +599,7 @@
 	   <tr id="<%= v.k %>" batch="<%= batch %>" <%= hisTagMark.join(' ') %> interf="<%= env.id %>" env="<%= env.env %>" his="1" prop="<%= api.customHis(v.k,'fav') %>">
 	          <th scope="row">
 		</th>
-	          <td onDblClick="api.onSelect('<%= v.k %>', this)" rapi="<%= v.api %>" type="1">
+	          <td onDblClick="api.onSelect('<%= v.k %>', this)" rapi="<%= v.api %>" ctype="1">
 			<blockquote style="width:<%=clientW - 25%>px;">
 				<div id="tag_area_<%= v.k %>"><%= hisShowTags.join(' ') %></div>
 				<p>
@@ -3759,7 +3759,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			api.hisTglRequResp(key, respType || 2);
 		},
 		onSelect: function(key, el) {
-			var type = $(el).attr('type'), rapi = $(el).attr('rapi');
+			var type = $(el).attr('ctype'), rapi = $(el).attr('rapi');
 			switch(type) {
 			case "1": api.hash.requ(rapi, key); break;
 			case "2": 
