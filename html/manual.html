@@ -4726,7 +4726,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				lemon.isFunc(clickFunc) && clickFunc(api.getServer(servId));
 			},
 			choosableServs: function() {
-				return api.env._curservs;
+				return lemon._curservs;
 			},
 			defaultChoosableServ: function() {
 				var serv = {};
@@ -4752,7 +4752,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				api.env.envClickHandle = api.env.envClickHandle || {};
 				api.env.envClickHandle[clickId] = options.handle;
 				if (options.choosable) {
-					api.env._curservs = {};
+					lemon._curservs = {};
 				}
 
 				var html = [
@@ -4808,7 +4808,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							}
 							
 							if (options.choosable) {
-								api.env._curservs[serv.id] = serv;
+								lemon._curservs[serv.id] = serv;
 							}
 						}
 					});
