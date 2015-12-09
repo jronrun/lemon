@@ -4965,7 +4965,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				api.env.changeEnv(theEnv);
 			},
 			lemon: function() {
-				if (lemon.isBlank(api.hash.capture) || 4 == api.hash.capture.share.type) {
+				if (!lemon.isBlank(api.hash.capture) && 4 == api.hash.capture.share.type) {
 					var dcs = api.preference.basic().dcs;
 					try {
 						lemon.cross(lemon.format('{0}/rapicfg.html', lemon.rtrim(dcs, '/')), function(r) {
