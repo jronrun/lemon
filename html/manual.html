@@ -157,10 +157,8 @@
 								<span class="text-muted glyphicon glyphicon-copy" title="Show Request URL"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="snapshoot_share">
 								<span class="text-muted glyphicon glyphicon-qrcode" title="Generate QRcode"></span></button>
-								<button type="button" class="btn btn-default" style="border:0px;" id="share_editable">
-								<span class="text-muted glyphicon glyphicon-edit" title="Snapshoot editable current API to browser address to Share"></span></button>
-								<button type="button" class="btn btn-default" style="border:0px;" id="share_readonly">
-								<span class="text-muted glyphicon glyphicon-share" title="Snapshoot readonly current API to browser address to Share"></span></button>
+								<button type="button" class="btn btn-default" style="border:0px;" id="share_this">
+								<span class="text-muted glyphicon glyphicon-share" title="Snapshoot Current Status to Share"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="api_define">
 								<span class="text-muted glyphicon glyphicon-question-sign" title="Show the Define API"></span></button>
 							</div>
@@ -222,6 +220,7 @@
 
 	var  homeldend = function() {
 		if (lemon.homeld && lemon.homeld.base && lemon.homeld.queue && lemon.homeld.css) {
+			lemon.delay(function() { api.env.lemon(); }, 500);
 			lemon.homeld.end();
 		}
 	}
@@ -1135,6 +1134,22 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 <button type="button" class="btn btn-default" onclick="api.advqry.remProp('<%= index %>');"><span class="text-muted glyphicon glyphicon-minus"></span></button>
 </div>
 </script>
+
+<script type="text/html" id="share_opt_tmpl">
+	<div id="share_option" class="list-group">
+		<button type="button" style="border:0px;" class="list-group-item btn btn-default" id="share_min" stype="1"> 
+		<span class="glyphicon glyphicon-hand-right" title="Readonly"></span> &nbsp;&nbsp; Minimum </button>
+		<p></p>
+		<button type="button" style="border:0px;" class="list-group-item btn btn-default" id="share_minhelp" stype="2"> 
+		<span class="glyphicon glyphicon-hand-right" title="Readonly & API help"></span> &nbsp;&nbsp; Readonly & API help </button>
+		<p></p>
+		<button type="button" style="border:0px;" class="list-group-item btn btn-default" id="share_one" stype="3"> 
+		<span class="glyphicon glyphicon-hand-right" title="Editable & Unload defines"></span> &nbsp;&nbsp; Editable & Unload defines </button>
+		<p></p>
+		<button type="button" style="border:0px;" class="list-group-item btn btn-default" id="share_max" stype="4"> 
+		<span class="glyphicon glyphicon-hand-right" title="Share Maximum"></span> &nbsp;&nbsp; Maximum </button>
+	</div>
+</script>
 						
 <script type="text/javascript">
 	root = window;
@@ -1190,11 +1205,11 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			apid: function(api, mutateOrServId) {
 				this.to(lemon.format('#apid/{0}/{1}{2}', api, lemon.when.mark(), (lemon.isUndefined(mutateOrServId) ? '' : ('.' + mutateOrServId))));
 			},
-			snap: function(data, editable) {
+			snap: function(data, shareType) {
 				api.hash.localtrigger = 1;
-				this.to(lemon.format('#snap/{0}/{1}', lemon.when.mark(), data || api.hash.snapshoot(editable)));
+				this.to(lemon.format('#snap/{0}/{1}', lemon.when.mark(), data || api.hash.snapshoot(shareType)));
 			},
-			snapshoot: function(editable) {
+			snapshoot: function(shareType) {
 				var aserv = api.env.which(lemon.getEnv());
 				if (-10 != aserv.id) {
 					aserv = api.getServer(aserv.id);
@@ -1208,24 +1223,48 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					resp: lemon.json.reverse(api.resp())
 				};
 				
-				if (editable) {
-					data.editable = 1;
+				if (shareType) {
+					data.share = {
+						type: parseInt(shareType)
+					};
+
+					if (!lemon.isBlank(data.api)) {
+						data.share.dapi = api.getAPI(data.api);
+					}
+					
+					switch(data.share.type) {
+					// Readonly (Minimum)
+					case 1:
+						data.share.dapi = null;
+						break;
+					// Readonly & API help
+					case 2:
+						break;
+					// Editable & unload defines
+					case 3:
+						break;
+					// Share Maximum
+					case 4:
+						break;
+					}
 				}
 				
 				return LZString.compressToEncodedURIComponent(lemon.json.reverse(data));
 			},
 			page: function(pg) {
 				try {
-					var args = pg.split('/');
+					var args = pg.split('/'), component = '.navbar,#left_toolbar,#right_toolbar';
 					switch(args[0]) {
 					case 'api': 
 						var hid = args[2].substring(19);
 						api.apichg(hid); 
 						api.hash.curHisId = parseInt(hid);
+						api.enable(component); $('#copy_url,#share_this').show();
 					break;
 					case 'apid':
 						var mid = args[2].substring(19);
-						api.apichg(lemon.format('api_{0}{1}', args[1], (lemon.isBlank(mid) ? '' : ('_' + mid)))); 
+						api.apichg(lemon.format('api_{0}{1}', args[1], (lemon.isBlank(mid) ? '' : ('_' + mid))));
+						api.enable(component); $('#copy_url,#share_this').show();
 						break;
 					case 'snap':
 						var capture = $.parseJSON(LZString.decompressFromEncodedURIComponent(args[2]));
@@ -1248,12 +1287,29 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						if (api.hash.localtrigger) {
 							
 						} else {
-							if (capture.editable) {
+							if (capture.share) {
 								api.hash.localtrigger = 0;
 								api.hash.capture = capture;
-								$('#copy_url,#share_editable').remove();
+								$('#copy_url,#share_this').hide();
+								switch(api.hash.capture.share.type) {
+								// Readonly (Minimum)
+								case 1:
+									api.disable(component);
+									break;
+								// Readonly & API help
+								case 2:
+									api.disable(component.replace(',#left_toolbar', ''));
+									api.disable($('#left_toolbar button').not('#api_define'));
+									break;
+								// Editable & unload defines
+								case 3:
+									break;
+								// Share Maximum
+								case 4:
+									break;
+								}
 							} else {
-								api.disable('.navbar,#left_toolbar,#right_toolbar');
+								api.disable(component);
 							}
 						}
 
@@ -1389,12 +1445,22 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					}
 				});
 
-				$('#share_readonly').click(function() {
-					api.hash.snap();
-				});
-
-				$('#share_editable').click(function() {
-					api.hash.snap(null, 1);
+				api.popover('#share_this', function() {
+					return lemon.tmpl($('#share_opt_tmpl').html(), {});
+				}, {
+					placement: 'right', title: 'Share...'
+				}).on('inserted.bs.popover', function() {
+					var el = $(this).data("bs.popover").tip();
+				}).on('show.bs.popover', function() { 
+					$(this).data("bs.popover").tip().css({
+						border: 0
+					});
+				}).on('shown.bs.popover', function() {
+					var el = $(this).data("bs.popover").tip();
+					$('#share_option button[id^=share_]').click(function() {
+						api.hash.snap(null, $(this).attr('stype'));
+						$('#share_this').popover('hide');
+					});
 				});
 				
 				api.popover('#snapshoot_share', function() {
@@ -3727,6 +3793,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			return result;
 		},
 		getAPI: function(theAPI) {
+			if (!lemon.isBlank(api.hash.capture) && !lemon.isBlank(api.hash.capture.share.dapi)) {
+				return api.hash.capture.share.dapi;
+			}
+			
 			var result = {};
 			lemon.each(api.preference.defines().items, function(v, k) {
 				if (v.api === theAPI) {
@@ -4719,7 +4789,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					theDefined = null, definedAPIs = undefined;
 				}
 
-				lemon.delay(function() { api.env.lemon(); }, 500);
+				//lemon.delay(function() { api.env.lemon(); }, 500);
 			},
 			envselectclick: function(clickId, servId) {
 				var clickFunc = api.env.envClickHandle[clickId]; 
@@ -4895,13 +4965,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				api.env.changeEnv(theEnv);
 			},
 			lemon: function() {
-				var dcs = api.preference.basic().dcs;
-				try {
-					lemon.cross(lemon.format('{0}/rapicfg.html', lemon.rtrim(dcs, '/')), function(r) {
-						api.impexp.doimport(r);
-					});
-				} catch(e) {
-					lemon.warn('Connection and do dcs(' + dcs + ') fail ' + e.message);
+				if (lemon.isBlank(api.hash.capture) || 4 == api.hash.capture.share.type) {
+					var dcs = api.preference.basic().dcs;
+					try {
+						lemon.cross(lemon.format('{0}/rapicfg.html', lemon.rtrim(dcs, '/')), function(r) {
+							api.impexp.doimport(r);
+						});
+					} catch(e) {
+						lemon.warn('Connection and do dcs(' + dcs + ') fail ' + e.message);
+					}
 				}
 			},
 			isProduct: function(interf) {
