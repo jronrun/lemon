@@ -1150,6 +1150,27 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		<span class="glyphicon glyphicon-hand-right" title="Share Maximum"></span> &nbsp;&nbsp; Maximum </button>
 	</div>
 </script>
+
+<!-- {title:'', content: '', triggerId: '', modalDialogClass: 'modal-sm'} -->
+<script type="text/html" id="modal_tmpl">
+<% var titleLabel = 'title_' + lemon.uniqueId(); %>
+<div class="modal fade" id="<%= triggerId %>" tabindex="-1" role="dialog" aria-labelledby="<%= titleLabel %>">
+  <div class="modal-dialog <%= modalDialogClass %>">
+    <div class="modal-content">
+	 <% if (!lemon.isBlank(title)) { %>
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+        <h6 class="modal-title" id="<%= titleLabel %>"><%= title %></h6>
+      </div>
+	 <% } %>
+      <div class="modal-body">
+		<% var theContent = content; if (lemon.isFunc(content)) { theContent = content(); } %>
+        <%= theContent %>
+      </div>
+    </div>
+  </div>
+</div>
+</script>
 						
 <script type="text/javascript">
 	root = window;
@@ -1370,6 +1391,26 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					}
 				});
 
+				var fromUrlModal = api.nav.newModal({
+					title: 'Set Join Selection Separator', 
+					triggerId: 'from_url_modal',
+					content: function() {
+						return [
+							'<div class="input-group input-group-lg">',
+							'<input type="text" id="input_sep" class="form-control" style="width:265px;" placeholder="Separator default is \',\'">',
+							'</div>'
+						].join('');
+					},
+					onHidden: function() {
+						lemon.joinsep = $('#input_sep').val();
+					}
+				});
+				api.nav.rightclick('#from_url', function() {
+					lemon.delay(function() {
+						fromUrlModal.toggle();
+					}, 100);
+				});
+				
 				$('#from_url').click(function() {
 					if (after.styled && after.request.somethingSelected()) {
 						var sel = after.request.getSelection();
@@ -1381,7 +1422,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								}
 							});
 						}
-						after.request.replaceSelection(join.join(','));
+						after.request.replaceSelection(join.join(lemon.joinsep || ','));
 						return false;
 					}
 					
@@ -1445,6 +1486,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					}
 				});
 
+				api.nav.rightclick('#share_this', function() {
+					api.hash.snap(null, 1);
+				});
 				api.popover('#share_this', function() {
 					return lemon.tmpl($('#share_opt_tmpl').html(), {});
 				}, {
@@ -2203,22 +2247,75 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 				return isActive ? 1 : 0;
 			},
-			dblclick: function(selector) {
+			newModal: function(options) {
+				options = lemon.extend({
+					title:'', 
+					content: '', 
+					triggerId: '', 
+					modalDialogClass: 'modal-sm',
+					onShow: null,
+					onShown: null,
+					onHide: null,
+					onHidden: null,
+					onLoaded: null
+				}, options || {});			
+
+				$('body').append(lemon.tmpl($('#modal_tmpl').html(), options));
+
+				var mid = '#' + options.triggerId;
+				api.nav.disableRightclick(mid);
+				
+				$(mid).on('show.bs.modal', function (e) {
+					lemon.isFunc(options.onShow) && options.onShow(mid);
+				}).on('shown.bs.modal', function (e) {
+					lemon.isFunc(options.onShown) && options.onShown(mid);
+				}).on('hide.bs.modal', function (e) {
+					lemon.isFunc(options.onHide) && options.onHide(mid);
+				}).on('hidden.bs.modal', function (e) {
+					lemon.isFunc(options.onHidden) && options.onHidden(mid);
+				}).on('loaded.bs.modal', function (e) {
+					lemon.isFunc(options.onLoaded) && options.onLoaded(mid);
+				});
+
+				return {
+					mid: mid,
+					show: function() { $(mid).modal('show'); },
+					hide: function() { $(mid).modal('hide'); },
+					handleUpdate: function() { $(mid).modal('handleUpdate'); },
+					toggle: function() { $(mid).modal('toggle'); },
+					options: function(options) {
+						$(mid).modal(lemon.extend({
+							backdrop: true,
+							keyboard: true,
+							show: true
+						}, options || {}));
+					}
+				}
+			},
+			disableRightclick: function(selector) {
 				//forbiden right click context menu
 				$(selector).bind('contextmenu', function() { 
 					return false; 
 				});
-				
-				//$(selector).dblclick(function(event) {
+			},
+			rightclick: function(selector, callback) {
+				api.nav.disableRightclick(selector);
 				$(selector).mousedown(function(event) {
 					//1 left 2 middle 3 right
 					if (event.which == 3) {
+						event.stopPropagation();
 						event.preventDefault();
-						if (lemon.endWith(selector, '_view')) {
-							api.nav.edit(selector);
-						} else {
-							api.nav.view(selector);
-						}
+						lemon.isFunc(callback) && callback(selector, event)
+					}
+				});
+			},
+			dblclick: function(selector) {
+				api.nav.disableRightclick(selector);
+				api.nav.rightclick(selector, function(selector) {
+					if (lemon.endWith(selector, '_view')) {
+						api.nav.edit(selector);
+					} else {
+						api.nav.view(selector);
 					}
 				});
 			},
@@ -2920,6 +3017,12 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}
 			return cust[hisId];
 		},
+		resetDefaultVal: function(el) {
+			var theAPI = $(el).attr('tapi');
+			if (after.styled && after[theAPI]) {
+				after[theAPI].setValue(lemon.json(api.getAPI(theAPI).request || {}));
+			}
+		},
 		setAPIDefaultValClose: function(theAPI) {
 			$('#set_default_' + theAPI).popover('hide');
 		},
@@ -2928,6 +3031,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			var title = [
 			 	theAPI + ' Default Value',
 			 	'<div class="pull-right">',
+			 	'<span class="glyphicon glyphicon-refresh" title="Reset API Defaut Value" onclick="api.resetDefaultVal(this);" tapi="' + theAPI + '"></span>',
+			 	'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
 			 	'<button type="button" class="close" aria-label="Close" onclick="api.setAPIDefaultValClose(\'' + theAPI + '\');">',
 			 	'<span aria-hidden="true">&times;</span></button>',
 			 	'</div>'
