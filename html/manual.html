@@ -1144,10 +1144,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		<span class="glyphicon glyphicon-hand-right" title="Readonly & API help"></span> &nbsp;&nbsp; Readonly & API help </button>
 		<p></p>
 		<button type="button" style="border:0px;" class="list-group-item btn btn-default" id="share_one" stype="3"> 
-		<span class="glyphicon glyphicon-hand-right" title="Editable & Unload defines"></span> &nbsp;&nbsp; Editable & Unload defines </button>
+		<span class="glyphicon glyphicon-hand-right" title="Editable & Unload Defines"></span> &nbsp;&nbsp; Editable & Unload defines </button>
 		<p></p>
 		<button type="button" style="border:0px;" class="list-group-item btn btn-default" id="share_max" stype="4"> 
 		<span class="glyphicon glyphicon-hand-right" title="Share Maximum"></span> &nbsp;&nbsp; Maximum </button>
+		<p></p>
+		<button type="button" style="border:0px;" class="list-group-item btn btn-default" id="share_regret_load" stype="5"> 
+		<span class="glyphicon glyphicon-hand-right" title="Regret Share load defines"></span> &nbsp;&nbsp; Regret Load Defines </button>
+		<p></p>
+		<button type="button" style="border:0px;" class="list-group-item btn btn-default" id="share_clean" stype="6"> 
+		<span class="glyphicon glyphicon-hand-right" title="Share Clean"></span> &nbsp;&nbsp; Response Command </button>
 	</div>
 </script>
 
@@ -1264,8 +1270,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					// Editable & unload defines
 					case 3:
 						break;
-					// Share Maximum
+					// Share Maximum (load defines)
 					case 4:
+						break;
+					// Regret load defines
+					case 5:
+						break;
+					// Clean (doimport)
+					case 6:
+						data.doi = data.resp; data.resp = {};
 						break;
 					}
 				}
@@ -1327,6 +1340,17 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 									break;
 								// Share Maximum
 								case 4:
+									break;
+								// Regret load defines
+								case 5:
+									var doi = { profile: { version: 0, lemon: 7 } }; api.impexp.doimport(doi);
+									doi.profile.lemon= 8; api.impexp.doimport(doi);
+									doi.profile.lemon= 9; api.impexp.doimport(doi);
+									break;
+								// Clean (doimport)
+								case 6:
+									api.impexp.doimport(capture.doi);
+									capture.resp = {};
 									break;
 								}
 							} else {
@@ -1486,13 +1510,16 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					}
 				});
 
+				$('#share_this').click(function() {
+					api.hash.snap(null, 2);
+				});
 				api.nav.rightclick('#share_this', function() {
-					api.hash.snap(null, 1);
+					$('#share_this').popover('toggle');
 				});
 				api.popover('#share_this', function() {
 					return lemon.tmpl($('#share_opt_tmpl').html(), {});
 				}, {
-					placement: 'right', title: 'Share...'
+					placement: 'right', title: 'Share...', trigger: 'manual'
 				}).on('inserted.bs.popover', function() {
 					var el = $(this).data("bs.popover").tip();
 				}).on('show.bs.popover', function() { 
