@@ -247,7 +247,7 @@
 		lemon.homeld.base = 1; homeldend();
 	});
 
-	var cmprfix = 'codemirror/5.8.0/';
+	var cmprfix = 'codemirror/5.9.0/';
 	var queue = $LAB
 		.queueScript(lemon.getUrl(cmprfix + 'codemirror.min.js'))
 		.queueWait()
@@ -5805,7 +5805,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}
 		},
 		tip: function(msg) {
-			note.instance.openNotification('<span style="color: red">' + msg + '</span>', {
+			note.instance.openNotification('<span style="color: orange">' + msg + '</span>', {
 				bottom: true, 
 				duration: 5000
 			});
