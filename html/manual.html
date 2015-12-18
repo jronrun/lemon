@@ -5922,7 +5922,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				css = 'solarized';
 			}
 			
-			note.themeload = note.themeload || ['default'];
+			note.themeload = note.themeload || ['default', 'lemon'];
 			if (note.themeload.indexOf(css) == -1) {
 				lemon.css(lemon.format(lemon.getUrl(cmprfix + 'theme/{0}.min.css'), css));
 				note.themeload.push(css);
@@ -5930,6 +5930,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 			note.current.theme = th;
 			note.instance.setOption('theme', th);
+			var status = note.status();
+		    note.tip('Current mode: ' + status.mode + ' & theme: ' + status.th);
 			if (!preview) {
 				note.storecfg('theme', th);
 			}
@@ -5998,20 +6000,24 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			    CodeMirror.autoLoadMode(note.instance, mode);
 			}
 			note.current.mode = info;
-		    note.tip('Current mode: ' + info.name + ' ' + spec);
+			var status = note.status();
+		    note.tip('Current mode: ' + status.mode + ' & theme: ' + status.th);
 		    if (!preview) {
 			    note.storecfg('language', info.name);
 			}
 		},
+		status: function() {
+			return {
+				mode: note.instance.getOption('mode'),
+				th: note.instance.getOption('theme'),
+				menu: (note.isMenuOpen() ? 1 : 0),
+				viminsert: ((note.instance.getOption('keyMap') == 'vim-insert') ? 1 : 0)
+			};
+		},
 		share: function() {
 			var content = note.instance.getValue();
 			if (!lemon.isBlank(content)) {
-				api.hash.note(content, {
-					mode: note.instance.getOption('mode'),
-					th: note.instance.getOption('theme'),
-					menu: (note.isMenuOpen() ? 1 : 0),
-					viminsert: ((note.instance.getOption('keyMap') == 'vim-insert') ? 1 : 0)
-				});
+				api.hash.note(content, note.status());
 			}
 
 			note.tip('There are nothing to share :(');
