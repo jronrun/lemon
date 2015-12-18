@@ -958,6 +958,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			<li role="separator" class="divider"></li>
 			<li><a href="javascript:void(0);" onclick="note.menuTgl();" title="Mouse move top toggle menu"><%= note.menu('Close Menu', ':menu', 'visual') %></a></li>
 			<li><a href="javascript:void(0);" onclick="note.close();" title="Close Note"><%= note.menu('Close Note', ':q', 'visual') %></a></li>
+			<li><a href="javascript:void(0);" onclick="note.share();" title="Share Note to Browser Address"><%= note.menu('Share Note', ':share', 'visual') %></a></li>
 			<li role="separator" class="divider"></li>
 			<li><a href="javascript:void(0);" onclick="note.save();" title="Save Note"><%= note.menu('Save Note', ':w', 'visual') %></a></li>
 			<li><a href="javascript:void(0);" onclick="note.saveclose();" title="Save & Close Note"><%= note.menu('Save & Close Note', ':wq', 'visual') %></a></li>
@@ -1236,6 +1237,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				api.hash.localtrigger = 1;
 				this.to(lemon.format('#snap/{0}/{1}', lemon.when.mark(), data || api.hash.snapshoot(shareType)));
 			},
+			note: function(text, data) {
+				api.hash.localtrigger = 1;
+				text = LZString.compressToEncodedURIComponent(text || '');
+				if (lemon.endWith('…')) {
+					lemon.warn(text);
+				}
+				this.to(lemon.format('#note/{0}/{1}/{2}', lemon.when.mark(), text, 
+						LZString.compressToEncodedURIComponent(lemon.json.reverse(data || {}))));
+			},
 			snapshoot: function(shareType) {
 				var aserv = api.env.which(lemon.getEnv());
 				if (-10 != aserv.id) {
@@ -1299,6 +1309,27 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						var mid = args[2].substring(19);
 						api.apichg(lemon.format('api_{0}{1}', args[1], (lemon.isBlank(mid) ? '' : ('_' + mid))));
 						api.enable(component); $('#copy_url,#share_this').show();
+						break;
+					case 'note':
+						if (!api.hash.localtrigger) {
+							note.open();
+							note.newNote(LZString.decompressFromEncodedURIComponent(args[2]));
+							var opts = $.parseJSON(LZString.decompressFromEncodedURIComponent(args[3]));
+							if (!lemon.isBlank(opts)) {
+								if (opts.mode) { 
+									note.mode(opts.mode, true); 
+								}
+								if (opts.th) { 
+									note.theme(opts.th, true); 
+								}
+								if (opts.menu && 1 == opts.menu) { 
+									note.menuTgl(); 
+								}
+								if (opts.viminsert && 1 == opts.viminsert) {
+									note.handleFunc.editMode();
+								}
+							}
+						}
 						break;
 					case 'snap':
 						var capture = $.parseJSON(LZString.decompressFromEncodedURIComponent(args[2]));
@@ -5758,6 +5789,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			{ name: 'menu', shortn: 'menu', handle: function(cm, params) {
 				$('#note_tool').popover('toggle');
 			}},
+			{ name: 'share', shortn: 'share', handle: function(cm, params) {
+				note.share();
+			}},
 			{ name: 'theme', shortn: 'th', handle: function(cm, params) {
 				if (lemon.isBlank(params.argString)) {
 					note.tip('change theme need a theme name. see <a onclick="note.help.theme();">themes</a>.');
@@ -5968,6 +6002,19 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		    if (!preview) {
 			    note.storecfg('language', info.name);
 			}
+		},
+		share: function() {
+			var content = note.instance.getValue();
+			if (!lemon.isBlank(content)) {
+				api.hash.note(content, {
+					mode: note.instance.getOption('mode'),
+					th: note.instance.getOption('theme'),
+					menu: (note.isMenuOpen() ? 1 : 0),
+					viminsert: ((note.instance.getOption('keyMap') == 'vim-insert') ? 1 : 0)
+				});
+			}
+
+			note.tip('There are nothing to share :(');
 		},
 		listNote: function() {
 			var ns = [];
