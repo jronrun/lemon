@@ -186,6 +186,8 @@
 								<span class="text-muted glyphicon glyphicon-leaf" title="Show Response In Fullscreen (Esc Quit)"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" data-element="both" data-toggle="modal" data-target="#modal_tpl">
 								<span class="text-muted glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
+								<button type="button" class="btn btn-default" style="border:0px;" id="btn_preview">
+								<span class="text-muted glyphicon glyphicon-info-sign" title="Previews"></span></button>
 							</div>
 							<textarea class="form-control" rows="21" style="border:0px;" id="response"></textarea>
 						</div>
@@ -196,6 +198,7 @@
 	</div>
 	
 <div class="modal fade"  tabindex="-1" id="modal_tpl" role="dialog"></div>
+<button type="button" class="hidden" id="btn_modal_blank" data-element="blank" data-toggle="modal" data-target="#modal_tpl"></button>
 	
 <script src="http://cdn.bootcss.com/labjs/2.0.3/LAB.min.js"></script>
 <script type="text/javascript"> 
@@ -210,6 +213,80 @@
 	    		link.setAttribute('href', lemon.getUrl(style));
 	    		lemon.query('head').appendChild(link);
 	    	});
+		},
+		isUrl: function(text) {
+			return /^(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?/.test(text);
+		},
+		iframe: function(options, selector) {
+			var uid = 'ifr_' + lemon.uniqueId();
+			options = lemon.extend({
+				id: uid,
+				name: uid,
+				align: null,
+				allowfullscreen: null,
+				frameborder: null,
+				height: null,
+				width: null,
+				longdesc: null,
+				marginheight: null,
+				marginwidth: null,
+				mozallowfullscreen: null,
+				webkitallowfullscreen: null,
+				referrerpolicy: null,
+				scrolling: null,
+				sandbox: null,
+				seamless: null,
+				src: null,
+				srcdoc: null
+			}, options || {});	
+
+		    var iframe = document.createElement('iframe');  
+			var meta = {
+				iframe: iframe,
+				attr: function(options) {
+					lemon.each(options, function(v, k) {
+					    if (!lemon.isNull(v)) { iframe.setAttribute(k, v); }
+					});
+					return meta;
+				},
+				fit: function(selector, offset) {
+					offset = lemon.extend({
+						height: 0,
+						width: 0
+					}, offset || {});
+					meta.attr({
+						width: $(selector).width() + offset.width,
+						height: $(selector).height() + offset.height
+					});
+					return meta;
+				},
+				write: function(text) {
+					var target = meta.getDocument();
+					target.open();
+					target.write(text);
+					target.close();
+					return meta;
+				},
+				openUrl: function(url, onready) {
+					meta.attr({
+						src: url
+					});
+					$('#' + options.id).load(function() { 
+						lemon.isFunc(onready) & onready(meta);
+					}); 
+					return meta;
+				},
+				getDocument: function() {
+					return iframe.contentDocument || iframe.contentWindow.document;
+				}
+			};
+
+			meta.attr(options);
+			$(selector || 'body').append(iframe);
+			
+			meta.dom = $(root.frames[options.name].document).contents();
+			meta.doc = $(meta.getDocument());
+			return meta;
 		}
 	});
 	
@@ -655,11 +732,15 @@
 	<% }); }%>
 </script>
 
+<script type="text/html" id="blank_tmpl">
+<% var clientW = document.body.clientWidth - 30; var panelH = document.body.clientHeight - 70; if ('blank_popup' != id) { %>
+<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="z-index:55103"><span aria-hidden="true" class="text-danger">×</span></button>
+<% } %>
+<div id="<%= id %>" style="height:<%=panelH%>px;max-height:<%=panelH%>px;width:<%=clientW%>px;"></div>
+</script>
+
 <script type="text/html" id="setting_tmpl">
-<%
-	var clientW = document.body.clientWidth - 30;
-    var panelH = document.body.clientHeight - 70;
-%>
+<% var clientW = document.body.clientWidth - 30; var panelH = document.body.clientHeight - 70; %>
 <div id="settings" style="height:<%=panelH%>px;max-height:<%=panelH%>px;width:<%=clientW%>px;">
     <ul id="" class="nav nav-tabs" role="tablist">
       <li role="presentation" class="">
@@ -1703,7 +1784,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					var key = lemon.trim($('#input_search').val());
 					//1 Just All API, 2 Normal Search, 3 Advance, 4 Tag, 5 Fav, 6 ALL History, 7 Settings, 
 					//8 complex or requ.{propA}:{valueA}|resp.{propB}:{valueB}, 9 complex and requ.{propA}:{valueA}&resp.{propB}:{valueB}
-					//11 API Mutation
+					//11 API Mutation, 15 blank
 					var searchType = 1;
 					var searchProp = '';
 					if (!lemon.isBlank(key)) {
@@ -1731,6 +1812,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								searchType = 7;
 							} else if ('MUTATION' == key) {
 								searchType = 11;
+							} else if ('BLANK' == key) {
+								searchType = 15;
 							}
 						}
 					}
@@ -1907,6 +1990,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 					case 7: //Settings
 						return lemon.tmpl($('#setting_tmpl').html(), {});
+
+					case 15: //blank
+						return lemon.tmpl($('#blank_tmpl').html(), { id: 'blank_popup' });
 					}
 
 					//var empty = 'Couldn’t find any APIs or histories';
@@ -1958,6 +2044,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		                    });
 		                });
 
+						break;
+					case 15:
 						break;
 					case 7:
 						$(el).data("bs.popover").tip().css({left:0});
@@ -2197,6 +2285,17 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					} else {
 						api.hash.requ('history', nextid);
 					}
+				});
+
+				$('#btn_preview').click(function() {
+					var text = '';
+					if (after.styled && after.response.somethingSelected()) {
+						text = after.response.getSelection();
+					} else {
+						text = api.resp();
+					}
+
+					api.preview(text);
 				});
 
 				api.popoverOnBtn("#btn_history", function() {
@@ -2590,6 +2689,45 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			holder.param = analyze2;
 			return holder;
 		},
+		preview: function(text, fullscreen) {
+			var ctx = ''; 
+			if (fullscreen) {
+				ctx = '#blank_modal';
+				api.mod.blank();
+			} else {
+				ctx = '#blank_popup'; 
+				api.typeSearch(15);
+			}
+			
+			var view = lemon.iframe({
+				frameborder: 0
+			}, ctx);
+
+			if (fullscreen) {
+				view.attr({
+					width: $(root).width(),
+					height: $(root).height(),
+					style: 'background-color: white'
+				});
+			} else {
+				view.fit(ctx);
+			}
+
+			if (lemon.isUrl(text)) {
+				view.openUrl(text);
+			} else {
+				view.write(text);
+				if (fullscreen) {
+					view.doc.keydown(function(e){
+			        	if (27 == e.keyCode) { //esc
+				        	api.mod.blank();
+				        }
+					});
+				}
+			}
+
+			api.viewer = view;
+		},
 		typeSearch: function(type, key) {
 			var val = '';
 			switch (type) {
@@ -2599,6 +2737,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			case 6: val = 'ALL'; break;
 			case 7: val = 'SETTING'; break;
 			case 11: val = 'MUTATION'; break;
+			case 15: val = 'BLANK'; break;
 			case 100: val = key || ''; break;
 			case 12:
 				$('#btn_advance').click();
@@ -2614,6 +2753,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			case 6:
 			case 7: 
 			case 11:
+			case 15:
 				$('#input_search').val('');
 				break;
 			}
@@ -5653,14 +5793,18 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}
 		},
 		mod: {
+			blank: function() {
+				$('#btn_modal_blank').click();
+			},
 			render: function() {
 				$('#modal_tpl').on('show.bs.modal', function (event) {
 				  	var button = $(event.relatedTarget);
 				  	var modal = $(this); modal.empty();
 				  	api.mod.currentTriggerId = button.data('element');
 				  	var heightOffset = -26;
-				  	
-				  	if ('both' == api.mod.currentTriggerId) {
+
+				  	switch(api.mod.currentTriggerId) {
+				  	case 'both':
 				  		/* var zoominRequest = $(document.createElement('textarea')).attr({
 						  	id: 'edit-area-requ'
 						}).css({
@@ -5674,7 +5818,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						  	height: document.body.clientHeight - heightOffset,
 							width: document.body.clientWidth / 2
 						}).text(api.resp()); */
-
+	
 				  		var h = document.body.clientHeight - heightOffset;
 				  		var w = document.body.clientWidth / 2;
 				  		
@@ -5689,7 +5833,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 								'</div>'
 							].join('');
 						modal.append(html);
-
+	
 						if (!after.styled) {
 							api.nav.dblclick('#edit-area-requ');
 						}
@@ -5698,8 +5842,10 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 							api.nav.dblclick('#edit-area-resp');
 						}
 						api.nav.view('#edit-area-resp');
-					} else {
-						var theVal1 = '';
+					  	break;
+				  	case '#request':
+				  	case '#response':
+				  		var theVal1 = '';
 						if ('#request' == api.mod.currentTriggerId) {
 							theVal1 = api.requ();
 						} else if ('#response' == api.mod.currentTriggerId) {
@@ -5718,22 +5864,31 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
 						api.nav.dblclick('#edit-area');
 						api.nav.view('#edit-area');
-					}
+					  	break;
+				  	case 'blank':
+				  		modal.append(lemon.tmpl($('#blank_tmpl').html(), { id: 'blank_modal' }));
+				  		modal.css({'z-index': 50103});
+					  	break;
+				  	}
 				}).on('hide.bs.modal', function(event) {
-					if ('both' == api.mod.currentTriggerId) {
-						api.requ($('#edit-area-requ').val());
+					switch(api.mod.currentTriggerId) {
+				  	case 'both':
+				  		api.requ($('#edit-area-requ').val());
 						api.resp($('#edit-area-resp').val());
 						if (!after.styled) {
 							api.nav.view('#request', true);
 							api.nav.view('#response', true);
 						}
-					} else {
-						if ('#request' == api.mod.currentTriggerId) {
-							api.requ($('#edit-area').val());
-						} else if ('#response' == api.mod.currentTriggerId) {
-							api.resp($('#edit-area').val());
-						}
-					}
+					  	break;
+				  	case '#request':
+				  		api.requ($('#edit-area').val());
+				  		break;
+				  	case '#response':
+				  		api.resp($('#edit-area').val());
+					  	break;
+				  	case 'blank':
+					  	break;
+				  	}
 				});
 			},
 			currentTriggerId: null
@@ -5781,6 +5936,13 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					note.tip('del note need a note id. use "list" commond to get.');
 				} else {
 					note.delNote(params.args[0]);
+				}
+			}},
+			{ name: 'view', shortn: 'v', handle: function(cm, params) {
+				if (lemon.isBlank(params.argString)) {
+					api.preview(note.instance.getValue(), true);
+				} else {
+					api.preview(params.args[0], true);
 				}
 			}},
 			{ name: 'wrapword', shortn: 'wrap', handle: function(cm, params) {
