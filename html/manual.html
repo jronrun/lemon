@@ -2287,7 +2287,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					}
 				});
 
-				$('#btn_preview').click(function() {
+				var respview = function(full) {
 					var text = '';
 					if (after.styled && after.response.somethingSelected()) {
 						text = after.response.getSelection();
@@ -2295,7 +2295,15 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						text = api.resp();
 					}
 
-					api.preview(text);
+					api.preview(text, full);
+				};
+				api.nav.rightclick('#btn_preview', function() {
+					lemon.delay(function() {
+						respview(true);
+					}, 100);
+				});
+				$('#btn_preview').click(function() {
+					respview();
 				});
 
 				api.popoverOnBtn("#btn_history", function() {
