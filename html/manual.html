@@ -272,7 +272,7 @@
 						src: url
 					});
 					$('#' + options.id).load(function() { 
-						lemon.isFunc(onready) & onready(meta);
+						lemon.isFunc(onready) && onready(meta);
 					}); 
 					return meta;
 				},
@@ -1040,6 +1040,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			<li><a href="javascript:void(0);" onclick="note.menuTgl();" title="Mouse move top toggle menu"><%= note.menu('Close Menu', ':menu', 'visual') %></a></li>
 			<li><a href="javascript:void(0);" onclick="note.close();" title="Close Note"><%= note.menu('Close Note', ':q', 'visual') %></a></li>
 			<li><a href="javascript:void(0);" onclick="note.share();" title="Share Note to Browser Address"><%= note.menu('Share Note', ':share', 'visual') %></a></li>
+			<li><a href="javascript:void(0);" onclick="note.preview();" title=":view"><%= note.menu('Preview', ':v', 'visual') %></a></li>
 			<li role="separator" class="divider"></li>
 			<li><a href="javascript:void(0);" onclick="note.save();" title="Save Note"><%= note.menu('Save Note', ':w', 'visual') %></a></li>
 			<li><a href="javascript:void(0);" onclick="note.saveclose();" title="Save & Close Note"><%= note.menu('Save & Close Note', ':wq', 'visual') %></a></li>
@@ -1125,9 +1126,23 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		<a href="javascript:void(0);" id="note_compare" role="button" aria-haspopup="true" aria-expanded="false">Compare</a>
 		</li>
 
+		<li>
+		<a href="javascript:void(0);" id="note_preview" role="button" aria-haspopup="true" aria-expanded="false">Preview</a>
+		</li>
+
+		<li class="dropdown">
+          <a href="javascript:void(0);" id="note_help_dd" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
+          <ul class="dropdown-menu" style="border:0px;">
+            <li><a href="javascript:void(0);" onclick="note.showhelp(3);" title="Vim">Vim</a></li>
+			<li><a href="javascript:void(0);" onclick="note.showhelp(7);" title="Vim Cheat Sheet">Vim Cheat Sheet</a></li>
+			<li><a href="javascript:void(0);" onclick="note.showhelp(6);" title="Vim Cheat Sheets">Vim Cheats</a></li>
+			<li><a href="javascript:void(0);" onclick="note.showhelp(5);" title="Note Vim">Note Vim</a></li>
+			<li><a href="javascript:void(0);" onclick="note.showhelp(4);" title="Codemirror Vim">Codemirror Vim</a></li>
+          </ul>
+        </li>
+
       </ul>
       <ul class="nav navbar-nav navbar-right">
-		<li><a href="javascript:void(0);" class="close" title="Close Menu" aria-label="Close" onclick="note.menuTgl();"><span aria-hidden="true">-</span></a></li>
 		<li><a href="javascript:void(0);" class="close" title="Close" aria-label="Close" onclick="note.close();"><span aria-hidden="true">×</span></a></li>
       </ul>
   </div>
@@ -5947,14 +5962,18 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				}
 			}},
 			{ name: 'view', shortn: 'v', handle: function(cm, params) {
-				if (lemon.isBlank(params.argString)) {
-					api.preview(note.instance.getValue(), true);
-				} else {
-					api.preview(params.args[0], true);
-				}
+				note.preview(params);
 			}},
 			{ name: 'wrapword', shortn: 'wrap', handle: function(cm, params) {
 				note.handleFunc.wordwrap();
+			}},
+			{ name: 'help', shortn: 'h', handle: function(cm, params) {
+				if (!lemon.isBlank(params.argString) && note.thehelp[params.args[0]]) {
+					note.help(params.args[0]);
+				} else {
+					note.menuTgl(2);
+					$('#note_help_dd').click();
+				}
 			}},
 			{ name: 'menu', shortn: 'menu', handle: function(cm, params) {
 				$('#note_tool').popover('toggle');
@@ -5964,7 +5983,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}},
 			{ name: 'theme', shortn: 'th', handle: function(cm, params) {
 				if (lemon.isBlank(params.argString)) {
-					note.tip('change theme need a theme name. see <a onclick="note.help.theme();">themes</a>.');
+					note.tip('change theme need a theme name. see <a onclick="note.showhelp(2);">themes</a>.');
 					note.showListTheme();
 					return;
 				}
@@ -5972,7 +5991,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}},
 			{ name: 'mode', shortn: 'm', handle: function(cm, params) {
 				if (lemon.isBlank(params.argString)) {
-					note.tip('change mode need a mode name. see <a onclick="note.help.mode();">supports modes</a>.');
+					note.tip('change mode need a mode name. see <a onclick="note.showhelp(1);">supports modes</a>.');
 					note.showListMode();
 					return;
 				}
@@ -6000,13 +6019,42 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				note.instance.setCursor(cursor);
 			}}
 		],
-		help: {
-			mode: function() {
-				window.open('http://codemirror.net/mode/index.html');
-			},
-			theme: function() {
-				window.open('http://codemirror.net/demo/theme.html');
+		thehelp: {
+			mode: 'http://codemirror.net/mode/index.html',
+			theme: 'http://codemirror.net/demo/theme.html',
+			vim: 'http://vimdoc.sourceforge.net/htmldoc/',
+			cmvim: 'http://codemirror.net/keymap/vim.js',
+			vimcheats: 'http://michael.peopleofhonoronly.com/vim/',
+			vimcheat: 'https://jronrun.github.io/refs/img/vim_cheat_sheet_for_programmers_screen.png',
+			notevim: function() {
+				return [
+					'<style>', lemon.json.toCSS(lemon.json.style), '</style>',
+					'<pre title="Note Commands" style="border:0px;">', lemon.json.highlight({commands: note.defineEx}), '</pre>'
+				].join('');
 			}
+		},
+		showhelp: function(type) {
+			switch(type) {
+			case 1: type = note.thehelp.mode; break;
+			case 2: type = note.thehelp.theme; break;
+			case 3: type = note.thehelp.vim; break;
+			case 4: type = note.thehelp.cmvim; break;
+			case 5: type = note.thehelp.notevim; break;
+			case 6: type = note.thehelp.vimcheats; break;
+			case 7: type = note.thehelp.vimcheat; break;
+			}
+			note.help(type);
+		},
+		help: function(text) {
+			if (note.thehelp[text]) {
+				text = note.thehelp[text];
+			}
+
+			if (lemon.isFunc(text)) {
+				text = text();
+			}
+			
+			api.preview(text, true);
 		},
 		tip: function(msg) {
 			note.instance.openNotification('<span style="color: orange">' + msg + '</span>', {
@@ -6183,6 +6231,19 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				menu: (note.isMenuOpen() ? 1 : 0),
 				viminsert: ((note.instance.getOption('keyMap') == 'vim-insert') ? 1 : 0)
 			};
+		},
+		preview: function(params) {
+			var text = '';
+			if (!params || lemon.isBlank(params.argString)) {
+				if (note.instance.somethingSelected()) {
+					text = note.instance.getSelection();
+				} else {
+					text = note.instance.getValue();
+				}
+			} else {
+				text = params.args[0];
+			}
+			api.preview(text, true);
 		},
 		share: function() {
 			var content = note.instance.getValue();
@@ -6505,6 +6566,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					$('#note_compare').click(function() {
 						note.diff.from = 0;
 						$('#note_merge').click();
+					});
+					$('#note_preview').click(function() {
+						note.preview();
 					});
 				});
 
