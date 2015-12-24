@@ -276,6 +276,10 @@
 					}); 
 					return meta;
 				},
+				reload: function() {
+					meta.getDocument().location.reload(true);
+					return meta;
+				},
 				getDocument: function() {
 					return iframe.contentDocument || iframe.contentWindow.document;
 				}
@@ -2310,7 +2314,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 						text = api.resp();
 					}
 
-					api.preview(text, full);
+					api.preview(text = text.replace(/\\"/g, "'"), full);
 				};
 				api.nav.rightclick('#btn_preview', function() {
 					lemon.delay(function() {
