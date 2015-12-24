@@ -328,7 +328,7 @@
 		lemon.homeld.base = 1; homeldend();
 	});
 
-	var cmprfix = 'codemirror/5.9.0/';
+	var cmprfix = 'codemirror/5.10.0/';
 	var queue = $LAB
 		.queueScript(lemon.getUrl(cmprfix + 'codemirror.min.js'))
 		.queueWait()
@@ -355,7 +355,7 @@
 		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/html-hint.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/css-hint.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/hint/sql-hint.min.js'))
-		
+		.queueScript(lemon.getUrl(cmprfix + 'addon/search/jump-to-line.min.js'))
 		
 		.queueScript(lemon.getUrl(cmprfix + 'mode/markdown/markdown.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'mode/javascript/javascript.min.js'))
@@ -1073,6 +1073,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			<li><a href="javascript:void(0);" cmd="findNext" title="n"><%= note.menu('Find Next', 'Cmd-G', 'edit') %></a></li>
 			<li><a href="javascript:void(0);" cmd="replace" title=":%s/"><%= note.menu('Replace...', 'Cmd-Alt-F', 'edit') %></a></li>
 			<li><a href="javascript:void(0);" cmd="replaceAll" title=":%s/"><%= note.menu('Replace All', 'Shift-Cmd-Alt-F', 'edit') %></a></li>
+			<li><a href="javascript:void(0);" cmd="jumpToLine" title=":jump"><%= note.menu('Jump To Line', 'Alt-G', 'edit') %></a></li>
 			<li><%= lemon.repeat('&nbsp;', 80) %></li>
           </ul>
         </li>
@@ -5981,6 +5982,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			}},
 			{ name: 'menu', shortn: 'menu', handle: function(cm, params) {
 				$('#note_tool').popover('toggle');
+			}},
+			{ name: 'jump', shortn: 'jump', handle: function(cm, params) {
+				note.handleCmd('jumpToLine');
 			}},
 			{ name: 'share', shortn: 'share', handle: function(cm, params) {
 				note.share();
