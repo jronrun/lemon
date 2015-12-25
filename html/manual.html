@@ -329,6 +329,7 @@
 	});
 
 	var cmprfix = 'codemirror/5.10.0/';
+	lemon.keymapvim = lemon.getUrl(cmprfix + 'keymap/vim.min.js');
 	var queue = $LAB
 		.queueScript(lemon.getUrl(cmprfix + 'codemirror.min.js'))
 		.queueWait()
@@ -383,7 +384,7 @@
 		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/markdown-fold.min.js'))
 		.queueScript(lemon.getUrl(cmprfix + 'addon/fold/xml-fold.min.js'))
 		
-		.queueScript(lemon.getUrl(cmprfix + 'keymap/vim.min.js'))
+		.queueScript(lemon.keymapvim)
 		.queueScript(lemon.getUrl(cmprfix + 'addon/selection/active-line.min.js'))
 		
 		.queueScript(lemon.getUrl('diff_match_patch/20121119/diff_match_patch.js'))
@@ -738,7 +739,7 @@
 
 <script type="text/html" id="blank_tmpl">
 <% var clientW = document.body.clientWidth - 30; var panelH = document.body.clientHeight - 70; if ('blank_popup' != id) { %>
-<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="z-index:55103"><span aria-hidden="true" class="text-danger">×</span></button>
+<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="z-index:55103"><span aria-hidden="true" class="text-danger">×</span>&nbsp;&nbsp;</button>
 <% } %>
 <div id="<%= id %>" style="height:<%=panelH%>px;max-height:<%=panelH%>px;width:<%=clientW%>px;"></div>
 </script>
@@ -1041,7 +1042,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
             <li><a href="javascript:void(0);" onclick="note.newNote();" title=":new"><%= note.menu('New', ':n', 'visual') %></a></li>
             <li><a href="javascript:void(0);" onclick="note.openFile();" title=":open"><%= note.menu('Open File...', ':o', 'visual') %></a></li>
 			<li role="separator" class="divider"></li>
-			<li><a href="javascript:void(0);" onclick="note.menuTgl();" title="Mouse move top toggle menu"><%= note.menu('Close Menu', ':menu', 'visual') %></a></li>
+			<li><a href="javascript:void(0);" onclick="note.menuTgl();" title="Mouse move left toggle menu"><%= note.menu('Close Menu', ':menu', 'visual') %></a></li>
 			<li><a href="javascript:void(0);" onclick="note.close();" title="Close Note"><%= note.menu('Close Note', ':q', 'visual') %></a></li>
 			<li><a href="javascript:void(0);" onclick="note.share();" title="Share Note to Browser Address"><%= note.menu('Share Note', ':share', 'visual') %></a></li>
 			<li><a href="javascript:void(0);" onclick="note.preview();" title=":view"><%= note.menu('Preview', ':v', 'visual') %></a></li>
@@ -5983,7 +5984,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			{ name: 'menu', shortn: 'menu', handle: function(cm, params) {
 				$('#note_tool').popover('toggle');
 			}},
-			{ name: 'jump', shortn: 'jump', handle: function(cm, params) {
+			{ name: 'jumptoline', shortn: 'jump', handle: function(cm, params) {
 				note.handleCmd('jumpToLine');
 			}},
 			{ name: 'share', shortn: 'share', handle: function(cm, params) {
@@ -6031,7 +6032,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			mode: 'http://codemirror.net/mode/index.html',
 			theme: 'http://codemirror.net/demo/theme.html',
 			vim: 'http://vimdoc.sourceforge.net/htmldoc/',
-			cmvim: 'http://codemirror.net/keymap/vim.js',
+			cmvim: lemon.keymapvim.replace('min.js', 'js'),
 			vimcheats: 'http://michael.peopleofhonoronly.com/vim/',
 			vimcheat: 'https://jronrun.github.io/refs/img/vim_cheat_sheet_for_programmers_screen.png',
 			notevim: function() {
@@ -6585,9 +6586,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					direct:'leftTop',
 					movein: note.close
 				}).listen({
-					direct:'rightTop',
+					direct:'left',
 					movein: function() {
-						note.menuTgl(2);
+						note.menuTgl(1);
 					},
 					moveout: function() {
 
