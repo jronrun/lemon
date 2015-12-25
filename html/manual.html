@@ -739,7 +739,7 @@
 
 <script type="text/html" id="blank_tmpl">
 <% var clientW = document.body.clientWidth - 30; var panelH = document.body.clientHeight - 70; if ('blank_popup' != id) { %>
-<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="z-index:55103"><span aria-hidden="true" class="text-danger">×</span>&nbsp;&nbsp;</button>
+<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="z-index:55103"><span aria-hidden="true" class="text-danger">x</span>&nbsp;&nbsp;</button>
 <% } %>
 <div id="<%= id %>" style="height:<%=panelH%>px;max-height:<%=panelH%>px;width:<%=clientW%>px;"></div>
 </script>
@@ -1149,7 +1149,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 
       </ul>
       <ul class="nav navbar-nav navbar-right">
-		<li><a href="javascript:void(0);" class="close" title="Close" aria-label="Close" onclick="note.close();"><span aria-hidden="true">×</span></a></li>
+		<li><a href="javascript:void(0);" class="close" title="Close" aria-label="Close" onclick="note.close();"><span aria-hidden="true">x</span></a></li>
       </ul>
   </div>
 </nav>
@@ -1183,7 +1183,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		<li><button type="button" class="btn btn-info btn-xs" style="margin-top:15px;" title="Toggle Three Panes" onclick="note.diff.threeway();" id="btn_threeway"><span class="glyphicon glyphicon-unchecked"></span> Panes</button></li>
 		<li style="margin-left:15px;"><button type="button" class="btn btn-info btn-xs" style="margin-top:15px;" title="Toggle Collapse Unchanged Stretches of Text" onclick="note.diff.collapse();" id="btn_collapse"><span class="glyphicon glyphicon-unchecked"></span> Collapse</button></li>
 		<li id="li_to_note" style="display:none;"> <a href="javascript:void(0);" title="Note" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-th-list"></span></a> </li>
-		<li><a href="javascript:void(0);" class="close" title="Close" aria-label="Close" onclick="note.diff.close();"><span aria-hidden="true">×</span></a></li>
+		<li><a href="javascript:void(0);" class="close" title="Close" aria-label="Close" onclick="note.diff.close();"><span aria-hidden="true">x</span></a></li>
       </ul>
   </div>
 </nav>
@@ -1268,7 +1268,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
     <div class="modal-content">
 	 <% if (!lemon.isBlank(title)) { %>
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">x</span></button>
         <h6 class="modal-title" id="<%= titleLabel %>"><%= title %></h6>
       </div>
 	 <% } %>
@@ -4991,7 +4991,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				var tipId = tipId || ('p_tip_' + lemon.uniqueId());
 				var html = [
 					'<div class="alert alert-default alert-dismissible fade in" style="border:1px solid;border-color:#a94442;" role="alert" id="' + tipId + '">',
-				    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>'
+				    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">x</span></button>'
 				];
 
 				if (title) {
@@ -5684,7 +5684,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 					alert('Manual API disabled');
 					var html = [
 						'<div class="alert alert-danger alert-dismissible fade in" role="alert">',
-					    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>',
+					    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">x</span></button>',
 					    '<h4>Oh snap!</h4>',
 						'<p>The Manual API disabled!</p>',		
 						'<p>' + (msg || '') + '&nbsp;</p>',				      
