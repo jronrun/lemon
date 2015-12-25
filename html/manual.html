@@ -1342,7 +1342,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			note: function(text, data) {
 				api.hash.localtrigger = 1;
 				text = LZString.compressToEncodedURIComponent(text || '');
-				if (lemon.endWith('…')) {
+				if (lemon.endWith('...')) {
 					lemon.warn(text);
 				}
 				this.to(lemon.format('#note/{0}/{1}/{2}', lemon.when.mark(), text, 
