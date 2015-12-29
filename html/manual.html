@@ -140,7 +140,7 @@
 					<form>
 						<div class="form-group">
 							<div class="pull-left">
-								<button type="button" class="btn btn-default" style="border:0px;"><span class="text-muted">Request</span></button>
+								<button type="button" class="btn btn-default" id="btn_requ_lt" style="border:0px;"><span class="text-muted">Request</span></button>
 							</div>
 							<div class="btn-group pull-right" id="left_toolbar">
 								<button type="button" class="btn btn-default" style="border:0px;" id="from_url">
@@ -151,8 +151,6 @@
 								<span class="text-muted glyphicon glyphicon-pencil" title="Define API"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" data-element="#request" data-toggle="modal" data-target="#modal_tpl">
 								<span class="text-muted glyphicon glyphicon-tree-deciduous" title="Show Request In Fullscreen (Esc Quit)"></span></button>
-								<button type="button" class="btn btn-default" style="border:0px;" data-element="both" data-toggle="modal" data-target="#modal_tpl">
-								<span class="text-muted glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="copy_url">
 								<span class="text-muted glyphicon glyphicon-copy" title="Show Request URL"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="snapshoot_share">
@@ -184,7 +182,7 @@
 								<button type="button" class="btn btn-default" id="btn_his_next" step="1" style="border:0px;"><span title="Next History" class="text-muted glyphicon glyphicon-chevron-right"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" data-element="#response" data-toggle="modal" data-target="#modal_tpl">
 								<span class="text-muted glyphicon glyphicon-leaf" title="Show Response In Fullscreen (Esc Quit)"></span></button>
-								<button type="button" class="btn btn-default" style="border:0px;" data-element="both" data-toggle="modal" data-target="#modal_tpl">
+								<button type="button" class="btn btn-default" id="btn_fullsc" style="border:0px;" data-element="both" data-toggle="modal" data-target="#modal_tpl">
 								<span class="text-muted glyphicon glyphicon-eye-open" title="Show Request and Response In Fullscreen (Esc Quit)"></span></button>
 								<button type="button" class="btn btn-default" style="border:0px;" id="btn_preview">
 								<span class="text-muted glyphicon glyphicon-info-sign" title="Previews"></span></button>
@@ -454,6 +452,11 @@
 
 			api.repl.intl();
 		});
+
+		$LAB.script('https://jronrun.github.io/refs/screenfull.min.js').wait(function() { 
+			api.nav.intlfull();
+		});
+
 	}, 1000);
 </script>
 
@@ -1046,6 +1049,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			<li><a href="javascript:void(0);" onclick="note.close();" title="Close Note"><%= note.menu('Close Note', ':q', 'visual') %></a></li>
 			<li><a href="javascript:void(0);" onclick="note.share();" title="Share Note to Browser Address"><%= note.menu('Share Note', ':share', 'visual') %></a></li>
 			<li><a href="javascript:void(0);" onclick="note.preview();" title=":view"><%= note.menu('Preview', ':v', 'visual') %></a></li>
+			<li><a href="javascript:void(0);" onclick="note.fulltgl();" title=":fullscreen"><%= note.menu('Fullscreen', ':full', 'visual') %></a></li>
 			<li role="separator" class="divider"></li>
 			<li><a href="javascript:void(0);" onclick="note.save();" title="Save Note"><%= note.menu('Save Note', ':w', 'visual') %></a></li>
 			<li><a href="javascript:void(0);" onclick="note.saveclose();" title="Save & Close Note"><%= note.menu('Save & Close Note', ':wq', 'visual') %></a></li>
@@ -2376,6 +2380,26 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			},
 			title: function(title) {
 				$('title').text(title || api.preference.basic().title || 'API');
+			},
+			intlfull: function() {
+				var fullsctgl = function() {
+					lemon.delay(function() {
+						screenfull.toggle();
+					}, 100);
+				};
+				
+				api.nav.rightclick('#btn_fullsc', fullsctgl);
+				$('#btn_requ_lt').click(fullsctgl);
+
+				$(document).on(screenfull.raw.fullscreenchange, function () {
+					lemon.delay(function() {
+						api.nav.pageResize();
+					}, 600);
+				});
+			},
+			pageResize: function() {
+				after.rich.fitSize(after.request);
+				after.rich.fitSize(after.response);
 			},
 			copyEncodeUrl: function(el) {
 				if ($('#request_url').length) {
@@ -5984,6 +6008,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			{ name: 'menu', shortn: 'menu', handle: function(cm, params) {
 				$('#note_tool').popover('toggle');
 			}},
+			{ name: 'fullscreen', shortn: 'full', handle: function(cm, params) {
+				note.fulltgl();
+			}},
 			{ name: 'jumptoline', shortn: 'jump', handle: function(cm, params) {
 				note.handleCmd('jumpToLine');
 			}},
@@ -6253,6 +6280,9 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 				text = params.args[0];
 			}
 			api.preview(text, true);
+		},
+		fulltgl: function() {
+			screenfull.toggle();
 		},
 		share: function() {
 			var content = note.instance.getValue();
