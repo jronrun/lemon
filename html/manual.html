@@ -1143,7 +1143,8 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 		<li class="dropdown">
           <a href="javascript:void(0);" id="note_help_dd" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help</a>
           <ul class="dropdown-menu" style="border:0px;">
-            <li><a href="javascript:void(0);" onclick="note.showhelp(3);" title="Vim">Vim</a></li>
+            <li><a href="javascript:void(0);" onclick="note.showhelp(3);" title="Vim Doc">Vim Doc</a></li>
+			<li><a href="javascript:void(0);" onclick="note.showhelp(8);" title="Vim Doc cn">Vim Doc cn</a></li>
 			<li><a href="javascript:void(0);" onclick="note.showhelp(7);" title="Vim Cheat Sheet">Vim Cheat Sheet</a></li>
 			<li><a href="javascript:void(0);" onclick="note.showhelp(6);" title="Vim Cheat Sheets">Vim Cheats</a></li>
 			<li><a href="javascript:void(0);" onclick="note.showhelp(5);" title="Note Vim">Note Vim</a></li>
@@ -6059,6 +6060,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			mode: 'http://codemirror.net/mode/index.html',
 			theme: 'http://codemirror.net/demo/theme.html',
 			vim: 'http://vimdoc.sourceforge.net/htmldoc/',
+			vimcn: 'http://vimcdoc.sourceforge.net/doc/help.html',
 			cmvim: lemon.keymapvim.replace('min.js', 'js'),
 			vimcheats: 'http://michael.peopleofhonoronly.com/vim/',
 			vimcheat: 'https://jronrun.github.io/refs/img/vim_cheat_sheet_for_programmers_screen.png',
@@ -6078,6 +6080,7 @@ lemon.each(api.preference.service(), function(envGroup, k) {
 			case 5: type = note.thehelp.notevim; break;
 			case 6: type = note.thehelp.vimcheats; break;
 			case 7: type = note.thehelp.vimcheat; break;
+			case 8: type = note.thehelp.vimcn; break;
 			}
 			note.help(type);
 		},
