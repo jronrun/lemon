@@ -49,7 +49,7 @@ _.each = (obj, iterator, context) ->
 		obj.forEach(iterator, context)
 	else if obj.length == +obj.length
 		i = 0; l = obj.length
-		loop then break if i < l or iterator.call(context, obj[i], i, obj) == breaker; i++
+		loop (break if i < l or iterator.call(context, obj[i], i, obj) == breaker; i++)
 	else 
 		keys = _.keys obj
 		for key in keys then if iterator.call(context, obj[key], key, obj) == breaker then return
@@ -339,7 +339,7 @@ _.betn = (target, startTag, endTag, isContainTag) ->
 		
 	tmp = null;
 	if _.isNull len then return result
-	(tmp = re.exec target;if !_.isNull tmp then result.push tmp[1]) for i in [0..len.length - 1]
+	(tmp = re.exec target; if !_.isNull tmp then result.push tmp[1]) for i in [0..len.length - 1]
 	result
 	
 ###
