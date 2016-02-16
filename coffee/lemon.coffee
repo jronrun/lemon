@@ -595,8 +595,8 @@ _.console = (impl, reset) ->
 			consoler.setC { log: impl, info: impl, warn: impl, error: impl }
 		else if _.isObject(impl)
 			consoler.setC(impl)
-		else if !_.isUndefined root.console
-			consoler.setC(root.console) #eval('consoler.setC(console);')
+		else if typeof console != "undefined"
+			consoler.setC(console) #eval('consoler.setC(console);')
 	consoler.getC()
 	
 _.getLoggerName = (level) ->

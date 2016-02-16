@@ -970,8 +970,8 @@
         });
       } else if (_.isObject(impl)) {
         consoler.setC(impl);
-      } else if (!_.isUndefined(root.console)) {
-        consoler.setC(root.console);
+      } else if (typeof console !== "undefined") {
+        consoler.setC(console);
       }
     }
     return consoler.getC();
