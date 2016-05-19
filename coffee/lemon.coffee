@@ -446,6 +446,8 @@ _.getParam = (elementId, extraSelector...) ->
     if (elName || '').length > 0
       if el.value
         elVal = el.value
+      else if (el.tagName || '').toLowerCase() == 'select'
+        elVal = el.options[el.options.selectedIndex].value;
       else if (el.tagName || '').toLowerCase() in invisibleVlaueEl
         elVal = el.innerText
       else

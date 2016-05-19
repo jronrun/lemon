@@ -749,6 +749,8 @@
       if ((elName || '').length > 0) {
         if (el.value) {
           elVal = el.value;
+        } else if ((el.tagName || '').toLowerCase() === 'select') {
+          elVal = el.options[el.options.selectedIndex].value;
         } else if (ref1 = (el.tagName || '').toLowerCase(), indexOf.call(invisibleVlaueEl, ref1) >= 0) {
           elVal = el.innerText;
         } else {
