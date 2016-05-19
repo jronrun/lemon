@@ -428,26 +428,30 @@ _.fillParam = (params...) ->
 			else
 				element.value = v
 	return
-	
+
 _.getParam = (elementId, extraSelector...) ->
-	elementId = _.startIf elementId, '#'
-	defaultInputType = [ 
-	    'hidden', 'text', 'checkbox', 'password',
-		'tel', 'email', 'url', 'number', 'date', 'time', 'datetime', 'month'
-	]
-	invisibleVlaueEl = ['li']
-	defaultEl = ['select'].concat extraSelector
-	for v in defaultInputType
-		defaultEl.push "input[type=#{v}]"
-	data = {}; ctx = _.query(elementId)
-	if _.isBlank ctx then return data 
-	for el in _.query(defaultEl.join(','), ctx, true)
-		elName = el.getAttribute('name')
-		if (elName || '').length > 0
-			data[elName] = if _.has(el, 'value') then (
-				if (el.tagName || '').toLowerCase() in invisibleVlaueEl then el.innerText else _.trim(el.value)
-			) else el.innerHTML
-	return data;
+  elementId = _.startIf elementId, '#'
+  defaultInputType = [
+    'hidden', 'text', 'checkbox', 'password',
+    'tel', 'email', 'url', 'number', 'date', 'time', 'datetime', 'month'
+  ]
+  invisibleVlaueEl = ['li']
+  defaultEl = ['select'].concat extraSelector
+  for v in defaultInputType
+    defaultEl.push "input[type=#{v}]"
+  data = {}; ctx = _.query(elementId)
+  if _.isBlank ctx then return data
+  for el in _.query(defaultEl.join(','), ctx, true)
+    elName = el.getAttribute('name')
+    if (elName || '').length > 0
+      if el.value
+        elVal = el.value
+      else if (el.tagName || '').toLowerCase() in invisibleVlaueEl
+        elVal = el.innerText
+      else
+        elVal = el.innerHTML
+      data[elName] = _.trim elVal
+  return data;
 	
 #string replacer
 

@@ -727,7 +727,7 @@
   };
 
   _.getParam = function() {
-    var ctx, data, defaultEl, defaultInputType, el, elName, elementId, extraSelector, invisibleVlaueEl, len2, len3, q, r, ref, ref1, v;
+    var ctx, data, defaultEl, defaultInputType, el, elName, elVal, elementId, extraSelector, invisibleVlaueEl, len2, len3, q, r, ref, ref1, v;
     elementId = arguments[0], extraSelector = 2 <= arguments.length ? slice.call(arguments, 1) : [];
     elementId = _.startIf(elementId, '#');
     defaultInputType = ['hidden', 'text', 'checkbox', 'password', 'tel', 'email', 'url', 'number', 'date', 'time', 'datetime', 'month'];
@@ -747,7 +747,14 @@
       el = ref[r];
       elName = el.getAttribute('name');
       if ((elName || '').length > 0) {
-        data[elName] = _.has(el, 'value') ? ((ref1 = (el.tagName || '').toLowerCase(), indexOf.call(invisibleVlaueEl, ref1) >= 0) ? el.innerText : _.trim(el.value)) : el.innerHTML;
+        if (el.value) {
+          elVal = el.value;
+        } else if (ref1 = (el.tagName || '').toLowerCase(), indexOf.call(invisibleVlaueEl, ref1) >= 0) {
+          elVal = el.innerText;
+        } else {
+          elVal = el.innerHTML;
+        }
+        data[elName] = _.trim(elVal);
       }
     }
     return data;
