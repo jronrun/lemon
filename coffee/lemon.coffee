@@ -432,7 +432,7 @@ _.fillParam = (params...) ->
 _.getParam = (elementId, extraSelector...) ->
   elementId = _.startIf elementId, '#'
   defaultInputType = [
-    'hidden', 'text', 'checkbox', 'password',
+    'hidden', 'text', 'checkbox', 'password', 'radio',
     'tel', 'email', 'url', 'number', 'date', 'time', 'datetime', 'month'
   ]
   invisibleVlaueEl = ['li']
@@ -444,7 +444,16 @@ _.getParam = (elementId, extraSelector...) ->
   for el in _.query(defaultEl.join(','), ctx, true)
     elName = el.getAttribute('name')
     if (elName || '').length > 0
-      if el.value
+      if (el.type || '').toLowerCase() == 'checkbox'
+        elVal = (data[elName] || [])
+        if el.checked
+          elVal = elVal.concat el.value
+      else if (el.type || '').toLowerCase() == 'radio'
+        if el.checked
+          elVal = el.value
+        else
+          elVal = if _.has(data, elName) then data[elName] else ''
+      else if el.value
         elVal = el.value
       else if (el.tagName || '').toLowerCase() == 'select'
         elVal = el.options[el.options.selectedIndex].value;
