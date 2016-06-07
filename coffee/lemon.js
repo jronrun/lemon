@@ -688,7 +688,7 @@
   };
 
   _.fillParam = function() {
-    var data, elId, element, k, l, params, ref, selector, textArr, v;
+    var aEl, data, elId, element, els, k, l, len2, newVs, params, q, ref, selector, textArr, v, vals;
     params = 1 <= arguments.length ? slice.call(arguments, 0) : [];
     elId = '';
     data = null;
@@ -715,12 +715,27 @@
       } else {
         selector = elId + ' [name=' + k + ']';
       }
-      element = _.query(selector);
-      if (!_.isBlank(element)) {
-        if (ref = (element.tagName || '').toLowerCase(), indexOf.call(textArr, ref) >= 0) {
-          element.innerHTML = v;
-        } else {
-          element.value = v;
+      els = _.query(selector, true);
+      if (!_.isBlank(els)) {
+        if (els.length > 1) {
+          vals = _.isArray(v) ? v : [v + ''];
+          newVs = [];
+          _.each(vals, function(tmp) {
+            newVs.push(tmp + '');
+          });
+          for (q = 0, len2 = els.length; q < len2; q++) {
+            aEl = els[q];
+            if (newVs.indexOf(aEl.value) !== -1) {
+              aEl.checked = 'checked';
+            }
+          }
+        } else if (els.length === 1) {
+          element = els[0];
+          if (ref = (element.tagName || '').toLowerCase(), indexOf.call(textArr, ref) >= 0) {
+            element.innerHTML = v;
+          } else {
+            element.value = v;
+          }
         }
       }
     }
@@ -730,7 +745,7 @@
     var ctx, data, defaultEl, defaultInputType, el, elName, elVal, elementId, extraSelector, invisibleVlaueEl, len2, len3, q, r, ref, ref1, v;
     elementId = arguments[0], extraSelector = 2 <= arguments.length ? slice.call(arguments, 1) : [];
     elementId = _.startIf(elementId, '#');
-    defaultInputType = ['hidden', 'text', 'checkbox', 'password', 'tel', 'email', 'url', 'number', 'date', 'time', 'datetime', 'month'];
+    defaultInputType = ['hidden', 'text', 'checkbox', 'password', 'radio', 'tel', 'email', 'url', 'number', 'date', 'time', 'datetime', 'month'];
     invisibleVlaueEl = ['li'];
     defaultEl = ['select'].concat(extraSelector);
     for (q = 0, len2 = defaultInputType.length; q < len2; q++) {
@@ -747,10 +762,25 @@
       el = ref[r];
       elName = el.getAttribute('name');
       if ((elName || '').length > 0) {
-        if (el.value) {
+        if ((el.type || '').toLowerCase() === 'checkbox') {
+          elVal = data[elName] || [];
+          if (el.checked) {
+            elVal = elVal.concat(el.value);
+          }
+        } else if ((el.type || '').toLowerCase() === 'radio') {
+          if (el.checked) {
+            elVal = el.value;
+          } else {
+            elVal = _.has(data, elName) ? data[elName] : '';
+          }
+        } else if (el.value) {
           elVal = el.value;
         } else if ((el.tagName || '').toLowerCase() === 'select') {
-          elVal = el.options[el.options.selectedIndex].value;
+          if (el.options[el.options.selectedIndex]) {
+            elVal = el.options[el.options.selectedIndex].value;
+          } else {
+            elVal = '';
+          }
         } else if (ref1 = (el.tagName || '').toLowerCase(), indexOf.call(invisibleVlaueEl, ref1) >= 0) {
           elVal = el.innerText;
         } else {

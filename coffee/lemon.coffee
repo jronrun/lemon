@@ -403,31 +403,45 @@ _.chkParam = (params...) ->
 		throw new Error(_.format(errMsg, args))
 	return true
 
+
 #elementId, data, selector supports: id, class, name
 _.fillParam = (params...) ->
-	elId = ''; data = null; textArr = ['div', 'span']; l = params.length
-	switch(l)
-		when 1 then data = params[0]
-		when 3, 2 then (
-			if l is 3
-				(textArr = textArr.concat(if _.isArray(params[2]) then params[2] else [params[2]]))
-			elId = params[0]; data = params[1]
-		)
-	elId = _.startIf(elId, '#')
-	
-	for k, v of data
-		selector = null
-		if _.startWith k, [ '#', '\\.' ]
-			selector = elId + ' ' + k
-		else 
-			selector = elId + ' [name=' + k + ']'
-		element = _.query selector
-		unless _.isBlank element
-			if (element.tagName || '').toLowerCase() in textArr
-				element.innerHTML = v
-			else
-				element.value = v
-	return
+  elId = ''; data = null; textArr = ['div', 'span']; l = params.length
+  switch(l)
+    when 1 then data = params[0]
+    when 3, 2 then (
+      if l is 3
+        (textArr = textArr.concat(if _.isArray(params[2]) then params[2] else [params[2]]))
+      elId = params[0]; data = params[1]
+    )
+  elId = _.startIf(elId, '#')
+
+  for k, v of data
+    selector = null
+    if _.startWith k, [ '#', '\\.' ]
+      selector = elId + ' ' + k
+    else
+      selector = elId + ' [name=' + k + ']'
+    els = _.query selector, true
+    unless _.isBlank els
+      if els.length > 1
+        vals = if _.isArray(v) then v else [v + '']
+        newVs = []
+        _.each vals, (tmp) -> (
+          newVs.push(tmp + '')
+          return
+        )
+        for aEl in els
+          if newVs.indexOf(aEl.value) != -1
+            aEl.checked = 'checked'
+      else if els.length == 1
+        element = els[0]
+        if (element.tagName || '').toLowerCase() in textArr
+          element.innerHTML = v
+        else
+          element.value = v
+  return
+
 
 _.getParam = (elementId, extraSelector...) ->
   elementId = _.startIf elementId, '#'
@@ -456,7 +470,10 @@ _.getParam = (elementId, extraSelector...) ->
       else if el.value
         elVal = el.value
       else if (el.tagName || '').toLowerCase() == 'select'
-        elVal = el.options[el.options.selectedIndex].value;
+        if el.options[el.options.selectedIndex]
+          elVal = el.options[el.options.selectedIndex].value;
+        else
+          elVal = ''
       else if (el.tagName || '').toLowerCase() in invisibleVlaueEl
         elVal = el.innerText
       else
