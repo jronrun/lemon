@@ -713,7 +713,7 @@
       if (_.startWith(k, ['#', '\\.'])) {
         selector = elId + ' ' + k;
       } else {
-        selector = elId + ' [name=' + k + ']';
+        selector = elId + ' [name="' + k + '"]';
       }
       els = _.query(selector, true);
       if (!_.isBlank(els)) {

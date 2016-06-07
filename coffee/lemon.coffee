@@ -421,7 +421,7 @@ _.fillParam = (params...) ->
     if _.startWith k, [ '#', '\\.' ]
       selector = elId + ' ' + k
     else
-      selector = elId + ' [name=' + k + ']'
+      selector = elId + ' [name="' + k + '"]'
     els = _.query selector, true
     unless _.isBlank els
       if els.length > 1
