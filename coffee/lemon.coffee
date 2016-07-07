@@ -5,7 +5,7 @@
 
 "use strict"
 
-root = this; 
+root = global;
 _ = (obj) -> 
 	if obj instanceof _ 
 		return obj
