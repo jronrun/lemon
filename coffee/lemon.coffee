@@ -5,7 +5,7 @@
 
 "use strict"
 
-root = global;
+root = if (typeof global == 'undefined') then window else global;
 _ = (obj) -> 
 	if obj instanceof _ 
 		return obj

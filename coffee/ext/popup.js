@@ -87,4 +87,4 @@
 	
 	core.register(module, core.delegate(proto));
 	
-})(this.kiwi, 'popup');
+})(lemon, 'popup');

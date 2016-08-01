@@ -179,4 +179,4 @@
 
 	core.register(component, proto);
 
-})(this, this.kiwi, 'base91');
+})((typeof global === 'undefined' ? window : global), lemon, 'base91');

@@ -130,4 +130,4 @@
 
 	core.register(component, proto);
 
-})(this, this.kiwi, 'mousepos');
+})((typeof global === 'undefined' ? window : global), lemon, 'mousepos');

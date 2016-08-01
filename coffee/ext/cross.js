@@ -138,4 +138,4 @@
 	
 	core.register(component, proto);
 	
-})(this, this.kiwi, 'cross');
+})((typeof global === 'undefined' ? window : global), lemon, 'cross');

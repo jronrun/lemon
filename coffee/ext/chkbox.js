@@ -26,4 +26,4 @@
 	
 	core.register(module, core.delegate(proto));
 	
-})(this.kiwi, 'chkbox');
+})(lemon, 'chkbox');

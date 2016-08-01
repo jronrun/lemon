@@ -201,4 +201,4 @@
 	};
 
 	kiwi.register(component, proto);
-})(this.kiwi, 'json');
+})(lemon, 'json');

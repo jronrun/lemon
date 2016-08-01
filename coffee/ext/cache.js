@@ -233,4 +233,4 @@
 		return core.newCache(maxSize, new Cache.BasicCacheStorage());
 	});
 
-})(this, this.kiwi, 'newCache');
+})((typeof global === 'undefined' ? window : global), lemon, 'newCache');

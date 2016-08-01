@@ -28,4 +28,4 @@
     
     core.register(component, proto);
     
-})(this.kiwi, 'cookie');
+})(lemon, 'cookie');

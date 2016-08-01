@@ -40,4 +40,4 @@
     
     core.register(component, proto);
 	
-})(this, this.kiwi, 'timer');
+})((typeof global === 'undefined' ? window : global), lemon, 'timer');

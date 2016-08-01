@@ -51,4 +51,4 @@
 	
 	core.register(component, proto);
 	
-})(this, this.kiwi, 'base64');
+})((typeof global === 'undefined' ? window : global), lemon, 'base64');

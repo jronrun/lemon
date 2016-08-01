@@ -16,4 +16,4 @@
 		o.trigger.apply(o, arguments);
 	};
 	
-})(this, this.kiwi);
+})((typeof global === 'undefined' ? window : global), lemon);

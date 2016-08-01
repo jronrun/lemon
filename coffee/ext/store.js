@@ -111,7 +111,7 @@
 	
 	core.register(component, proto);
 	
-})(this, this.kiwi, 'store');
+})((typeof global === 'undefined' ? window : global), lemon, 'store');
 
 //Html5 fetures support check
 (function(root, core, component) {
@@ -126,5 +126,5 @@
 	
 	core.register(component, proto);
 	
-})(this, this.kiwi, 'support');
+})((typeof global === 'undefined' ? window : global), lemon, 'support');
 
